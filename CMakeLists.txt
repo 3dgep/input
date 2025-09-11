@@ -17,3 +17,7 @@ if(MSVC)
     add_compile_options(/MP)
 endif(MSVC)
 
+set( INC_FILES
+    include/Input/Input.h
+
+    )
