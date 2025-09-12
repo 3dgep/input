@@ -81,6 +81,7 @@ if(INPUT_BACKEND STREQUAL "GDK")
     set(GDK_SRC_FILES
         src/backends/GDK/GamepadGDK.cpp
         src/backends/GDK/InputGDK.cpp
+        src/backends/GDK/InputGDK.hpp
         src/backends/GDK/KeyboardGDK.cpp
         src/backends/GDK/MouseGDK.cpp
     )
@@ -100,7 +101,7 @@ add_library(input::input ALIAS input)
 
 target_compile_features(input PUBLIC cxx_std_20)
 
-if(GDK_FOUND)
+if(INPUT_BACKEND STREQUAL "GDK")
     target_link_libraries(input
         PUBLIC Microsoft::GDK
     )
