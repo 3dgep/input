@@ -80,8 +80,6 @@ set_property(CACHE INPUT_BACKEND PROPERTY STRINGS ${AVAILABLE_BACKENDS})
 if(INPUT_BACKEND STREQUAL "GDK")
     set(GDK_SRC_FILES
         src/backends/GDK/GamepadGDK.cpp
-        src/backends/GDK/InputGDK.cpp
-        src/backends/GDK/InputGDK.hpp
         src/backends/GDK/KeyboardGDK.cpp
         src/backends/GDK/MouseGDK.cpp
     )

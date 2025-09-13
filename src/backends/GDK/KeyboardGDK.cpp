@@ -50,12 +50,12 @@ public:
         return m_Connected > 0;
     }
 
-    void getState( Keyboard::State& state ) const
+    Keyboard::State getState() const
     {
-        state = {};
+        Keyboard::State state{};
 
         if ( !m_GameInput )
-            return;
+            return state;
 
         ComPtr<IGameInputReading> reading;
         if ( SUCCEEDED( m_GameInput->GetCurrentReading( GameInputKindKeyboard, nullptr, reading.GetAddressOf() ) ) )
@@ -85,6 +85,8 @@ public:
                 KeyDown( vk, state );
             }
         }
+
+        return state;
     }
 
     uint32_t m_Connected = 0;
@@ -155,9 +157,7 @@ private:
 
 Keyboard::State Keyboard::getState() const
 {
-    State state;
-    KeyboardGDK::get().getState( state );
-    return state;
+    return KeyboardGDK::get().getState();
 }
 
 void Keyboard::reset()
@@ -168,3 +168,7 @@ bool Keyboard::isConnected()
     return KeyboardGDK::get().isConnected();
 }
 
+void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
+{
+    // GameInput for Keyboard doesn't require Win32 messages, but this simplifies integration.
+}
