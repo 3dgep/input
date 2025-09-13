@@ -1,11 +1,43 @@
-#include "InputGDK.hpp"
+#include <input/Input.hpp>
 
+#include <GameInput.h>
+#include <wrl.h>
+
+#include <cstring>  // for memcmp
 #include <format>
 #include <iostream>
+#include <mutex>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 using namespace input;
+using namespace Microsoft::WRL;
+
+// Context for GDK implementation.
+class InputGDK
+{
+public:
+    void addGamepad( IGameInputDevice* gamepad );
+    void removeGamepad( IGameInputDevice* gamepad );
+    void setKeyboard( IGameInputDevice* keyboard );
+    void setMouse( IGameInputDevice* mouse );
+
+    void update();
+
+    static InputGDK& get();
+
+    InputGDK();
+    ~InputGDK();
+
+    ComPtr<IGameInput>     m_GameInput;
+    GameInputCallbackToken m_DeviceCallbackToken;
+
+    std::vector<ComPtr<IGameInputDevice>> m_Gamepads;
+    ComPtr<IGameInputDevice>              m_Keyboard;
+    ComPtr<IGameInputDevice>              m_Mouse;
+
+};
 
 // Based on sample: https://github.dev/microsoft/Xbox-GDK-Samples/blob/main/Samples/System/GamepadKeyboardMouse/GamepadKeyboardMouse.cpp
 
@@ -36,7 +68,7 @@ void CALLBACK DeviceCallback(
         else if ( ( deviceKind & GameInputKindMouse ) != 0 )
         {
             message = "Mouse";
-        }        
+        }
 
         message += " Connected.";
     }
@@ -91,12 +123,24 @@ InputGDK::~InputGDK()
 
 void InputGDK::addGamepad( IGameInputDevice* gamepad )
 {
-    m_Gamepads.insert( { gamepad->GetDeviceInfo()->deviceId, gamepad } );
+    m_Gamepads.push_back( gamepad );
 }
 
 void InputGDK::removeGamepad( IGameInputDevice* gamepad )
 {
-    m_Gamepads.erase( gamepad->GetDeviceInfo()->deviceId );
+    std::erase_if( m_Gamepads, [gamepad]( const ComPtr<IGameInputDevice>& d ) {
+        return std::memcmp( d->GetDeviceInfo()->deviceId.value, gamepad->GetDeviceInfo()->deviceId.value, APP_LOCAL_DEVICE_ID_SIZE ) == 0;
+    } );
+}
+
+void InputGDK::setKeyboard( IGameInputDevice* keyboard )
+{
+    m_Keyboard = keyboard;
+}
+
+void InputGDK::setMouse( IGameInputDevice* mouse )
+{
+    m_Mouse = mouse;
 }
 
 InputGDK& InputGDK::get()
@@ -110,25 +154,23 @@ void InputGDK::update()
 
     // Gamepad input.
     {
-        HRESULT hr = m_GameInput->GetCurrentReading( GameInputKindGamepad, nullptr, &reading );
-        if ( SUCCEEDED( hr ) )
+        for ( auto& device: m_Gamepads )
         {
-            GameInputGamepadState gameInputGamepadState;
-            if ( reading->GetGamepadState( &gameInputGamepadState ) )
+            ComPtr<IGameInputReading> reading;
+            HRESULT                   hr = m_GameInput->GetCurrentReading( GameInputKindGamepad, device.Get(), &reading );
+            if ( SUCCEEDED( hr ) )
             {
-                GamepadState state {};
-                
+                GameInputGamepadState gameInputGamepadState;
+                if ( reading->GetGamepadState( &gameInputGamepadState ) )
+                {
+
+                }
             }
         }
     }
 }
 
-InputGDK& getInputGDK()
-{
-    static InputGDK inputGDK;
-    return inputGDK;
-}
-
 void Input::update()
 {
+    InputGDK::get().update();
 }
