@@ -127,7 +127,7 @@ public:
             }
         }
 
-        state.scrollWheel = m_ScrollWheelCurrent;
+        state.scrollWheelValue = m_ScrollWheelCurrent;
 
         return state;
     }

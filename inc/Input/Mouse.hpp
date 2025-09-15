@@ -82,7 +82,7 @@ public:
         /// <summary>
         /// The value of the mouse's scroll wheel.
         /// </summary>
-        int scrollWheel;
+        int scrollWheelValue;
 
         /// <summary>
         /// 

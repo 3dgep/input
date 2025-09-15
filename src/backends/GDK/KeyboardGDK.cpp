@@ -7,6 +7,37 @@
 #include <iostream>
 #include <stdexcept>
 
+//======================================================================================
+// Microsoft Game Developer Kit implementation.
+//======================================================================================
+
+//
+// For a Win32 desktop application, call this function from your Window Message Procedure
+//
+// extern void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+// 
+// LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+// {
+//     switch (message)
+//     {
+//
+//     case WM_ACTIVATE:
+//     case WM_ACTIVATEAPP:
+//         Keyboard_ProcessMessage(message, wParam, lParam);
+//         break;
+//
+//     case WM_KEYDOWN:
+//     case WM_SYSKEYDOWN:
+//     case WM_KEYUP:
+//     case WM_SYSKEYUP:
+//         Keyboard_ProcessMessage(message, wParam, lParam);
+//         break;
+//
+//     }
+// }
+//
+
+
 using namespace input;
 using Microsoft::WRL::ComPtr;
 
