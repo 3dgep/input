@@ -46,7 +46,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 
 using namespace input;
-using namespace Microsoft::WRL;
+using Microsoft::WRL::ComPtr;
 
 namespace
 {
@@ -63,6 +63,7 @@ using ScopedHandle = std::unique_ptr<void, handle_closer>;
 
 }  // namespace
 
+// Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Src/Mouse.cpp
 class MouseGDK
 {
 public:

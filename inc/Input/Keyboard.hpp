@@ -4,6 +4,7 @@
 
 namespace input
 {
+// Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Inc/Keyboard.h
 class Keyboard
 {
 public:

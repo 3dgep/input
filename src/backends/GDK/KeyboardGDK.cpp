@@ -8,7 +8,7 @@
 #include <stdexcept>
 
 using namespace input;
-using namespace Microsoft::WRL;
+using Microsoft::WRL::ComPtr;
 
 namespace
 {
@@ -33,9 +33,9 @@ void KeyUp( int key, Keyboard::State& state ) noexcept
     const unsigned int bf = 1u << ( key & 0x1f );
     ptr[( key >> 5 )] &= ~bf;
 }
-}
+}  // namespace
 
-
+// Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Src/Keyboard.cpp
 class KeyboardGDK
 {
 public:
@@ -52,7 +52,7 @@ public:
 
     Keyboard::State getState() const
     {
-        Keyboard::State state{};
+        Keyboard::State state {};
 
         if ( !m_GameInput )
             return state;
@@ -90,6 +90,11 @@ public:
     }
 
     uint32_t m_Connected = 0;
+
+    KeyboardGDK( const KeyboardGDK& )            = delete;
+    KeyboardGDK( KeyboardGDK&& )                 = delete;
+    KeyboardGDK& operator=( const KeyboardGDK& ) = delete;
+    KeyboardGDK& operator=( KeyboardGDK&& )      = delete;
 
 private:
     static void CALLBACK OnGameInputDevice(

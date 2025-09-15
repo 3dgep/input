@@ -4,11 +4,12 @@
 
 namespace input
 {
+// Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Inc/GamePad.h
 struct Gamepad
 {
     static const int MAX_PLAYER_COUNT;  ///< Maximum number of gamepads is platform specific.
 
-    static constexpr int MOST_RECENT_PLAYER = -1; ///< Use this player ID to get the most recently plugged-in gamepad.
+    static constexpr int MOST_RECENT_PLAYER = -1;  ///< Use this player ID to get the most recently plugged-in gamepad.
 
     /// <summary>
     /// Dead-zone mode.
@@ -332,6 +333,9 @@ public:
 private:
     Gamepad::State lastState;
 };
+
+float ApplyLinearDeadZone( float value, float maxValue, float deadZoneSize ) noexcept;                                                                      ///< Defined in Gamepad.cpp
+void  ApplyStickDeadZone( float x, float y, Gamepad::DeadZone deadZoneMode, float maxValue, float deadZoneSize, float& resultX, float& resultY ) noexcept;  ///< Defined in Gamepad.cpp
 
 }  // namespace input
 

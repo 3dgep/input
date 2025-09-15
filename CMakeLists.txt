@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.12...3.31)
 
 option(INPUT_BUILD_SAMPLES "Build Input samples." ON)
-set(INPUT_BACKEND "" CACHE STRING "Which backend to use.")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -33,17 +32,52 @@ set(SRC_FILES
     src/Mouse.cpp
 )
 
-set(AVAILABLE_BACKENDS "")
-
 if(WIN32)
-    list(APPEND AVAILABLE_BACKENDS "WIN32")
+    message(STATUS "Win32 found, Win32 support enabled.")
+    set( WIN32_SRC_FILES
+        src/backends/Win32/GamepadWin32.cpp
+        src/backends/Win32/KeyboardWin32.cpp
+        src/backends/Win32/MouseWin32.cpp
+    )
+    source_group(backends/Win32 FILES ${WIN32_SRC_FILES})
+
+    add_library( input_Win32 STATIC ${INC_FILES} ${SRC_FILES} ${WIN32_SRC_FILES} .clang-format)
+    add_library( input::Win32 ALIAS input_Win32)
+    target_compile_features(input_Win32 PUBLIC cxx_std_20)
+
+    target_link_libraries( input_Win32
+    )
+
+    target_include_directories( input_Win32
+        PUBLIC inc
+    )
+else()
+    message(STATUS "Win32 not found, Win32 support disabled.")
 endif()
 
 find_package(GDK)
 
 if(GDK_FOUND)
     message(STATUS "GDK found, GDK support enabled.")
-    list(APPEND AVAILABLE_BACKENDS "GDK")
+    set(GDK_SRC_FILES
+        src/backends/GDK/GamepadGDK.cpp
+        src/backends/GDK/KeyboardGDK.cpp
+        src/backends/GDK/MouseGDK.cpp
+    )
+
+    source_group(backends/GDK FILES ${GDK_SRC_FILES})
+
+    add_library( input_GDK STATIC ${INC_FILES} ${SRC_FILES} ${GDK_SRC_FILES} .clang-format)
+    add_library( input::GDK ALIAS input_GDK)
+    target_compile_features(input_GDK PUBLIC cxx_std_20)
+    target_link_libraries( input_GDK
+        PUBLIC Microsoft::GDK
+    )
+
+    target_include_directories( input_GDK
+        PUBLIC inc
+    )
+
 else()
     message(STATUS "GDK not found, GDK support disabled.")
 endif()
@@ -52,7 +86,6 @@ find_package(SDL2)
 
 if(SDL2_FOUND)
     message(STATUS "SDL2 found, SDL2 support enabled.")
-    list(APPEND AVAILABLE_BACKENDS "SDL2")
 else()
     message(STATUS "SDL2 not found, SDL2 support disabled.")
 endif()
@@ -61,7 +94,6 @@ find_package(SDL3)
 
 if(SDL3_FOUND)
     message(STATUS "SDL3 found, SDL3 support enabled.")
-    list(APPEND AVAILABLE_BACKENDS "SDL3")
 else()
     message(STATUS "SDL3 not found, SDL3 support disabled.")
 endif()
@@ -70,42 +102,6 @@ find_package(GLFW)
 
 if(GLFW_FOUND)
     message(STATUS "GLFW found, GLFW support enabled.")
-    list(APPEND AVAILABLE_BACKENDS "GLFW")
 else()
     message(STATUS "GLFW not found, GLFW support disabled.")
 endif()
-
-set_property(CACHE INPUT_BACKEND PROPERTY STRINGS ${AVAILABLE_BACKENDS})
-
-if(INPUT_BACKEND STREQUAL "GDK")
-    set(GDK_SRC_FILES
-        src/backends/GDK/GamepadGDK.cpp
-        src/backends/GDK/KeyboardGDK.cpp
-        src/backends/GDK/MouseGDK.cpp
-    )
-    list(APPEND SRC_FILES ${GDK_SRC_FILES})
-
-    source_group(backends/GDK FILES ${GDK_SRC_FILES})
-endif()
-
-set(ALL_FILES
-    ${INC_FILES}
-    ${SRC_FILES}
-    .clang-format
-)
-
-add_library(input STATIC ${ALL_FILES})
-add_library(input::input ALIAS input)
-
-target_compile_features(input PUBLIC cxx_std_20)
-
-if(INPUT_BACKEND STREQUAL "GDK")
-    target_link_libraries(input
-        PUBLIC Microsoft::GDK
-    )
-endif()
-
-target_include_directories(input
-    PUBLIC inc
-)
-

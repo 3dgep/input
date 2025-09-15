@@ -4,8 +4,8 @@
 #include <cassert>    // for assert.
 #include <cstring>    // for std::memset.
 
-using namespace input;
-
+namespace input
+{
 float ApplyLinearDeadZone( float value, float maxValue, float deadZoneSize ) noexcept
 {
     if ( value < -deadZoneSize )
@@ -35,8 +35,8 @@ void ApplyStickDeadZone(
     Gamepad::DeadZone deadZoneMode,
     float             maxValue,
     float             deadZoneSize,
-    _Out_ float&      resultX,
-    _Out_ float&      resultY ) noexcept
+    float&            resultX,
+    float&            resultY ) noexcept
 {
     switch ( deadZoneMode )
     {
@@ -63,6 +63,9 @@ void ApplyStickDeadZone(
         break;
     }
 }
+}  // namespace input
+
+using namespace input;
 
 Gamepad::Gamepad( int playerIndex )
 : playerIndex { playerIndex }

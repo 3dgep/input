@@ -5,6 +5,7 @@
 namespace input
 {
 
+// Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Inc/Mouse.h
 class Mouse
 {
 public:

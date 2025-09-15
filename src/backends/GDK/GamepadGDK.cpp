@@ -9,15 +9,13 @@
 #include <stdexcept>
 
 using namespace input;
-using namespace Microsoft::WRL;
+using Microsoft::WRL::ComPtr;
 
 const int Gamepad::MAX_PLAYER_COUNT = 8;
 
 constexpr float XboxOneThumbDeadZone = .24f;  // Recommended Xbox One controller deadzone
 
-extern float ApplyLinearDeadZone( float value, float maxValue, float deadZoneSize ) noexcept;
-extern void  ApplyStickDeadZone( float x, float y, Gamepad::DeadZone deadZoneMode, float maxValue, float deadZoneSize, _Out_ float& resultX, _Out_ float& resultY ) noexcept;
-
+// Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Src/GamePad.cpp
 class GamepadGDK
 {
 public:
