@@ -1,3 +1,5 @@
+#include "input/Gamepad.hpp"
+
 #include <input/Mouse.hpp>
 
 #include <cassert>
@@ -11,10 +13,10 @@ void MouseStateTracker::update( const Mouse::State& state ) noexcept
 {
     UPDATE_BUTTON_STATE( leftButton );
 
-    assert( ( !state.leftButton && !lastState.leftButton ) == ( leftButton == UP ) );
-    assert( ( state.leftButton && lastState.leftButton ) == ( leftButton == HELD ) );
-    assert( ( !state.leftButton && lastState.leftButton ) == ( leftButton == RELEASED ) );
-    assert( ( state.leftButton && !lastState.leftButton ) == ( leftButton == PRESSED ) );
+    assert( ( !state.leftButton && !lastState.leftButton ) == ( leftButton == ButtonState::UP ) );
+    assert( ( state.leftButton && lastState.leftButton ) == ( leftButton == ButtonState::HELD ) );
+    assert( ( !state.leftButton && lastState.leftButton ) == ( leftButton == ButtonState::RELEASED ) );
+    assert( ( state.leftButton && !lastState.leftButton ) == ( leftButton == ButtonState::PRESSED ) );
 
     UPDATE_BUTTON_STATE( middleButton );
     UPDATE_BUTTON_STATE( rightButton );

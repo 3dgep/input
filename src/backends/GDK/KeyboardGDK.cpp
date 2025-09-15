@@ -131,7 +131,7 @@ private:
 
             if ( FAILED( hr ) )
             {
-                throw std::runtime_error( std::format( "Failed to register device callback: {:08X}", static_cast<unsigned int>( hr ) ) );
+                throw std::runtime_error( std::format( "Failed to register keyboard device callback: {:08X}", static_cast<unsigned int>( hr ) ) );
             }
         }
         else

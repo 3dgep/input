@@ -1,19 +1,25 @@
 #pragma once
 
+#include <cstdint>
+
 namespace input
 {
-/// <summary>
-/// Dead-zone mode.
-/// </summary>
-enum class DeadZone
+struct Gamepad
 {
-    IndependentAxis = 0,
-    Circular,
-    None,
-};
+    static const int MAX_PLAYER_COUNT;  ///< Maximum number of gamepads is platform specific.
 
-struct GamepadState
-{
+    static constexpr int MOST_RECENT_PLAYER = -1; ///< Use this player ID to get the most recently plugged-in gamepad.
+
+    /// <summary>
+    /// Dead-zone mode.
+    /// </summary>
+    enum class DeadZone
+    {
+        IndependentAxis = 0,
+        Circular,
+        None,
+    };
+
     struct Buttons
     {
         union
@@ -55,7 +61,7 @@ struct GamepadState
             bool start;
             bool menu;
         };
-    } buttons;
+    };
 
     struct DPad
     {
@@ -63,7 +69,7 @@ struct GamepadState
         bool down;
         bool right;
         bool left;
-    } dPad;
+    };
 
     struct ThumbSticks
     {
@@ -71,269 +77,329 @@ struct GamepadState
         float leftY;
         float rightX;
         float rightY;
-    } thumbSticks;
+    };
 
     struct Triggers
     {
         float left;
         float right;
-    } triggers;
+    };
 
-    bool connected;
+    struct State
+    {
+        bool        connected;
+        uint64_t    packet;
+        Buttons     buttons;
+        DPad        dPad;
+        ThumbSticks thumbSticks;
+        Triggers    triggers;
 
-    bool isConnected() const noexcept;
+        bool isConnected() const noexcept
+        {
+            return connected;
+        }
 
-    bool isAPressed() const noexcept;
-    bool isBPressed() const noexcept;
-    bool isXPressed() const noexcept;
-    bool isYPressed() const noexcept;
+        bool isAPressed() const noexcept
+        {
+            return buttons.a;
+        }
 
-    bool isLeftStickPressed() const noexcept;
-    bool isRightStickPressed() const noexcept;
+        bool isBPressed() const noexcept
+        {
+            return buttons.b;
+        }
 
-    bool isLeftShoulderPressed() const noexcept;
-    bool isRightShoulderPressed() const noexcept;
+        bool isXPressed() const noexcept
+        {
+            return buttons.x;
+        }
 
-    bool isBackPressed() const noexcept;
-    bool isViewPressed() const noexcept;
-    bool isStartPressed() const noexcept;
-    bool isMenuPressed() const noexcept;
+        bool isYPressed() const noexcept
+        {
+            return buttons.y;
+        }
 
-    bool isDPadDownPressed() const noexcept;
-    bool isDPadUpPressed() const noexcept;
-    bool isDPadLeftPressed() const noexcept;
-    bool isDPadRightPressed() const noexcept;
+        bool isLeftStickPressed() const noexcept
+        {
+            return buttons.leftStick;
+        }
 
-    bool isLeftThumbStickUp() const noexcept;
-    bool isLeftThumbStickDown() const noexcept;
-    bool isLeftThumbStickLeft() const noexcept;
-    bool isLeftThumbStickRight() const noexcept;
+        bool isRightStickPressed() const noexcept
+        {
+            return buttons.rightStick;
+        }
 
-    bool isRightThumbStickUp() const noexcept;
-    bool isRightThumbStickDown() const noexcept;
-    bool isRightThumbStickLeft() const noexcept;
-    bool isRightThumbStickRight() const noexcept;
+        bool isLeftShoulderPressed() const noexcept
+        {
+            return buttons.leftShoulder;
+        }
 
-    bool isLeftTriggerPressed() const noexcept;
-    bool isRightTriggerPressed() const noexcept;
-};
+        bool isRightShoulderPressed() const noexcept
+        {
+            return buttons.rightShoulder;
+        }
 
-inline bool GamepadState::isConnected() const noexcept
-{
-    return connected;
-}
+        bool isBackPressed() const noexcept
+        {
+            return buttons.back;
+        }
 
-inline bool GamepadState::isAPressed() const noexcept
-{
-    return buttons.a;
-}
+        bool isViewPressed() const noexcept
+        {
+            return buttons.view;
+        }
 
-inline bool GamepadState::isBPressed() const noexcept
-{
-    return buttons.b;
-}
+        bool isStartPressed() const noexcept
+        {
+            return buttons.start;
+        }
 
-inline bool GamepadState::isXPressed() const noexcept
-{
-    return buttons.x;
-}
+        bool isMenuPressed() const noexcept
+        {
+            return buttons.menu;
+        }
 
-inline bool GamepadState::isYPressed() const noexcept
-{
-    return buttons.y;
-}
+        bool isDPadDownPressed() const noexcept
+        {
+            return dPad.down;
+        }
 
-inline bool GamepadState::isLeftStickPressed() const noexcept
-{
-    return buttons.leftStick;
-}
+        bool isDPadUpPressed() const noexcept
+        {
+            return dPad.up;
+        }
 
-inline bool GamepadState::isRightStickPressed() const noexcept
-{
-    return buttons.rightStick;
-}
+        bool isDPadLeftPressed() const noexcept
+        {
+            return dPad.left;
+        }
 
-inline bool GamepadState::isLeftShoulderPressed() const noexcept
-{
-    return buttons.leftShoulder;
-}
+        bool isDPadRightPressed() const noexcept
+        {
+            return dPad.right;
+        }
 
-inline bool GamepadState::isRightShoulderPressed() const noexcept
-{
-    return buttons.rightShoulder;
-}
+        bool isLeftThumbStickUp() const noexcept
+        {
+            return thumbSticks.leftY > 0.5f;
+        }
 
-inline bool GamepadState::isBackPressed() const noexcept
-{
-    return buttons.back;
-}
+        bool isLeftThumbStickDown() const noexcept
+        {
+            return thumbSticks.leftY < -0.5f;
+        }
 
-inline bool GamepadState::isViewPressed() const noexcept
-{
-    return buttons.view;
-}
+        bool isLeftThumbStickLeft() const noexcept
+        {
+            return thumbSticks.leftX < -0.5f;
+        }
 
-inline bool GamepadState::isStartPressed() const noexcept
-{
-    return buttons.start;
-}
+        bool isLeftThumbStickRight() const noexcept
+        {
+            return thumbSticks.leftX > 0.5f;
+        }
 
-inline bool GamepadState::isMenuPressed() const noexcept
-{
-    return buttons.menu;
-}
+        bool isRightThumbStickUp() const noexcept
+        {
+            return thumbSticks.rightY > 0.5f;
+        }
 
-inline bool GamepadState::isDPadDownPressed() const noexcept
-{
-    return dPad.down;
-}
-inline bool GamepadState::isDPadUpPressed() const noexcept
-{
-    return dPad.up;
-}
-inline bool GamepadState::isDPadLeftPressed() const noexcept
-{
-    return dPad.left;
-}
-inline bool GamepadState::isDPadRightPressed() const noexcept
-{
-    return dPad.right;
-}
+        bool isRightThumbStickDown() const noexcept
+        {
+            return thumbSticks.rightY < -0.5f;
+        }
 
-inline bool GamepadState::isLeftThumbStickUp() const noexcept
-{
-    return thumbSticks.leftY > 0.5f;
-}
+        bool isRightThumbStickLeft() const noexcept
+        {
+            return thumbSticks.rightX < -0.5f;
+        }
 
-inline bool GamepadState::isLeftThumbStickDown() const noexcept
-{
-    return thumbSticks.leftY < -0.5f;
-}
+        bool isRightThumbStickRight() const noexcept
+        {
+            return thumbSticks.rightX > 0.5f;
+        }
 
-inline bool GamepadState::isLeftThumbStickLeft() const noexcept
-{
-    return thumbSticks.leftX < -0.5f;
-}
+        bool isLeftTriggerPressed() const noexcept
+        {
+            return triggers.left > 0.5f;
+        }
 
-inline bool GamepadState::isLeftThumbStickRight() const noexcept
-{
-    return thumbSticks.leftX > 0.5f;
-}
+        bool isRightTriggerPressed() const noexcept
+        {
+            return triggers.right > 0.5f;
+        }
 
-inline bool GamepadState::isRightThumbStickUp() const noexcept
-{
-    return thumbSticks.rightY > 0.5f;
-}
+        bool operator==( const State& ) const noexcept;
+        bool operator!=( const State& ) const noexcept = default;
+    };
 
-inline bool GamepadState::isRightThumbStickDown() const noexcept
-{
-    return thumbSticks.rightY < -0.5f;
-}
-
-inline bool GamepadState::isRightThumbStickLeft() const noexcept
-{
-    return thumbSticks.rightX < -0.5f;
-}
-
-inline bool GamepadState::isRightThumbStickRight() const noexcept
-{
-    return thumbSticks.rightX > 0.5f;
-}
-
-inline bool GamepadState::isLeftTriggerPressed() const noexcept
-{
-    return triggers.left > 0.5f;
-}
-
-inline bool GamepadState::isRightTriggerPressed() const noexcept
-{
-    return triggers.right > 0.5f;
-}
-
-struct Gamepad
-{
     Gamepad() = default;
     Gamepad( int playerIndex );
 
-    GamepadState getState() const;
-    bool         setVibration( float leftMotor, float rightMotor, float leftTrigger = 0.0f, float rightTrigger = 0.0f );
+    State getState( DeadZone deadZoneMode = DeadZone::IndependentAxis ) const;
+    bool  setVibration( float leftMotor, float rightMotor, float leftTrigger = 0.0f, float rightTrigger = 0.0f );
+
+    static void suspend() noexcept;
+    static void resume() noexcept;
 
 private:
-    int playerIndex = -1;
+    int playerIndex = MOST_RECENT_PLAYER;
+};
+
+class GamepadStateTracker
+{
+public:
+    enum class ButtonState : uint8_t
+    {
+        UP       = 0,  // Button is up
+        HELD     = 1,  // Button is held down
+        RELEASED = 2,  // Button was just released
+        PRESSED  = 3,  // Buton was just pressed
+    };
+
+    union
+    {
+        ButtonState a;
+        ButtonState cross;
+    };
+    union
+    {
+        ButtonState b;
+        ButtonState circle;
+    };
+    union
+    {
+        ButtonState x;
+        ButtonState square;
+    };
+
+    union
+    {
+        ButtonState y;
+        ButtonState triangle;
+    };
+
+    ButtonState leftStick;
+    ButtonState rightStick;
+
+    ButtonState leftShoulder;
+    ButtonState rightShoulder;
+
+    union
+    {
+        ButtonState back;
+        ButtonState view;
+    };
+
+    union
+    {
+        ButtonState start;
+        ButtonState menu;
+    };
+
+    ButtonState dPadUp;
+    ButtonState dPadDown;
+    ButtonState dPadLeft;
+    ButtonState dPadRight;
+
+    ButtonState leftStickUp;
+    ButtonState leftStickDown;
+    ButtonState leftStickLeft;
+    ButtonState leftStickRight;
+
+    ButtonState rightStickUp;
+    ButtonState rightStickDown;
+    ButtonState rightStickLeft;
+    ButtonState rightStickRight;
+
+    ButtonState leftTrigger;
+    ButtonState rightTrigger;
+
+    GamepadStateTracker() noexcept
+    {
+        reset();
+    }
+
+    void update( const Gamepad::State& state );
+
+    void reset() noexcept;
+
+    Gamepad::State getLastState() const noexcept
+    {
+        return lastState;
+    }
+
+private:
+    Gamepad::State lastState;
 };
 
 }  // namespace input
 
-inline bool operator==( const input::GamepadState::Buttons& lhs, const input::GamepadState::Buttons& rhs )
+inline bool operator==( const input::Gamepad::Buttons& lhs, const input::Gamepad::Buttons& rhs )
 {
-    return lhs.a == rhs.a &&                          //
-           lhs.b == rhs.b &&                          //
-           lhs.x == rhs.x &&                          //
-           lhs.y == rhs.y &&                          //
-           lhs.leftStick == rhs.leftStick &&          //
-           lhs.rightStick == rhs.rightStick &&        //
-           lhs.leftShoulder == rhs.leftShoulder &&    //
-           lhs.rightShoulder == rhs.rightShoulder &&  //
-           lhs.back == rhs.back &&                    //
+    return lhs.a == rhs.a &&
+           lhs.b == rhs.b &&
+           lhs.x == rhs.x &&
+           lhs.y == rhs.y &&
+           lhs.leftStick == rhs.leftStick &&
+           lhs.rightStick == rhs.rightStick &&
+           lhs.leftShoulder == rhs.leftShoulder &&
+           lhs.rightShoulder == rhs.rightShoulder &&
+           lhs.back == rhs.back &&
            lhs.start == rhs.start;
 }
 
-inline bool operator!=( const input::GamepadState::Buttons& lhs, const input::GamepadState::Buttons& rhs )
+inline bool operator!=( const input::Gamepad::Buttons& lhs, const input::Gamepad::Buttons& rhs )
 {
     return !( lhs == rhs );
 }
 
-inline bool operator==( const input::GamepadState::DPad& lhs, const input::GamepadState::DPad& rhs )
+inline bool operator==( const input::Gamepad::DPad& lhs, const input::Gamepad::DPad& rhs )
 {
-    return lhs.left == rhs.left &&    //
-           lhs.right == rhs.right &&  //
-           lhs.up == rhs.up &&        //
+    return lhs.left == rhs.left &&
+           lhs.right == rhs.right &&
+           lhs.up == rhs.up &&
            lhs.down == rhs.down;
 }
 
-inline bool operator!=( const input::GamepadState::DPad& lhs, const input::GamepadState::DPad& rhs )
+inline bool operator!=( const input::Gamepad::DPad& lhs, const input::Gamepad::DPad& rhs )
 {
     return !( lhs == rhs );
 }
 
-inline bool operator==( const input::GamepadState::ThumbSticks& lhs,
-                        const input::GamepadState::ThumbSticks& rhs )
+inline bool operator==( const input::Gamepad::ThumbSticks& lhs,
+                        const input::Gamepad::ThumbSticks& rhs )
 {
-    return lhs.leftX == rhs.leftX &&    //
-           lhs.leftY == rhs.leftY &&    //
-           lhs.rightX == rhs.rightX &&  //
+    return lhs.leftX == rhs.leftX &&
+           lhs.leftY == rhs.leftY &&
+           lhs.rightX == rhs.rightX &&
            lhs.rightY == rhs.rightY;
 }
 
-inline bool operator!=( const input::GamepadState::ThumbSticks& lhs,
-                        const input::GamepadState::ThumbSticks& rhs )
+inline bool operator!=( const input::Gamepad::ThumbSticks& lhs,
+                        const input::Gamepad::ThumbSticks& rhs )
 {
     return !( lhs == rhs );
 }
 
-inline bool operator==( const input::GamepadState::Triggers& lhs,
-                        const input::GamepadState::Triggers& rhs )
+inline bool operator==( const input::Gamepad::Triggers& lhs,
+                        const input::Gamepad::Triggers& rhs )
 {
-    return lhs.left == rhs.left &&  //
+    return lhs.left == rhs.left &&
            lhs.right == rhs.right;
 }
 
-inline bool operator!=( const input::GamepadState::Triggers& lhs,
-                        const input::GamepadState::Triggers& rhs )
+inline bool operator!=( const input::Gamepad::Triggers& lhs,
+                        const input::Gamepad::Triggers& rhs )
 {
     return !( lhs == rhs );
 }
 
-inline bool operator==( const input::GamepadState& lhs, const input::GamepadState& rhs )
+inline bool operator==( const input::Gamepad::State& lhs, const input::Gamepad::State& rhs )
 {
-    return lhs.connected == rhs.connected &&      //
-           lhs.buttons == rhs.buttons &&          //
-           lhs.dPad == rhs.dPad &&                //
-           lhs.thumbSticks == rhs.thumbSticks &&  //
+    return lhs.connected == rhs.connected &&
+           lhs.buttons == rhs.buttons &&
+           lhs.dPad == rhs.dPad &&
+           lhs.thumbSticks == rhs.thumbSticks &&
            lhs.triggers == rhs.triggers;
-}
-
-inline bool operator!=( const input::GamepadState& lhs, const input::GamepadState& rhs )
-{
-    return !( lhs == rhs );
 }

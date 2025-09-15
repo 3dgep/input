@@ -136,7 +136,7 @@ private:
 class MouseStateTracker
 {
 public:
-    enum ButtonState : uint8_t
+    enum class ButtonState : uint8_t
     {
         UP       = 0,  // Button is up
         HELD     = 1,  // Button is held down

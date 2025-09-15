@@ -21,6 +21,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 // Call this static function from your Window Message Procedure
 //
 // extern void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+//
 // LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // {
 //     switch (message)
@@ -271,7 +272,7 @@ private:
 
             if ( FAILED( hr ) )
             {
-                throw std::runtime_error( std::format( "Failed to register device callback: {:08X}", static_cast<unsigned int>( hr ) ) );
+                throw std::runtime_error( std::format( "Failed to register mouse device callback: {:08X}", static_cast<unsigned int>( hr ) ) );
             }
         }
         else
