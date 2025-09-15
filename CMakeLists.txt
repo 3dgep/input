@@ -86,6 +86,25 @@ find_package(SDL2)
 
 if(SDL2_FOUND)
     message(STATUS "SDL2 found, SDL2 support enabled.")
+        set(SDL2_SRC_FILES
+        src/backends/SDL2/GamepadSDL2.cpp
+        src/backends/SDL2/KeyboardSDL2.cpp
+        src/backends/SDL2/MouseSDL2.cpp
+    )
+
+    source_group(backends/SDL2 FILES ${SDL2_SRC_FILES})
+
+    add_library( input_SDL2 STATIC ${INC_FILES} ${SRC_FILES} ${SDL2_SRC_FILES} .clang-format)
+    add_library( input::SDL2 ALIAS input_SDL2)
+    target_compile_features(input_SDL2 PUBLIC cxx_std_20)
+    target_link_libraries( input_SDL2
+        PUBLIC SDL2::SDL2
+    )
+
+    target_include_directories( input_SDL2
+        PUBLIC inc
+    )
+
 else()
     message(STATUS "SDL2 not found, SDL2 support disabled.")
 endif()
