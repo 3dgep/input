@@ -113,6 +113,25 @@ find_package(SDL3)
 
 if(SDL3_FOUND)
     message(STATUS "SDL3 found, SDL3 support enabled.")
+    set(SDL3_SRC_FILES
+        src/backends/SDL3/GamepadSDL3.cpp
+        src/backends/SDL3/KeyboardSDL3.cpp
+        src/backends/SDL3/MouseSDL3.cpp
+    )
+
+    source_group(backends/SDL3 FILES ${SDL3_SRC_FILES})
+
+    add_library( input_SDL3 STATIC ${INC_FILES} ${SRC_FILES} ${SDL3_SRC_FILES} .clang-format)
+    add_library( input::SDL3 ALIAS input_SDL3)
+    target_compile_features(input_SDL3 PUBLIC cxx_std_20)
+    target_link_libraries( input_SDL3
+        PUBLIC SDL3::SDL3
+    )
+
+    target_include_directories( input_SDL3
+        PUBLIC inc
+    )
+
 else()
     message(STATUS "SDL3 not found, SDL3 support disabled.")
 endif()
