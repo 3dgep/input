@@ -17,8 +17,8 @@ public:
 
     enum class Mode : uint8_t
     {
-        Absolute, ///< The mouse position is in absolute screenspace.
-        Relative  ///< The mouse position is relative to the current window.
+        Absolute, ///< The mouse position is in absolute coordinates.
+        Relative  ///< The mouse position in relative change based on the current window.
     };
 
     /// <summary>
@@ -65,7 +65,7 @@ public:
         /// motion, otherwise it is the position of the mouse cursor relative to the window that
         /// sent the event.
         /// </remarks>
-        /// <see cref="Mouse::lockToWindow" />
+        /// <see cref="Mouse::setWindow" />
         int x;
 
         /// <summary>
@@ -76,7 +76,7 @@ public:
         /// motion, otherwise it is the position of the mouse cursor relative to the window that
         /// sent the event.
         /// </remarks>
-        /// <see cref="Mouse::lockToWindow" />
+        /// <see cref="Mouse::setWindow" />
         int y;
 
         /// <summary>
@@ -85,7 +85,8 @@ public:
         int scrollWheelValue;
 
         /// <summary>
-        /// 
+        /// Whether the mouse's x and y cordinates are absolute (relative to the top-left corner of the window)
+        /// or 
         /// </summary>
         Mode positionMode;
 

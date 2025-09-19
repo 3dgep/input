@@ -140,6 +140,24 @@ find_package(GLFW)
 
 if(GLFW_FOUND)
     message(STATUS "GLFW found, GLFW support enabled.")
+	set( GLFW_SRC_FILES
+        src/backends/GLFW/GamepadGLFW.cpp
+        src/backends/GLFW/KeyboardGLFW.cpp
+        src/backends/GLFW/MouseGLFW.cpp
+    )
+
+    source_group(backends/GLFW FILES ${GLFW_SRC_FILES})
+
+    add_library( input_GLFW STATIC ${INC_FILES} ${SRC_FILES} ${GLFW_SRC_FILES} .clang-format)
+    add_library( input::GLFW ALIAS input_GLFW)
+    target_compile_features(input_GLFW PUBLIC cxx_std_20)
+    target_link_libraries( input_GLFW
+        PUBLIC glfw
+    )
+
+    target_include_directories( input_GLFW
+        PUBLIC inc
+	)
 else()
     message(STATUS "GLFW not found, GLFW support disabled.")
 endif()
