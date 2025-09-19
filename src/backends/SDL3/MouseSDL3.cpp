@@ -1,8 +1,9 @@
-#include "input/Mouse.hpp"
-
-#include <SDL3/SDL.h>
-#include <cassert>
 #include <input/Mouse.hpp>
+
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_events.h>
+
+#include <cassert>
 #include <mutex>
 
 using namespace input;
@@ -88,8 +89,7 @@ public:
 
     bool isConnected() const
     {
-        // SDL3 always has a mouse device
-        return true;
+        return SDL_HasMouse();
     }
 
     bool isVisible() const noexcept

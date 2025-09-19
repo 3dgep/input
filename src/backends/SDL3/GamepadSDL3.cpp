@@ -1,6 +1,11 @@
-#include <SDL3/SDL.h>
-#include <array>
 #include <input/Gamepad.hpp>
+
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_gamepad.h>
+#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_timer.h>
+
+#include <array>
 #include <mutex>
 
 using namespace input;

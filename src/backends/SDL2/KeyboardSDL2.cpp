@@ -1,6 +1,8 @@
-#include <SDL.h>
-#include <cstring>
 #include <input/Keyboard.hpp>
+
+#include <SDL.h>
+
+#include <cstring>
 #include <mutex>
 
 using namespace input;

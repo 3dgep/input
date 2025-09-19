@@ -1,6 +1,6 @@
 #include <input/Keyboard.hpp>
 
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_keyboard.h>
 
 #include <mutex>
 #include <cstring>
@@ -238,8 +238,7 @@ public:
 
     bool isConnected() const
     {
-        // SDL3 always has a keyboard device
-        return true;
+        return SDL_HasKeyboard();
     }
 
     KeyboardSDL3(const KeyboardSDL3&) = delete;

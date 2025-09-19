@@ -1,6 +1,8 @@
-#include <SDL.h>
-#include <array>
 #include <input/Gamepad.hpp>
+
+#include <SDL.h>
+
+#include <array>
 #include <mutex>
 
 using namespace input;
