@@ -183,7 +183,7 @@ public:
         }
     }
 
-    void SetWindow( HWND window )
+    void setWindow( HWND window )
     {
         if ( m_Window == window )
             return;
@@ -226,7 +226,7 @@ private:
 
     friend void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 
-    void ClipToWindow() noexcept
+    void clipToWindow() noexcept
     {
         assert( m_Window != nullptr );
 
@@ -332,7 +332,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
 
         ShowCursor( FALSE );
 
-        impl.ClipToWindow();
+        impl.clipToWindow();
     }
     break;
 
@@ -354,7 +354,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
 
                 ShowCursor( FALSE );
 
-                impl.ClipToWindow();
+                impl.clipToWindow();
             }
         }
         else
@@ -379,7 +379,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
             UINT     rawSize = sizeof( raw );
 
             const UINT resultData = GetRawInputData( reinterpret_cast<HRAWINPUT>( lParam ), RID_INPUT, &raw, &rawSize, sizeof( RAWINPUTHEADER ) );
-            if ( resultData == static_cast<UINT>(-1) )
+            if ( resultData == static_cast<UINT>( -1 ) )
             {
                 throw std::runtime_error( "GetRawInputData" );
             }
@@ -399,8 +399,8 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
                     const int width  = GetSystemMetrics( SM_CXVIRTUALSCREEN );
                     const int height = GetSystemMetrics( SM_CYVIRTUALSCREEN );
 
-                    const auto x = static_cast<int>( ( static_cast<float>(raw.data.mouse.lLastX) / 65535.0f ) * static_cast<float>(width) );
-                    const auto y = static_cast<int>( ( static_cast<float>(raw.data.mouse.lLastY) / 65535.0f ) * static_cast<float>(height) );
+                    const auto x = static_cast<int>( ( static_cast<float>( raw.data.mouse.lLastX ) / 65535.0f ) * static_cast<float>( width ) );
+                    const auto y = static_cast<int>( ( static_cast<float>( raw.data.mouse.lLastY ) / 65535.0f ) * static_cast<float>( height ) );
 
                     if ( impl.m_RelativeX == INT32_MAX )
                     {
@@ -537,10 +537,3 @@ void Mouse::setVisible( bool visible )
 {
     MouseWin32::get().setVisible( visible );
 }
-
-
-
-
-
-
-

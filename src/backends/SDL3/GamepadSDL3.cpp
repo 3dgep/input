@@ -163,12 +163,12 @@ private:
 
         scanGamepads();
 
-        SDL_AddEventWatch( &SDLEventWatch, this );
+        SDL_AddEventWatch( &GamepadSDL3::SDLEventWatch, this );
     }
 
     ~GamepadSDL3()
     {
-        SDL_RemoveEventWatch( &SDLEventWatch, this );
+        SDL_RemoveEventWatch( &GamepadSDL3::SDLEventWatch, this );
         for ( auto& pad: m_Gamepads )
         {
             if ( pad )
