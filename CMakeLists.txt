@@ -161,3 +161,7 @@ if(GLFW_FOUND)
 else()
     message(STATUS "GLFW not found, GLFW support disabled.")
 endif()
+
+if(INPUT_BUILD_SAMPLES)
+    add_subdirectory(samples)
+endif()

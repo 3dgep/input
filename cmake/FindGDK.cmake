@@ -47,6 +47,15 @@ if(GDK_ROOT_PATH)
             ${GDK_ROOT_PATH}/GXDK/gamekit/lib/${GDK_ARCH}
         NO_DEFAULT_PATH
     )
+        # Find GameInput library
+        find_library(GAMEINPUT_LIBRARY
+            NAMES GameInput.lib
+            PATHS
+                ${GDK_ROOT_PATH}/gamekit/lib/${GDK_ARCH}
+                ${GDK_ROOT_PATH}/GRDK/gamekit/lib/${GDK_ARCH}
+                ${GDK_ROOT_PATH}/GXDK/gamekit/lib/${GDK_ARCH}
+            NO_DEFAULT_PATH
+        )
     
     # Try to read version file if it exists
     if(EXISTS "${GDK_ROOT_PATH}/GDKVersion.txt")
@@ -67,11 +76,15 @@ find_package_handle_standard_args(GDK
 
 if(GDK_FOUND)
     set(GDK_INCLUDE_DIRS ${GDK_INCLUDE_DIR})
-    set(GDK_LIBRARIES ${GDK_LIBRARY})
+    if(GAMEINPUT_LIBRARY)
+        set(GDK_LIBRARIES ${GDK_LIBRARY} ${GAMEINPUT_LIBRARY})
+    else()
+        set(GDK_LIBRARIES ${GDK_LIBRARY})
+    endif()
     
     message(STATUS "GDK Type: ${GDK_TYPE}")
     message(STATUS "GDK Include: ${GDK_INCLUDE_DIR}")
-    message(STATUS "GDK Library: ${GDK_LIBRARY}")
+    message(STATUS "GDK Libraries: ${GDK_LIBRARIES}")
     
     # Create imported target
     if(NOT TARGET Microsoft::GDK)
@@ -80,6 +93,9 @@ if(GDK_FOUND)
             IMPORTED_LOCATION "${GDK_LIBRARY}"
             INTERFACE_INCLUDE_DIRECTORIES "${GDK_INCLUDE_DIR}"
         )
+        if(GAMEINPUT_LIBRARY)
+            set_property(TARGET Microsoft::GDK APPEND PROPERTY IMPORTED_LINK_INTERFACE_LIBRARIES "${GAMEINPUT_LIBRARY}")
+        endif()
     endif()
 endif()
 
