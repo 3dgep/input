@@ -17,8 +17,8 @@ public:
 
     enum class Mode : uint8_t
     {
-        Absolute, ///< The mouse position is in absolute coordinates.
-        Relative  ///< The mouse position in relative change based on the current window.
+        Absolute, ///< Mouse position is reported based on its location in the window.
+        Relative  ///< Mouse movement is reported as a series of delta values, rather than an absolute position.
     };
 
     /// <summary>
