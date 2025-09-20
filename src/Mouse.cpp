@@ -23,6 +23,8 @@ void MouseStateTracker::update( const Mouse::State& state ) noexcept
     UPDATE_BUTTON_STATE( xButton1 );
     UPDATE_BUTTON_STATE( xButton2 );
 
+    scrollWheelDelta = state.scrollWheelValue - lastState.scrollWheelValue;
+
     lastState = state;
 }
 

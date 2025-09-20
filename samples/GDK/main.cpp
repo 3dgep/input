@@ -28,11 +28,12 @@ ComPtr<ID2D1Bitmap>           g_pKeyboardBitmap;
 ComPtr<ID2D1Bitmap>           g_pMouseBitmap;
 ComPtr<IDWriteFactory>        g_pDWriteFactory;
 ComPtr<IDWriteTextFormat>     g_pTextFormat;
+ComPtr<IDWriteTextFormat>     g_pMousePanelTextFormat;
 ComPtr<ID2D1SolidColorBrush>  g_pTextBrush;
 
 MouseStateTracker mouseStateTracker;
-D2D1_POINT_2F g_MousePosition { 0, 0 };
-float         g_fMouseRotation = 0.0f;
+D2D1_POINT_2F     g_MousePosition { 0, 0 };
+float             g_fMouseRotation = 0.0f;
 
 // Helper: Load a bitmap from file using WIC
 HRESULT LoadBitmapFromFile(
@@ -100,8 +101,109 @@ void DrawRotatedBitmap(
     renderTarget->SetTransform( oldTransform );
 }
 
+// Helper to convert Mouse::Mode to string
+const wchar_t* MouseModeToString( Mouse::Mode mode )
+{
+    switch ( mode )
+    {
+    case Mouse::Mode::Absolute:
+        return L"Absolute";
+    case Mouse::Mode::Relative:
+        return L"Relative";
+    default:
+        return L"Unknown";
+    }
+}
+
+void DrawMouseStatePanel( ID2D1RenderTarget* renderTarget, IDWriteTextFormat* textFormat, ID2D1SolidColorBrush* textBrush )
+{
+    // Panel size and margin
+    const float panelWidth  = 320.0f;
+    const float panelHeight = 280.0f;
+    const float margin      = 20.0f;
+
+    D2D1_SIZE_F rtSize = renderTarget->GetSize();
+
+    // Position panel at top-right
+    D2D1_RECT_F panelRect = D2D1::RectF(
+        rtSize.width - panelWidth - margin,
+        margin,
+        rtSize.width - margin,
+        margin + panelHeight );
+
+    // Draw panel background
+    ComPtr<ID2D1SolidColorBrush> panelBrush;
+    renderTarget->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::LightGray, 0.85f ), panelBrush.GetAddressOf() );
+
+    // Draw panel background with rounded corners
+    D2D1_ROUNDED_RECT roundedPanelRect = {
+        panelRect,
+        16.0f, // radiusX
+        16.0f  // radiusY
+    };
+    renderTarget->FillRoundedRectangle(&roundedPanelRect, panelBrush.Get());
+
+    // Draw accent rectangle (darker, smaller, inset)
+    const float accentInset = 8.0f;
+    D2D1_RECT_F accentRect  = D2D1::RectF(
+        panelRect.left + accentInset,
+        panelRect.top + accentInset,
+        panelRect.right - accentInset,
+        panelRect.bottom - accentInset );
+    ComPtr<ID2D1SolidColorBrush> accentBrush;
+    renderTarget->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Gray, 0.85f ), accentBrush.GetAddressOf() );
+
+    // Draw accent rectangle with rounded corners
+    D2D1_ROUNDED_RECT roundedAccentRect = {
+        accentRect,
+        12.0f, // radiusX
+        12.0f  // radiusY
+    };
+    renderTarget->FillRoundedRectangle(&roundedAccentRect, accentBrush.Get());
+
+    // Prepare mouse state text
+    Mouse::State   mouseState = Mouse::get().getState();
+    const wchar_t* modeStr    = MouseModeToString( mouseState.positionMode );
+
+    wchar_t mouseText[256];
+    swprintf( mouseText, 256,
+              L"Mouse State\n"
+              L"Position:\t(%.0f, %.0f)\n"
+              L"Mode:\t%s\n"
+              L"Left:\t%s\n"
+              L"Middle:\t%s\n"
+              L"Right:\t%s\n"
+              L"X1:\t%s\n"
+              L"X2:\t%s\n"
+              L"Scroll:\t%d",
+              mouseState.x, mouseState.y,
+              modeStr,
+              mouseState.leftButton ? L"Down" : L"Up",
+              mouseState.middleButton ? L"Down" : L"Up",
+              mouseState.rightButton ? L"Down" : L"Up",
+              mouseState.xButton1 ? L"Down" : L"Up",
+              mouseState.xButton2 ? L"Down" : L"Up",
+              mouseState.scrollWheelValue
+    );
+
+    // Draw mouse state text
+    D2D1_RECT_F textRect = D2D1::RectF(
+        panelRect.left + 20.0f,
+        panelRect.top + 20.0f,
+        panelRect.right - 20.0f,
+        panelRect.bottom - 20.0f );
+    renderTarget->DrawText(
+        mouseText,
+        static_cast<UINT32>( wcslen( mouseText ) ),
+        textFormat,
+        textRect,
+        textBrush );
+}
+
 void update()
 {
+    using Mouse::Mode::Absolute;
+    using Mouse::Mode::Relative;
     using MouseStateTracker::ButtonState::Pressed;
     using MouseStateTracker::ButtonState::Released;
 
@@ -117,11 +219,11 @@ void update()
     {
         switch ( mouseState.positionMode )
         {
-        case Mouse::Mode::Absolute:
-            mouse.setMode( Mouse::Mode::Relative );
+        case Absolute:
+            mouse.setMode( Relative );
             break;
-        case Mouse::Mode::Relative:
-            mouse.setMode( Mouse::Mode::Absolute );
+        case Relative:
+            mouse.setMode( Absolute );
             break;
         }
     }
@@ -130,11 +232,11 @@ void update()
 
     switch ( mouseState.positionMode )
     {
-    case Mouse::Mode::Absolute:
-        g_MousePosition = D2D1_POINT_2F { mouseState.x, mouseState.y };
+    case Absolute:
+        g_MousePosition  = D2D1_POINT_2F { mouseState.x, mouseState.y };
         g_fMouseRotation = 0.0f;
         break;
-    case Mouse::Mode::Relative:
+    case Relative:
         g_MousePosition = D2D1_POINT_2F { rtSize.width / 2.0f, rtSize.height / 2.0f };
         g_fMouseRotation += mouseState.x + mouseState.y;
         break;
@@ -183,6 +285,12 @@ void render()
         if ( g_pMouseBitmap )
         {
             DrawRotatedBitmap( g_pRenderTarget.Get(), g_pMouseBitmap.Get(), g_MousePosition, g_fMouseRotation );
+        }
+
+        // Draw mouse state panel
+        if ( g_pMousePanelTextFormat && g_pTextBrush )
+        {
+            DrawMouseStatePanel( g_pRenderTarget.Get(), g_pMousePanelTextFormat.Get(), g_pTextBrush.Get() );
         }
 
         g_pRenderTarget->EndDraw();
@@ -336,6 +444,24 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
         std::cerr << "Failed to create text brush." << std::endl;
         return -9;
     }
+
+    // Create a text format for the mouse state panel (left aligned)
+    hr = g_pDWriteFactory->CreateTextFormat(
+        L"Segoe UI",  // Font family
+        nullptr,      // Font collection
+        DWRITE_FONT_WEIGHT_NORMAL,
+        DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH_NORMAL,
+        20.0f,  // Font size
+        L"en-us",
+        &g_pMousePanelTextFormat );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to create mouse panel text format." << std::endl;
+        return -10;
+    }
+    g_pMousePanelTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_LEADING );
+    g_pMousePanelTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
 
     // Message loop
     MSG  msg     = {};

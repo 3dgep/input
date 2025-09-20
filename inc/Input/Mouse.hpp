@@ -152,6 +152,8 @@ public:
     ButtonState xButton1;
     ButtonState xButton2;
 
+    int scrollWheelDelta;
+
     MouseStateTracker() noexcept
     {
         reset();
