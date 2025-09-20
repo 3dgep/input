@@ -20,9 +20,10 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // m_mouse->SetWindow(hwnd);
 //
-// And call this static function from your Window Message Procedure
+// And call this function from your Window Message Procedure
 //
-// extern void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+// void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+// 
 // LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // {
 //     switch (message)

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="svg602" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:cc="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:ns1="http://sozi.baierouge.fr" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 170.61 320.44">
+  <!-- Generator: Adobe Illustrator 29.8.1, SVG Export Plug-In . SVG Version: 2.1.1 Build 2)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: url(#radial-gradient1);
+      }
+
+      .st0, .st1, .st2, .st3 {
+        fill-rule: evenodd;
+      }
+
+      .st4, .st5 {
+        fill: none;
+        stroke-width: 1.25px;
+      }
+
+      .st4, .st5, .st2 {
+        stroke: #000;
+      }
+
+      .st1 {
+        fill: url(#linear-gradient1);
+      }
+
+      .st5 {
+        stroke-linecap: round;
+      }
+
+      .st2 {
+        fill: url(#radial-gradient);
+        stroke-width: 1.12px;
+      }
+
+      .st3 {
+        fill: url(#linear-gradient);
+      }
+    </style>
+    <radialGradient id="radial-gradient" cx="-887.05" cy="559.75" fx="-887.05" fy="559.75" r="1.08" gradientTransform="translate(150322.07 178727.11) scale(169.43 -319.22)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#333"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient1" cx="-863.86" cy="556.5" fx="-863.86" fy="556.5" r="1.45" gradientTransform="translate(27094.87 49006.22) scale(31.25 -87.92)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#333"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient" x1="-854.62" y1="554.62" x2="-854.62" y2="553.87" gradientTransform="translate(19852.85 29163.52) scale(23.13 -52.51)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#333"/>
+      <stop offset="1" stop-color="#fff"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient1" x1="-854.62" y1="554.69" x2="-854.62" y2="553.69" gradientTransform="translate(19852.85 29163.52) scale(23.13 -52.51)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b3b3eb" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000"/>
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview id="base"/>
+  <path id="path617" class="st2" d="M85.3,319.83C12.06,319.83.98,254.81,1.74,234.21c1.13-19.43,2.06-97.59-1.17-163.4C1.4-1.11,56.34.61,85.28.61s83.89-1.72,84.72,70.2c-3.24,65.81-2.3,143.97-1.17,163.4.75,20.6-10.32,85.61-83.56,85.61" sodipodi:nodetypes="ccccccccccccccccc"/>
+  <path id="path655" class="st0" d="M100.82,61.51c.17-23.81-6.69-43.49-15.32-43.95-8.63-.46-15.76,18.47-15.93,42.28,0,.56,0,1.12,0,1.67-.17,23.81,6.69,43.49,15.32,43.95,8.63.46,15.76-18.47,15.93-42.28,0-.56,0-1.12,0-1.67Z" sodipodi:cx="117.8125" sodipodi:cy="254.933533" sodipodi:rx="15.9375" sodipodi:ry="34.6875" sodipodi:type="arc"/>
+  <path id="path618" class="st4" d="M85.27,1.03v118.58"/>
+  <path id="path639" class="st3" d="M97.08,60.89c0-14.5-5.18-26.26-11.56-26.26s-11.57,11.76-11.57,26.26h0c0,14.5,5.18,26.26,11.56,26.26s11.57-11.76,11.57-26.26Z" sodipodi:cx="117.8125" sodipodi:cy="257.121033" sodipodi:rx="11.5625" sodipodi:ry="26.25" sodipodi:type="arc"/>
+  <path id="path645" class="st1" d="M97.08,60.89c0-14.5-5.18-26.26-11.56-26.26s-11.57,11.76-11.57,26.26h0c0,14.5,5.18,26.26,11.56,26.26s11.57-11.76,11.57-26.26Z" sodipodi:cx="117.8125" sodipodi:cy="257.121033" sodipodi:rx="11.5625" sodipodi:ry="26.25" sodipodi:type="arc"/>
+  <path id="path619" class="st5" d="M85.06,119.55c-82.35,0-80.16,3.3-82.62,3.92" sodipodi:nodetypes="cc"/>
+  <path id="path620" class="st5" d="M85.27,119.55c83.17,0,82.89,4.67,82.89,4.67" sodipodi:nodetypes="cc"/>
+</svg>

@@ -20,7 +20,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // Call this static function from your Window Message Procedure
 //
-// extern void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+// void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // {

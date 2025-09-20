@@ -66,7 +66,7 @@ public:
         /// sent the event.
         /// </remarks>
         /// <see cref="Mouse::setWindow" />
-        int x;
+        float x;
 
         /// <summary>
         /// The y-coordinate of the mouse cursor relative to the top-left corner of the window that received the mouse event.
@@ -77,7 +77,7 @@ public:
         /// sent the event.
         /// </remarks>
         /// <see cref="Mouse::setWindow" />
-        int y;
+        float y;
 
         /// <summary>
         /// The value of the mouse's scroll wheel.
@@ -140,10 +140,10 @@ class MouseStateTracker
 public:
     enum class ButtonState : uint8_t
     {
-        UP       = 0,  // Button is up
-        HELD     = 1,  // Button is held down
-        RELEASED = 2,  // Button was just released
-        PRESSED  = 3,  // Buton was just pressed
+        Up       = 0,  // Button is up
+        Held     = 1,  // Button is held down
+        Released = 2,  // Button was just released
+        Pressed  = 3,  // Buton was just pressed
     };
 
     ButtonState leftButton;

@@ -13,10 +13,10 @@ void MouseStateTracker::update( const Mouse::State& state ) noexcept
 {
     UPDATE_BUTTON_STATE( leftButton );
 
-    assert( ( !state.leftButton && !lastState.leftButton ) == ( leftButton == ButtonState::UP ) );
-    assert( ( state.leftButton && lastState.leftButton ) == ( leftButton == ButtonState::HELD ) );
-    assert( ( !state.leftButton && lastState.leftButton ) == ( leftButton == ButtonState::RELEASED ) );
-    assert( ( state.leftButton && !lastState.leftButton ) == ( leftButton == ButtonState::PRESSED ) );
+    assert( ( !state.leftButton && !lastState.leftButton ) == ( leftButton == ButtonState::Up ) );
+    assert( ( state.leftButton && lastState.leftButton ) == ( leftButton == ButtonState::Held ) );
+    assert( ( !state.leftButton && lastState.leftButton ) == ( leftButton == ButtonState::Released ) );
+    assert( ( state.leftButton && !lastState.leftButton ) == ( leftButton == ButtonState::Pressed ) );
 
     UPDATE_BUTTON_STATE( middleButton );
     UPDATE_BUTTON_STATE( rightButton );

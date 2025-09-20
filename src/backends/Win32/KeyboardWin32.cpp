@@ -14,7 +14,7 @@ using namespace input;
 //
 // For a Win32 desktop application, call this function from your Window Message Procedure
 //
-// extern void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+// void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // {
