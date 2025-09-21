@@ -381,7 +381,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
         }
         else
         {
-            impl.m_State = {};
+            memset( &impl.m_State, 0, sizeof( Mouse::State ) );
         }
         return;
 
@@ -502,12 +502,7 @@ void Mouse::setVisible( bool visible )
     MouseGDK::get().setVisible( visible );
 }
 
-
 void Mouse::setWindow( void* window )
 {
     MouseGDK::get().setWindow( static_cast<HWND>( window ) );
 }
-
-
-
-

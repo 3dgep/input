@@ -215,7 +215,7 @@ private:
         m_ScrollWheelValue.reset( CreateEventEx( nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
         m_RelativeRead.reset( CreateEventEx( nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
         m_AbsoluteMode.reset( CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
-        m_RelativeRead.reset( CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
+        m_RelativeMode.reset( CreateEventEx( nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE ) );
 
         if ( !m_ScrollWheelValue || !m_RelativeRead || !m_AbsoluteMode || !m_RelativeRead )
         {
@@ -537,4 +537,9 @@ bool Mouse::isVisible() const noexcept
 void Mouse::setVisible( bool visible )
 {
     MouseWin32::get().setVisible( visible );
+}
+
+void Mouse::setWindow( void* window )
+{
+    MouseWin32::get().setWindow( static_cast<HWND>( window ) );
 }
