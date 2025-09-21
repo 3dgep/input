@@ -13,6 +13,7 @@
 #pragma comment( lib, "windowscodecs" )
 
 #include <iostream>
+#include <unordered_map>
 
 using namespace input;
 using Microsoft::WRL::ComPtr;
@@ -34,6 +35,138 @@ ComPtr<ID2D1SolidColorBrush>  g_pTextBrush;
 MouseStateTracker mouseStateTracker;
 D2D1_POINT_2F     g_MousePosition { 0, 0 };
 float             g_fMouseRotation = 0.0f;
+
+constexpr int KEY_SIZE = 50;  // The size of a key in the keyboard image (in pixels).
+
+// Construct a RECT from x, y, width, height.
+consteval D2D1_RECT_F r( int x, int y, int width = KEY_SIZE, int height = KEY_SIZE )
+{
+    return { static_cast<float>( x ), static_cast<float>( y ), static_cast<float>( x + width ), static_cast<float>( y + height ) };
+}
+
+using K = Keyboard::Keys;
+
+std::unordered_map<K, D2D1_RECT_F> g_KeyRects = {
+    // Row 1
+    { K::Escape, r( 24, 25 ) },
+    { K::F1, r( 121, 25 ) },
+    { K::F2, r( 176, 25 ) },
+    { K::F3, r( 232, 25 ) },
+    { K::F4, r( 287, 25 ) },
+    { K::F5, r( 373, 25 ) },
+    { K::F6, r( 428, 25 ) },
+    { K::F7, r( 484, 25 ) },
+    { K::F8, r( 539, 25 ) },
+    { K::F9, r( 625, 25 ) },
+    { K::F10, r( 680, 25 ) },
+    { K::F11, r( 736, 25 ) },
+    { K::F12, r( 791, 25 ) },
+    { K::PrintScreen, r( 877, 25 ) },
+    { K::Scroll, r( 933, 25 ) },
+    { K::Pause, r( 988, 25 ) },
+
+    // Row 2
+    { K::OemTilde, r( 24, 98 ) },
+    { K::D1, r( 79, 98 ) },
+    { K::D2, r( 135, 98 ) },
+    { K::D3, r( 190, 98 ) },
+    { K::D4, r( 245, 98 ) },
+    { K::D5, r( 301, 98 ) },
+    { K::D6, r( 356, 98 ) },
+    { K::D7, r( 412, 98 ) },
+    { K::D8, r( 467, 98 ) },
+    { K::D9, r( 522, 98 ) },
+    { K::D0, r( 578, 98 ) },
+    { K::OemMinus, r( 633, 98 ) },
+    { K::OemPlus, r( 689, 98 ) },
+    { K::Back, r( 745, 98, 97 ) },
+    { K::Insert, r( 877, 98 ) },
+    { K::Home, r( 933, 98 ) },
+    { K::PageUp, r( 988, 98 ) },
+
+    // Row 3
+    { K::Tab, r( 24, 154, 73 ) },
+    { K::Q, r( 104, 154 ) },
+    { K::W, r( 159, 154 ) },
+    { K::E, r( 215, 154 ) },
+    { K::R, r( 270, 154 ) },
+    { K::T, r( 325, 154 ) },
+    { K::Y, r( 381, 154 ) },
+    { K::U, r( 436, 154 ) },
+    { K::I, r( 491, 154 ) },
+    { K::O, r( 547, 154 ) },
+    { K::P, r( 602, 154 ) },
+    { K::OemOpenBrackets, r( 658, 154 ) },
+    { K::OemCloseBrackets, r( 713, 154 ) },
+    { K::OemPipe, r( 769, 154, 73 ) },
+    { K::Delete, r( 877, 154 ) },
+    { K::End, r( 932, 154 ) },
+    { K::PageDown, r( 988, 154 ) },
+
+    // Row 4
+    { K::CapsLock, r( 24, 210, 97 ) },
+    { K::A, r( 128, 210 ) },
+    { K::S, r( 184, 210 ) },
+    { K::D, r( 240, 210 ) },
+    { K::F, r( 296, 210 ) },
+    { K::G, r( 352, 210 ) },
+    { K::H, r( 408, 210 ) },
+    { K::J, r( 464, 210 ) },
+    { K::K, r( 520, 210 ) },
+    { K::L, r( 576, 210 ) },
+    { K::OemSemicolon, r( 632, 210 ) },
+    { K::OemQuotes, r( 688, 210 ) },
+    { K::Enter, r( 744, 210, 98 ) },
+
+    // Row 5
+    { K::LeftShift, r( 24, 266, 122 ) },
+    { K::Z, r( 152, 266 ) },
+    { K::X, r( 206, 266 ) },
+    { K::C, r( 261, 266 ) },
+    { K::V, r( 315, 266 ) },
+    { K::B, r( 369, 266 ) },
+    { K::N, r( 423, 266 ) },
+    { K::M, r( 477, 266 ) },
+    { K::OemComma, r( 532, 266 ) },
+    { K::OemPeriod, r( 586, 266 ) },
+    { K::OemQuestion, r( 640, 266 ) },
+    { K::RightShift, r( 696, 266, 146 ) },
+
+    // Row 6
+    { K::LeftControl, r( 24, 322, 61 ) },
+    { K::LeftSuper, r( 92, 322, 61 ) },
+    { K::LeftAlt, r( 160, 322, 61 ) },
+    { K::Space, r( 228, 322, 340 ) },
+    { K::RightAlt, r( 575, 322, 61 ) },
+    { K::RightSuper, r( 643, 322, 61 ) },
+    { K::Apps, r( 712, 322, 61 ) },
+    { K::RightControl, r( 780, 322, 61 ) },
+
+    // Arrow keys
+    { K::Up, r( 932, 266 ) },
+    { K::Left, r( 877, 322 ) },
+    { K::Down, r( 932, 322 ) },
+    { K::Right, r( 988, 322 ) },
+
+    // Numpad
+    { K::NumLock, r( 1074, 98 ) },
+    { K::Divide, r( 1129, 98 ) },
+    { K::Multiply, r( 1185, 98 ) },
+    { K::Subtract, r( 1240, 98 ) },
+    { K::Add, r( 1240, 154, 50, 106 ) },
+    { K::Separator, r( 1240, 266, 50, 106 ) },
+    { K::Decimal, r( 1184, 322 ) },
+    { K::NumPad0, r( 1074, 322, 106 ) },
+    { K::NumPad1, r( 1074, 266 ) },
+    { K::NumPad2, r( 1129, 266 ) },
+    { K::NumPad3, r( 1184, 266 ) },
+    { K::NumPad4, r( 1074, 210 ) },
+    { K::NumPad5, r( 1129, 210 ) },
+    { K::NumPad6, r( 1184, 210 ) },
+    { K::NumPad7, r( 1074, 154 ) },
+    { K::NumPad8, r( 1129, 154 ) },
+    { K::NumPad9, r( 1184, 154 ) },
+};
 
 // Helper: Load a bitmap from file using WIC
 HRESULT LoadBitmapFromFile(
@@ -138,10 +271,10 @@ void DrawMouseStatePanel( ID2D1RenderTarget* renderTarget, IDWriteTextFormat* te
     // Draw panel background with rounded corners
     D2D1_ROUNDED_RECT roundedPanelRect = {
         panelRect,
-        16.0f, // radiusX
-        16.0f  // radiusY
+        16.0f,  // radiusX
+        16.0f   // radiusY
     };
-    renderTarget->FillRoundedRectangle(&roundedPanelRect, panelBrush.Get());
+    renderTarget->FillRoundedRectangle( &roundedPanelRect, panelBrush.Get() );
 
     // Draw accent rectangle (darker, smaller, inset)
     const float accentInset = 8.0f;
@@ -156,10 +289,10 @@ void DrawMouseStatePanel( ID2D1RenderTarget* renderTarget, IDWriteTextFormat* te
     // Draw accent rectangle with rounded corners
     D2D1_ROUNDED_RECT roundedAccentRect = {
         accentRect,
-        12.0f, // radiusX
-        12.0f  // radiusY
+        12.0f,  // radiusX
+        12.0f   // radiusY
     };
-    renderTarget->FillRoundedRectangle(&roundedAccentRect, accentBrush.Get());
+    renderTarget->FillRoundedRectangle( &roundedAccentRect, accentBrush.Get() );
 
     // Prepare mouse state text
     Mouse::State   mouseState = Mouse::get().getState();
@@ -183,8 +316,7 @@ void DrawMouseStatePanel( ID2D1RenderTarget* renderTarget, IDWriteTextFormat* te
               mouseState.rightButton ? L"Down" : L"Up",
               mouseState.xButton1 ? L"Down" : L"Up",
               mouseState.xButton2 ? L"Down" : L"Up",
-              mouseState.scrollWheelValue
-    );
+              mouseState.scrollWheelValue );
 
     // Draw mouse state text
     D2D1_RECT_F textRect = D2D1::RectF(
@@ -279,6 +411,26 @@ void render()
                     g_pTextFormat.Get(),
                     textRect,
                     g_pTextBrush.Get() );
+            }
+
+            ComPtr<ID2D1SolidColorBrush> highlightBrush;
+            g_pRenderTarget->CreateSolidColorBrush(
+                D2D1::ColorF( D2D1::ColorF::Red, 0.5f ),  // semi-transparent red
+                highlightBrush.GetAddressOf() );
+
+            // Draw rectangles over pressed keys, offset by bitmap position
+            Keyboard::State keyboardState = Keyboard::get().getState();
+            for ( const auto& [key, rect]: g_KeyRects )
+            {
+                if ( keyboardState.isKeyDown( key ) )
+                {
+                    D2D1_RECT_F offsetRect = D2D1::RectF(
+                        rect.left + left,
+                        rect.top + top,
+                        rect.right + left,
+                        rect.bottom + top );
+                    g_pRenderTarget->FillRectangle( offsetRect, highlightBrush.Get() );
+                }
             }
         }
 

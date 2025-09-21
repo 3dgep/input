@@ -95,8 +95,8 @@ int SDLScancodeToVirtualKey(SDL_Scancode scancode)
     case SDL_SCANCODE_Y: return static_cast<int>(K::Y);
     case SDL_SCANCODE_Z: return static_cast<int>(K::Z);
 
-    case SDL_SCANCODE_LGUI: return static_cast<int>(K::LeftWindows);
-    case SDL_SCANCODE_RGUI: return static_cast<int>(K::RightWindows);
+    case SDL_SCANCODE_LGUI: return static_cast<int>(K::LeftSuper);
+    case SDL_SCANCODE_RGUI: return static_cast<int>(K::RightSuper);
     case SDL_SCANCODE_APPLICATION: return static_cast<int>(K::Apps);
 
     case SDL_SCANCODE_KP_0: return static_cast<int>(K::NumPad0);

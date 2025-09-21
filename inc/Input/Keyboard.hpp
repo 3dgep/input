@@ -74,35 +74,35 @@ public:
         D8            = 0x38,       // 8
         D9            = 0x39,       // 9
                                     // 0x3A - 40 are undefined
-        A            = 0x41,        // A
-        B            = 0x42,        // B
-        C            = 0x43,        // C
-        D            = 0x44,        // D
-        E            = 0x45,        // E
-        F            = 0x46,        // F
-        G            = 0x47,        // G
-        H            = 0x48,        // H
-        I            = 0x49,        // I
-        J            = 0x4a,        // J
-        K            = 0x4b,        // K
-        L            = 0x4c,        // L
-        M            = 0x4d,        // M
-        N            = 0x4e,        // N
-        O            = 0x4f,        // O
-        P            = 0x50,        // P
-        Q            = 0x51,        // Q
-        R            = 0x52,        // R
-        S            = 0x53,        // S
-        T            = 0x54,        // T
-        U            = 0x55,        // U
-        V            = 0x56,        // V
-        W            = 0x57,        // W
-        X            = 0x58,        // X
-        Y            = 0x59,        // Y
-        Z            = 0x5a,        // Z
-        LeftWindows  = 0x5b,        // Left Windows key
-        RightWindows = 0x5c,        // Right Windows key
-        Apps         = 0x5d,        // Apps key
+        A          = 0x41,          // A
+        B          = 0x42,          // B
+        C          = 0x43,          // C
+        D          = 0x44,          // D
+        E          = 0x45,          // E
+        F          = 0x46,          // F
+        G          = 0x47,          // G
+        H          = 0x48,          // H
+        I          = 0x49,          // I
+        J          = 0x4a,          // J
+        K          = 0x4b,          // K
+        L          = 0x4c,          // L
+        M          = 0x4d,          // M
+        N          = 0x4e,          // N
+        O          = 0x4f,          // O
+        P          = 0x50,          // P
+        Q          = 0x51,          // Q
+        R          = 0x52,          // R
+        S          = 0x53,          // S
+        T          = 0x54,          // T
+        U          = 0x55,          // U
+        V          = 0x56,          // V
+        W          = 0x57,          // W
+        X          = 0x58,          // X
+        Y          = 0x59,          // Y
+        Z          = 0x5a,          // Z
+        LeftSuper  = 0x5b,          // Left Windows key
+        RightSuper = 0x5c,          // Right Windows key
+        Apps       = 0x5d,          // Apps key
                                     // 0x5E is reserved
         Sleep     = 0x5f,           // The Sleep key
         NumPad0   = 0x60,           // The Numeric keypad 0 key
@@ -470,7 +470,7 @@ public:
     Keyboard& operator=( Keyboard&& )      = delete;
 
 private:
-    Keyboard() = default;
+    Keyboard()  = default;
     ~Keyboard() = default;
 
 };  // class Keyboard

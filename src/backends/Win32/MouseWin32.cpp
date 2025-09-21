@@ -290,7 +290,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
         break;
 
     case WAIT_FAILED:
-        throw std::system_error( std::error_code( static_cast<int>( GetLastError() ), std::system_category() ), "WaitForMultipleObjectsEx" );
+        throw std::system_error( std::error_code( static_cast<int>( GetLastError() ), std::system_category() ), "WaitForSingleObjectEx" );
     }
 
     // Next handle mode change events.

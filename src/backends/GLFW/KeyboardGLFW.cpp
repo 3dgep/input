@@ -159,11 +159,11 @@ int GLFWKeyToVirtualKey(int glfwKey)
     case GLFW_KEY_LEFT_SHIFT: return static_cast<int>(K::LeftShift);
     case GLFW_KEY_LEFT_CONTROL: return static_cast<int>(K::LeftControl);
     case GLFW_KEY_LEFT_ALT: return static_cast<int>(K::LeftAlt);
-    case GLFW_KEY_LEFT_SUPER: return static_cast<int>(K::LeftWindows);
+    case GLFW_KEY_LEFT_SUPER: return static_cast<int>(K::LeftSuper);
     case GLFW_KEY_RIGHT_SHIFT: return static_cast<int>(K::RightShift);
     case GLFW_KEY_RIGHT_CONTROL: return static_cast<int>(K::RightControl);
     case GLFW_KEY_RIGHT_ALT: return static_cast<int>(K::RightAlt);
-    case GLFW_KEY_RIGHT_SUPER: return static_cast<int>(K::RightWindows);
+    case GLFW_KEY_RIGHT_SUPER: return static_cast<int>(K::RightSuper);
     case GLFW_KEY_MENU: return static_cast<int>(K::Apps);
 
     // Unmapped/undefined keys
