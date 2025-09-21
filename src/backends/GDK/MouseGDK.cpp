@@ -163,8 +163,8 @@ public:
 
 #ifndef _GAMING_XBOX
             POINT point;
-            point.x = m_State.x;
-            point.y = m_State.y;
+            point.x = static_cast<LONG>( m_State.x );
+            point.y = static_cast<LONG>( m_State.y );
 
             if ( MapWindowPoints( m_Window, nullptr, &point, 1 ) )
             {

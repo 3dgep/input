@@ -27,6 +27,9 @@ ComPtr<ID2D1Factory1>         g_pD2DFactory;
 ComPtr<ID2D1HwndRenderTarget> g_pRenderTarget;
 ComPtr<ID2D1Bitmap>           g_pKeyboardBitmap;
 ComPtr<ID2D1Bitmap>           g_pMouseBitmap;
+ComPtr<ID2D1Bitmap>           g_pLMBBitmap;
+ComPtr<ID2D1Bitmap>           g_pRMBBitmap;
+ComPtr<ID2D1Bitmap>           g_pMMBBitmap;
 ComPtr<IDWriteFactory>        g_pDWriteFactory;
 ComPtr<IDWriteTextFormat>     g_pTextFormat;
 ComPtr<IDWriteTextFormat>     g_pMousePanelTextFormat;
@@ -434,9 +437,18 @@ void render()
             }
         }
 
-        if ( g_pMouseBitmap )
+        auto mouseState = Mouse::get().getState();
+
+        if ( g_pMouseBitmap && g_pLMBBitmap && g_pRMBBitmap && g_pMMBBitmap )
         {
+
             DrawRotatedBitmap( g_pRenderTarget.Get(), g_pMouseBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if (mouseState.leftButton )
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pLMBBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if (mouseState.rightButton)
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pRMBBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if (mouseState.middleButton)
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pMMBBitmap.Get(), g_MousePosition, g_fMouseRotation );
         }
 
         // Draw mouse state panel
@@ -553,6 +565,42 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
     if ( FAILED( hr ) )
     {
         std::cerr << "Failed to load bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load LMB bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/LMB.png",
+        &g_pLMBBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load LMB bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load RMB bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/RMB.png",
+        &g_pRMBBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load RMB bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load MMB bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/MMB.png",
+        &g_pMMBBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load MMB bitmap." << std::endl;
         return -6;
     }
 
