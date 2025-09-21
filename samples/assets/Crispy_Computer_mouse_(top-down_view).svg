@@ -4,62 +4,65 @@
   <defs>
     <style>
       .st0 {
-        fill: url(#radial-gradient1);
+        fill: url(#radial-gradient);
       }
 
-      .st0, .st1, .st2, .st3 {
-        fill-rule: evenodd;
-      }
-
-      .st4, .st5 {
-        fill: none;
-        stroke-width: 1.25px;
-      }
-
-      .st4, .st5, .st2 {
+      .st0, .st1, .st2, .st3, .st4 {
         stroke: #000;
       }
 
-      .st1 {
-        fill: url(#linear-gradient1);
-      }
-
-      .st5 {
-        stroke-linecap: round;
-      }
-
-      .st2 {
-        fill: url(#radial-gradient);
+      .st0, .st2 {
         stroke-width: 1.12px;
       }
 
+      .st0, .st2, .st3, .st4, .st5 {
+        fill-rule: evenodd;
+      }
+
+      .st1 {
+        stroke-width: 1.25px;
+      }
+
+      .st1, .st2 {
+        fill: none;
+      }
+
       .st3 {
+        fill: url(#linear-gradient1);
+      }
+
+      .st4 {
+        fill: url(#radial-gradient1);
+      }
+
+      .st5 {
         fill: url(#linear-gradient);
       }
     </style>
-    <radialGradient id="radial-gradient" cx="-887.05" cy="559.75" fx="-887.05" fy="559.75" r="1.08" gradientTransform="translate(150322.07 178727.11) scale(169.43 -319.22)" gradientUnits="userSpaceOnUse">
+    <radialGradient id="radial-gradient" cx="-1755.89" cy="142.44" fx="-1755.89" fy="142.44" r="1.08" gradientTransform="translate(297529.88 -45425.11) scale(169.43 319.22)" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#fff"/>
       <stop offset="1" stop-color="#333"/>
     </radialGradient>
-    <radialGradient id="radial-gradient1" cx="-863.86" cy="556.5" fx="-863.86" fy="556.5" r="1.45" gradientTransform="translate(27094.87 49006.22) scale(31.25 -87.92)" gradientUnits="userSpaceOnUse">
+    <radialGradient id="radial-gradient1" cx="99.24" cy="78.74" fx="99.24" fy="78.74" r="125.98" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#fff"/>
       <stop offset="1" stop-color="#333"/>
     </radialGradient>
-    <linearGradient id="linear-gradient" x1="-854.62" y1="554.62" x2="-854.62" y2="553.87" gradientTransform="translate(19852.85 29163.52) scale(23.13 -52.51)" gradientUnits="userSpaceOnUse">
+    <linearGradient id="linear-gradient" x1="-1690.83" y1="153.6" x2="-1690.83" y2="154.35" gradientTransform="translate(39194.47 -8024.99) scale(23.13 52.51)" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#333"/>
       <stop offset="1" stop-color="#fff"/>
     </linearGradient>
-    <linearGradient id="linear-gradient1" x1="-854.62" y1="554.69" x2="-854.62" y2="553.69" gradientTransform="translate(19852.85 29163.52) scale(23.13 -52.51)" gradientUnits="userSpaceOnUse">
+    <linearGradient id="linear-gradient1" x1="-1690.83" y1="153.53" x2="-1690.83" y2="154.53" gradientTransform="translate(39194.47 -8024.99) scale(23.13 52.51)" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#b3b3eb" stop-opacity="0"/>
       <stop offset="1" stop-color="#000"/>
     </linearGradient>
   </defs>
   <sodipodi:namedview id="base"/>
-  <path id="path617" class="st2" d="M85.3,319.83C12.06,319.83.98,254.81,1.74,234.21c1.13-19.43,2.06-97.59-1.17-163.4C1.4-1.11,56.34.61,85.28.61s83.89-1.72,84.72,70.2c-3.24,65.81-2.3,143.97-1.17,163.4.75,20.6-10.32,85.61-83.56,85.61" sodipodi:nodetypes="ccccccccccccccccc"/>
-  <path id="path655" class="st0" d="M100.82,61.51c.17-23.81-6.69-43.49-15.32-43.95-8.63-.46-15.76,18.47-15.93,42.28,0,.56,0,1.12,0,1.67-.17,23.81,6.69,43.49,15.32,43.95,8.63.46,15.76-18.47,15.93-42.28,0-.56,0-1.12,0-1.67Z" sodipodi:cx="117.8125" sodipodi:cy="254.933533" sodipodi:rx="15.9375" sodipodi:ry="34.6875" sodipodi:type="arc"/>
-  <path id="path618" class="st4" d="M85.27,1.03v118.58"/>
-  <path id="path639" class="st3" d="M97.08,60.89c0-14.5-5.18-26.26-11.56-26.26s-11.57,11.76-11.57,26.26h0c0,14.5,5.18,26.26,11.56,26.26s11.57-11.76,11.57-26.26Z" sodipodi:cx="117.8125" sodipodi:cy="257.121033" sodipodi:rx="11.5625" sodipodi:ry="26.25" sodipodi:type="arc"/>
-  <path id="path645" class="st1" d="M97.08,60.89c0-14.5-5.18-26.26-11.56-26.26s-11.57,11.76-11.57,26.26h0c0,14.5,5.18,26.26,11.56,26.26s11.57-11.76,11.57-26.26Z" sodipodi:cx="117.8125" sodipodi:cy="257.121033" sodipodi:rx="11.5625" sodipodi:ry="26.25" sodipodi:type="arc"/>
-  <path id="path619" class="st5" d="M85.06,119.55c-82.35,0-80.16,3.3-82.62,3.92" sodipodi:nodetypes="cc"/>
-  <path id="path620" class="st5" d="M85.27,119.55c83.17,0,82.89,4.67,82.89,4.67" sodipodi:nodetypes="cc"/>
+  <path id="path617" class="st2" d="M168.23,124.22c-.96,49.58-.24,95.69.6,109.99.75,20.6-10.32,85.61-83.56,85.61" sodipodi:nodetypes="ccccccccccccccccc"/>
+  <path id="path6171" data-name="path617" class="st2" d="M85.3,319.83C12.06,319.83.98,254.81,1.74,234.21c.84-14.37,1.56-60.87.58-110.74" sodipodi:nodetypes="ccccccccccccccccc"/>
+  <path id="path6172" data-name="path617" class="st0" d="M85.3,319.83C12.06,319.83.98,254.81,1.74,234.21c1.13-19.43,2.06-97.59-1.17-163.4C1.4-1.11,56.34.61,85.28.61s83.89-1.72,84.72,70.2c-3.24,65.81-2.3,143.97-1.17,163.4.75,20.6-10.32,85.61-83.56,85.61" sodipodi:nodetypes="ccccccccccccccccc"/>
+  <path class="st4" d="M100.82,61.51v1.67c-.17,23.47-7.09,42.19-15.55,42.29-.13,0-.25,0-.38,0-8.63-.46-15.49-20.14-15.32-43.95v-1.67c.17-23.6,7.17-42.4,15.7-42.29.08,0,.16,0,.23.01,8.63.46,15.49,20.14,15.32,43.95Z"/>
+  <path id="path639" class="st5" d="M97.08,60.89c0-14.5-5.18-26.26-11.56-26.26s-11.57,11.76-11.57,26.26h0c0,14.5,5.18,26.26,11.56,26.26s11.57-11.76,11.57-26.26Z" sodipodi:cx="117.8125" sodipodi:cy="257.121033" sodipodi:rx="11.5625" sodipodi:ry="26.25" sodipodi:type="arc"/>
+  <path id="path645" class="st3" d="M97.08,60.89c0-14.5-5.18-26.26-11.56-26.26s-11.57,11.76-11.57,26.26h0c0,14.5,5.18,26.26,11.56,26.26s11.57-11.76,11.57-26.26Z" sodipodi:cx="117.8125" sodipodi:cy="257.121033" sodipodi:rx="11.5625" sodipodi:ry="26.25" sodipodi:type="arc"/>
+  <path class="st1" d="M69.57,59.84v1.67c-.17,23.81,6.69,43.49,15.32,43.95.13,0,.25,0,.38,0v14.08c-82.35,0-80.49,3.3-82.95,3.92-.35-17.55-.91-35.53-1.75-52.66C1.4-1.1,56.33.61,85.27.61v16.94c-8.53-.11-15.53,18.69-15.7,42.29Z"/>
+  <path class="st1" d="M101.27,59.84v1.67c.17,23.81-6.69,43.49-15.32,43.95-.13,0-.25,0-.38,0v14.08c82.35,0,80.49,3.3,82.95,3.92.35-17.55.91-35.53,1.75-52.66C169.44-1.1,114.51.61,85.57.61v16.94c8.53-.11,15.53,18.69,15.7,42.29Z"/>
 </svg>
