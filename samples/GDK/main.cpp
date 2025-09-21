@@ -30,6 +30,8 @@ ComPtr<ID2D1Bitmap>           g_pMouseBitmap;
 ComPtr<ID2D1Bitmap>           g_pLMBBitmap;
 ComPtr<ID2D1Bitmap>           g_pRMBBitmap;
 ComPtr<ID2D1Bitmap>           g_pMMBBitmap;
+ComPtr<ID2D1Bitmap>           g_pScrollUpBitmap;
+ComPtr<ID2D1Bitmap>           g_pScrollDownBitmap;
 ComPtr<IDWriteFactory>        g_pDWriteFactory;
 ComPtr<IDWriteTextFormat>     g_pTextFormat;
 ComPtr<IDWriteTextFormat>     g_pMousePanelTextFormat;
@@ -45,6 +47,13 @@ constexpr int KEY_SIZE = 50;  // The size of a key in the keyboard image (in pix
 consteval D2D1_RECT_F r( int x, int y, int width = KEY_SIZE, int height = KEY_SIZE )
 {
     return { static_cast<float>( x ), static_cast<float>( y ), static_cast<float>( x + width ), static_cast<float>( y + height ) };
+}
+
+template<typename T>
+void SafeRelease( ComPtr<T>& ptr )
+{
+    if ( ptr )
+        ptr.Reset();
 }
 
 using K = Keyboard::Keys;
@@ -449,6 +458,10 @@ void render()
                 DrawRotatedBitmap( g_pRenderTarget.Get(), g_pRMBBitmap.Get(), g_MousePosition, g_fMouseRotation );
             if (mouseState.middleButton)
                 DrawRotatedBitmap( g_pRenderTarget.Get(), g_pMMBBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if ( mouseStateTracker.scrollWheelDelta > 0 )
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pScrollUpBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if ( mouseStateTracker.scrollWheelDelta < 0 )
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pScrollDownBitmap.Get(), g_MousePosition, g_fMouseRotation );
         }
 
         // Draw mouse state panel
@@ -604,6 +617,30 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
         return -6;
     }
 
+    // Load Scroll Up bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/Scroll_Up.png",
+        &g_pScrollUpBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load Scroll Up bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load Scroll Down bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/Scroll_Down.png",
+        &g_pScrollDownBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load Scroll Down bitmap." << std::endl;
+        return -6;
+    }
+
     // Initialize DirectWrite
     hr = DWriteCreateFactory(
         DWRITE_FACTORY_TYPE_SHARED,
@@ -685,20 +722,18 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
     }
 
     // Cleanup
-    if ( g_pTextBrush )
-        g_pTextBrush.Reset();
-    if ( g_pTextFormat )
-        g_pTextFormat.Reset();
-    if ( g_pDWriteFactory )
-        g_pDWriteFactory.Reset();
-    if ( g_pKeyboardBitmap )
-        g_pKeyboardBitmap.Reset();
-    if ( g_pMouseBitmap )
-        g_pMouseBitmap.Reset();
-    if ( g_pRenderTarget )
-        g_pRenderTarget.Reset();
-    if ( g_pD2DFactory )
-        g_pD2DFactory.Reset();
+    SafeRelease(g_pTextBrush);
+    SafeRelease(g_pTextFormat);
+    SafeRelease(g_pDWriteFactory);
+    SafeRelease(g_pKeyboardBitmap);
+    SafeRelease(g_pMouseBitmap);
+    SafeRelease(g_pLMBBitmap);
+    SafeRelease(g_pRMBBitmap);
+    SafeRelease(g_pMMBBitmap);
+    SafeRelease(g_pScrollUpBitmap);
+    SafeRelease(g_pScrollDownBitmap);
+    SafeRelease(g_pRenderTarget);
+    SafeRelease(g_pD2DFactory);
 
     CoUninitialize();
 
