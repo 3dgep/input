@@ -28,8 +28,8 @@ ComPtr<ID2D1HwndRenderTarget> g_pRenderTarget;
 ComPtr<ID2D1Bitmap>           g_pKeyboardBitmap;
 ComPtr<ID2D1Bitmap>           g_pMouseBitmap;
 ComPtr<IDWriteFactory>        g_pDWriteFactory;
-ComPtr<IDWriteTextFormat>     g_pTextFormat;
-ComPtr<IDWriteTextFormat>     g_pMousePanelTextFormat;
+ComPtr<IDWriteTextFormat>     g_pCenterTextFormat;
+ComPtr<IDWriteTextFormat>     g_pLeftTextFormat;
 ComPtr<ID2D1SolidColorBrush>  g_pTextBrush;
 
 MouseStateTracker mouseStateTracker;
@@ -394,7 +394,7 @@ void render()
                 g_pKeyboardBitmap.Get(),
                 D2D1::RectF( left, top, left + bmpSize.width, top + bmpSize.height ) );
 
-            if ( g_pTextFormat && g_pTextBrush )
+            if ( g_pCenterTextFormat && g_pTextBrush )
             {
                 const wchar_t* text       = L"By Rumudiez - Created in Adobe Illustrator, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=26015253";
                 float          textHeight = 28.0f;
@@ -408,7 +408,7 @@ void render()
                 g_pRenderTarget->DrawText(
                     text,
                     static_cast<UINT32>( wcslen( text ) ),
-                    g_pTextFormat.Get(),
+                    g_pCenterTextFormat.Get(),
                     textRect,
                     g_pTextBrush.Get() );
             }
@@ -440,9 +440,9 @@ void render()
         }
 
         // Draw mouse state panel
-        if ( g_pMousePanelTextFormat && g_pTextBrush )
+        if ( g_pLeftTextFormat && g_pTextBrush )
         {
-            DrawMouseStatePanel( g_pRenderTarget.Get(), g_pMousePanelTextFormat.Get(), g_pTextBrush.Get() );
+            DrawMouseStatePanel( g_pRenderTarget.Get(), g_pLeftTextFormat.Get(), g_pTextBrush.Get() );
         }
 
         g_pRenderTarget->EndDraw();
@@ -575,7 +575,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
         DWRITE_FONT_STRETCH_NORMAL,
         20.0f,  // Font size
         L"en-us",
-        &g_pTextFormat );
+        &g_pCenterTextFormat );
     if ( FAILED( hr ) )
     {
         std::cerr << "Failed to create text format." << std::endl;
@@ -583,9 +583,9 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
     }
 
     // Center align text horizontally
-    g_pTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );
+    g_pCenterTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );
     // Align text vertically to the top of the layout rectangle
-    g_pTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
+    g_pCenterTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
 
     // Create a solid color brush for text
     hr = g_pRenderTarget->CreateSolidColorBrush(
@@ -606,14 +606,14 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
         DWRITE_FONT_STRETCH_NORMAL,
         20.0f,  // Font size
         L"en-us",
-        &g_pMousePanelTextFormat );
+        &g_pLeftTextFormat );
     if ( FAILED( hr ) )
     {
         std::cerr << "Failed to create mouse panel text format." << std::endl;
         return -10;
     }
-    g_pMousePanelTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_LEADING );
-    g_pMousePanelTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
+    g_pLeftTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_LEADING );
+    g_pLeftTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
 
     // Message loop
     MSG  msg     = {};
@@ -639,8 +639,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
     // Cleanup
     if ( g_pTextBrush )
         g_pTextBrush.Reset();
-    if ( g_pTextFormat )
-        g_pTextFormat.Reset();
+    if ( g_pCenterTextFormat )
+        g_pCenterTextFormat.Reset();
     if ( g_pDWriteFactory )
         g_pDWriteFactory.Reset();
     if ( g_pKeyboardBitmap )
