@@ -585,6 +585,14 @@ void renderGamepad( const Gamepad::State& state, float left, float top )
             renderCircle( RED, { left + 287, top + 133 }, 16.0f );
         if ( state.buttons.menu )
             renderCircle( RED, { left + 381, top + 133 }, 16.0f );
+        if ( state.dPad.up )
+            renderRectangle( RED, r( left + 233, top + 193, 30, 30 ) );
+        if ( state.dPad.down )
+            renderRectangle( RED, r( left + 233, top + 251, 30, 30 ) );
+        if ( state.dPad.left )
+            renderRectangle( RED, r( left + 205, top + 223, 30, 30 ) );
+        if ( state.dPad.right )
+            renderRectangle( RED, r( left + 261, top + 223, 32, 27 ) );
 
         if ( state.buttons.leftShoulder )
             g_pRenderTarget->DrawBitmap( g_pLeftBumperBitmap.Get(),
