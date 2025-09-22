@@ -8,6 +8,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#pragma comment( lib, "gameinput.lib" )
+
 using namespace input;
 using Microsoft::WRL::ComPtr;
 

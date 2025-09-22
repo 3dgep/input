@@ -14,6 +14,7 @@
 
 #include "input/Gamepad.hpp"
 
+#include <cassert>
 #include <iostream>
 #include <unordered_map>
 
@@ -486,6 +487,30 @@ void update()
         g_fMouseRotation += mouseState.x + mouseState.y;
         break;
     }
+
+    for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+    {
+        Gamepad        gamepad { i };
+        Gamepad::State gamepadState = gamepad.getState();
+
+        // Test vibration.
+        if ( gamepadState.connected )
+        {
+            float lx        = gamepadState.thumbSticks.leftX;
+            float ly        = gamepadState.thumbSticks.leftY;
+            float leftMotor = std::sqrt( lx * lx + ly * ly );
+
+            float rx         = gamepadState.thumbSticks.rightX;
+            float ry         = gamepadState.thumbSticks.rightY;
+            float rightMotor = std::sqrt( rx * rx + ry * ry );
+
+            float leftTrigger  = gamepadState.triggers.left;
+            float rightTrigger = gamepadState.triggers.right;
+
+            // BUG: Vibrating multiple motors when using GDK causes the controller to start vibrating continuously.
+            // gamepad.setVibration( leftMotor, rightMotor, leftTrigger, rightTrigger );
+        }
+    }
 }
 
 enum class FillMode
@@ -681,10 +706,10 @@ void render()
         // Draw XBox Controller bitmap at bottom right corner
         if ( g_pXBoxControllerBitmap )
         {
-            auto  bmpSize  = g_pXBoxControllerBitmap->GetSize();
-            float margin   = 32.0f;
-            float left     = margin;
-            float top      = margin;
+            auto  bmpSize = g_pXBoxControllerBitmap->GetSize();
+            float margin  = 32.0f;
+            float left    = margin;
+            float top     = margin;
 
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {

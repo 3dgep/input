@@ -6,6 +6,8 @@
 #include <memory>
 #include <system_error>
 
+#pragma comment( lib, "runtimeobject.lib" )
+
 using namespace input;
 using namespace Microsoft::WRL;
 

@@ -12,6 +12,9 @@
 #pragma comment( lib, "dwrite" )
 #pragma comment( lib, "windowscodecs" )
 
+#include "input/Gamepad.hpp"
+
+#include <cassert>
 #include <iostream>
 #include <unordered_map>
 
@@ -27,6 +30,14 @@ ComPtr<ID2D1Factory1>         g_pD2DFactory;
 ComPtr<ID2D1HwndRenderTarget> g_pRenderTarget;
 ComPtr<ID2D1Bitmap>           g_pKeyboardBitmap;
 ComPtr<ID2D1Bitmap>           g_pMouseBitmap;
+ComPtr<ID2D1Bitmap>           g_pLMBBitmap;
+ComPtr<ID2D1Bitmap>           g_pRMBBitmap;
+ComPtr<ID2D1Bitmap>           g_pMMBBitmap;
+ComPtr<ID2D1Bitmap>           g_pScrollUpBitmap;
+ComPtr<ID2D1Bitmap>           g_pScrollDownBitmap;
+ComPtr<ID2D1Bitmap>           g_pXBoxControllerBitmap;
+ComPtr<ID2D1Bitmap>           g_pLeftBumperBitmap;
+ComPtr<ID2D1Bitmap>           g_pRightBumperBitmap;
 ComPtr<IDWriteFactory>        g_pDWriteFactory;
 ComPtr<IDWriteTextFormat>     g_pCenterTextFormat;
 ComPtr<IDWriteTextFormat>     g_pLeftTextFormat;
@@ -36,12 +47,22 @@ MouseStateTracker mouseStateTracker;
 D2D1_POINT_2F     g_MousePosition { 0, 0 };
 float             g_fMouseRotation = 0.0f;
 
-constexpr int KEY_SIZE = 50;  // The size of a key in the keyboard image (in pixels).
+constexpr float KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
+constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamepad state panel.
+constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // The height of the moue state panel.
+constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state panels.
 
 // Construct a RECT from x, y, width, height.
-consteval D2D1_RECT_F r( int x, int y, int width = KEY_SIZE, int height = KEY_SIZE )
+constexpr D2D1_RECT_F r( float x, float y, float width = KEY_SIZE, float height = KEY_SIZE )
 {
-    return { static_cast<float>( x ), static_cast<float>( y ), static_cast<float>( x + width ), static_cast<float>( y + height ) };
+    return { x, y, x + width, y + height };
+}
+
+template<typename T>
+void SafeRelease( ComPtr<T>& ptr )
+{
+    if ( ptr )
+        ptr.Reset();
 }
 
 using K = Keyboard::Keys;
@@ -248,21 +269,13 @@ const wchar_t* MouseModeToString( Mouse::Mode mode )
     }
 }
 
-void DrawMouseStatePanel( ID2D1RenderTarget* renderTarget, IDWriteTextFormat* textFormat, ID2D1SolidColorBrush* textBrush )
+void DrawMouseStatePanel( float x, float y, ID2D1RenderTarget* renderTarget, IDWriteTextFormat* textFormat, ID2D1SolidColorBrush* textBrush )
 {
-    // Panel size and margin
-    const float panelWidth  = 320.0f;
-    const float panelHeight = 280.0f;
-    const float margin      = 20.0f;
-
-    D2D1_SIZE_F rtSize = renderTarget->GetSize();
-
-    // Position panel at top-right
     D2D1_RECT_F panelRect = D2D1::RectF(
-        rtSize.width - panelWidth - margin,
-        margin,
-        rtSize.width - margin,
-        margin + panelHeight );
+        x,
+        y,
+        x + PANEL_WIDTH,
+        y + MOUSE_STATE_PANEL_HEIGHT );
 
     // Draw panel background
     ComPtr<ID2D1SolidColorBrush> panelBrush;
@@ -332,6 +345,107 @@ void DrawMouseStatePanel( ID2D1RenderTarget* renderTarget, IDWriteTextFormat* te
         textBrush );
 }
 
+void DrawGamepadStatePanel(
+    float                 x,
+    float                 y,
+    const Gamepad::State& gamepadState, int playerIndex )
+{
+    if ( !gamepadState.connected )
+        return;
+
+    // Panel rectangle at (x, y)
+    D2D1_RECT_F panelRect = D2D1::RectF(
+        x,
+        y,
+        x + PANEL_WIDTH,
+        y + GAMEPAD_STATE_PANEL_HEIGHT );
+
+    // Draw panel background
+    ComPtr<ID2D1SolidColorBrush> panelBrush;
+    g_pRenderTarget->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::LightGray, 0.85f ), panelBrush.GetAddressOf() );
+
+    D2D1_ROUNDED_RECT roundedPanelRect = {
+        panelRect,
+        16.0f,  // radiusX
+        16.0f   // radiusY
+    };
+    g_pRenderTarget->FillRoundedRectangle( &roundedPanelRect, panelBrush.Get() );
+
+    // Draw accent rectangle (darker, smaller, inset)
+    const float accentInset = 8.0f;
+    D2D1_RECT_F accentRect  = D2D1::RectF(
+        panelRect.left + accentInset,
+        panelRect.top + accentInset,
+        panelRect.right - accentInset,
+        panelRect.bottom - accentInset );
+    ComPtr<ID2D1SolidColorBrush> accentBrush;
+    g_pRenderTarget->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Gray, 0.85f ), accentBrush.GetAddressOf() );
+
+    D2D1_ROUNDED_RECT roundedAccentRect = {
+        accentRect,
+        12.0f,  // radiusX
+        12.0f   // radiusY
+    };
+    g_pRenderTarget->FillRoundedRectangle( &roundedAccentRect, accentBrush.Get() );
+
+    // Prepare gamepad state text
+    wchar_t gamepadText[512];
+    swprintf( gamepadText, 512,
+              L"Gamepad %i\n"
+              L"A:\t\t%s\n"
+              L"B:\t\t%s\n"
+              L"X:\t\t%s\n"
+              L"Y:\t\t%s\n"
+              L"View:\t\t%s\n"
+              L"Menu:\t\t%s\n"
+              L"LB:\t\t%s\n"
+              L"RB:\t\t%s\n"
+              L"Left Stick:\t%s\n"
+              L"Right Stick:\t%s\n"
+              L"DPad Up:\t%s\n"
+              L"DPad Down:\t%s\n"
+              L"DPad Left:\t%s\n"
+              L"DPad Right:\t%s\n"
+              L"LT:\t\t%.2f\n"
+              L"RT:\t\t%.2f\n"
+              L"Left Stick:\t(%.2f, %.2f)\n"
+              L"Right Stick:\t(%.2f, %.2f)",
+              playerIndex,
+              gamepadState.buttons.a ? L"Down" : L"Up",
+              gamepadState.buttons.b ? L"Down" : L"Up",
+              gamepadState.buttons.x ? L"Down" : L"Up",
+              gamepadState.buttons.y ? L"Down" : L"Up",
+              gamepadState.buttons.view ? L"Down" : L"Up",
+              gamepadState.buttons.menu ? L"Down" : L"Up",
+              gamepadState.buttons.leftShoulder ? L"Down" : L"Up",
+              gamepadState.buttons.rightShoulder ? L"Down" : L"Up",
+              gamepadState.buttons.leftStick ? L"Down" : L"Up",
+              gamepadState.buttons.rightStick ? L"Down" : L"Up",
+              gamepadState.dPad.up ? L"Down" : L"Up",
+              gamepadState.dPad.down ? L"Down" : L"Up",
+              gamepadState.dPad.left ? L"Down" : L"Up",
+              gamepadState.dPad.right ? L"Down" : L"Up",
+              gamepadState.triggers.left,
+              gamepadState.triggers.right,
+              gamepadState.thumbSticks.leftX,
+              gamepadState.thumbSticks.leftY,
+              gamepadState.thumbSticks.rightX,
+              gamepadState.thumbSticks.rightY );
+
+    // Draw gamepad state text
+    D2D1_RECT_F textRect = D2D1::RectF(
+        panelRect.left + 20.0f,
+        panelRect.top + 20.0f,
+        panelRect.right - 20.0f,
+        panelRect.bottom - 20.0f );
+    g_pRenderTarget->DrawText(
+        gamepadText,
+        static_cast<UINT32>( wcslen( gamepadText ) ),
+        g_pLeftTextFormat.Get(),
+        textRect,
+        g_pTextBrush.Get() );
+}
+
 void update()
 {
     using Mouse::Mode::Absolute;
@@ -373,6 +487,159 @@ void update()
         g_fMouseRotation += mouseState.x + mouseState.y;
         break;
     }
+
+    for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+    {
+        Gamepad        gamepad { i };
+        Gamepad::State gamepadState = gamepad.getState();
+
+        // Test vibration.
+        if ( gamepadState.connected )
+        {
+            float lx        = gamepadState.thumbSticks.leftX;
+            float ly        = gamepadState.thumbSticks.leftY;
+            float leftMotor = std::sqrt( lx * lx + ly * ly );
+
+            float rx         = gamepadState.thumbSticks.rightX;
+            float ry         = gamepadState.thumbSticks.rightY;
+            float rightMotor = std::sqrt( rx * rx + ry * ry );
+
+            float leftTrigger  = gamepadState.triggers.left;
+            float rightTrigger = gamepadState.triggers.right;
+
+            gamepad.setVibration( leftMotor, rightMotor, leftTrigger, rightTrigger );
+        }
+    }
+}
+
+enum class FillMode
+{
+    Solid,
+    Outline
+};
+
+// Commonly used colors.
+const D2D1_COLOR_F RED   = D2D1::ColorF( D2D1::ColorF::Red, 0.5f );
+const D2D1_COLOR_F BLACK = D2D1::ColorF( D2D1::ColorF::Black );
+const D2D1_COLOR_F WHITE = D2D1::ColorF( D2D1::ColorF::White );
+
+void renderRectangle( D2D1_COLOR_F color, D2D1_RECT_F rect, FillMode fillMode = FillMode::Solid )
+{
+    ComPtr<ID2D1SolidColorBrush> brush;
+    g_pRenderTarget->CreateSolidColorBrush( color, brush.GetAddressOf() );
+
+    switch ( fillMode )
+    {
+    case FillMode::Solid:
+        g_pRenderTarget->FillRectangle( rect, brush.Get() );
+        break;
+    case FillMode::Outline:
+        g_pRenderTarget->DrawRectangle( rect, brush.Get(), 4.0f );
+        break;
+    }
+}
+
+void renderOutlineRectangle( D2D1_COLOR_F color, D2D1_RECT_F rect )
+{
+    renderRectangle( color, rect, FillMode::Solid );
+    renderRectangle( BLACK, rect, FillMode::Outline );
+}
+
+void renderCircle( D2D1_COLOR_F color, D2D1_POINT_2F center, float radius, FillMode fillMode = FillMode::Solid )
+{
+    ComPtr<ID2D1SolidColorBrush> brush;
+    g_pRenderTarget->CreateSolidColorBrush( color, brush.GetAddressOf() );
+
+    D2D1_ELLIPSE ellipse = { center, radius, radius };
+    switch ( fillMode )
+    {
+    case FillMode::Solid:
+        g_pRenderTarget->FillEllipse( ellipse, brush.Get() );
+        break;
+    case FillMode::Outline:
+        g_pRenderTarget->DrawEllipse( ellipse, brush.Get(), 4.0f );
+        break;
+    }
+}
+
+void renderOutlineCircle( D2D1_COLOR_F color, D2D1_POINT_2F center, float radius )
+{
+    renderCircle( color, center, radius, FillMode::Solid );
+    renderCircle( BLACK, center, radius, FillMode::Outline );
+}
+
+D2D1_POINT_2F operator+( const D2D1_POINT_2F& lhs, const D2D1_POINT_2F& rhs )
+{
+    return { lhs.x + rhs.x, lhs.y + rhs.y };
+}
+
+void renderThumbStick( float x, float y, bool pressed, const D2D1_POINT_2F& center )
+{
+    constexpr float thumbstickRadius = 55.0f;
+    auto            offset           = D2D1::Point2F( x * thumbstickRadius, -y * thumbstickRadius );
+    if ( pressed )
+        renderCircle( RED, center, thumbstickRadius );
+
+    renderOutlineCircle( WHITE, center + offset, 30.0f );
+}
+
+void renderGamepad( const Gamepad::State& state, float left, float top )
+{
+    if ( g_pXBoxControllerBitmap && g_pLeftBumperBitmap && g_pRightBumperBitmap && state.connected )
+    {
+        D2D1_SIZE_F bmpSize = g_pXBoxControllerBitmap->GetSize();
+
+        g_pRenderTarget->DrawBitmap(
+            g_pXBoxControllerBitmap.Get(),
+            D2D1::RectF(
+                left,
+                top,
+                left + bmpSize.width,
+                top + bmpSize.height ) );
+
+        if ( state.buttons.a )
+            renderCircle( RED, { left + 503, top + 177 }, 23.0f );
+        if ( state.buttons.b )
+            renderCircle( RED, { left + 549, top + 133 }, 23.0f );
+        if ( state.buttons.x )
+            renderCircle( RED, { left + 457, top + 133 }, 23.0f );
+        if ( state.buttons.y )
+            renderCircle( RED, { left + 505, top + 88 }, 23.0f );
+        if ( state.buttons.view )
+            renderCircle( RED, { left + 287, top + 133 }, 16.0f );
+        if ( state.buttons.menu )
+            renderCircle( RED, { left + 381, top + 133 }, 16.0f );
+        if ( state.dPad.up )
+            renderRectangle( RED, r( left + 233, top + 193, 30, 30 ) );
+        if ( state.dPad.down )
+            renderRectangle( RED, r( left + 233, top + 251, 30, 30 ) );
+        if ( state.dPad.left )
+            renderRectangle( RED, r( left + 205, top + 223, 30, 30 ) );
+        if ( state.dPad.right )
+            renderRectangle( RED, r( left + 261, top + 223, 32, 27 ) );
+
+        if ( state.buttons.leftShoulder )
+            g_pRenderTarget->DrawBitmap( g_pLeftBumperBitmap.Get(),
+                                         D2D1::RectF(
+                                             left,
+                                             top,
+                                             left + bmpSize.width,
+                                             top + bmpSize.height ) );
+
+        if ( state.buttons.rightShoulder )
+            g_pRenderTarget->DrawBitmap( g_pRightBumperBitmap.Get(),
+                                         D2D1::RectF(
+                                             left,
+                                             top,
+                                             left + bmpSize.width,
+                                             top + bmpSize.height ) );
+
+        renderThumbStick( state.thumbSticks.leftX, state.thumbSticks.leftY, state.buttons.leftStick, { left + 168.0f, top + 134.0f } );
+        renderThumbStick( state.thumbSticks.rightX, state.thumbSticks.rightY, state.buttons.rightStick, { left + 420.0f, top + 236.0f } );
+        // Triggers
+        renderOutlineRectangle( RED, r( left, top, 40, state.triggers.left * 130 ) );
+        renderOutlineRectangle( RED, r( left + bmpSize.width - 40, top, 40, state.triggers.right * 130 ) );
+    }
 }
 
 void render()
@@ -382,9 +649,10 @@ void render()
         g_pRenderTarget->BeginDraw();
         g_pRenderTarget->Clear( D2D1::ColorF( D2D1::ColorF::White ) );
 
+        D2D1_SIZE_F rtSize = g_pRenderTarget->GetSize();
+
         if ( g_pKeyboardBitmap )
         {
-            D2D1_SIZE_F rtSize  = g_pRenderTarget->GetSize();
             D2D1_SIZE_F bmpSize = g_pKeyboardBitmap->GetSize();
 
             float left = ( rtSize.width - bmpSize.width ) / 2.0f;
@@ -434,15 +702,71 @@ void render()
             }
         }
 
-        if ( g_pMouseBitmap )
+        // Draw XBox Controller bitmap at bottom right corner
+        if ( g_pXBoxControllerBitmap )
         {
+            auto  bmpSize = g_pXBoxControllerBitmap->GetSize();
+            float margin  = 32.0f;
+            float left    = margin;
+            float top     = margin;
+
+            for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+            {
+                auto gamepadState = Gamepad { i }.getState();
+
+                if ( gamepadState.connected )
+                {
+                    renderGamepad( gamepadState, left, top );
+
+                    left += bmpSize.width + margin;
+                    if ( left + bmpSize.width > rtSize.width - PANEL_WIDTH - margin * 2 )
+                    {
+                        left = margin;
+                        top += bmpSize.height + margin;
+                    }
+                }
+            }
+        }
+
+        if ( g_pMouseBitmap && g_pLMBBitmap && g_pRMBBitmap && g_pMMBBitmap )
+        {
+            auto mouseState = Mouse::get().getState();
+
             DrawRotatedBitmap( g_pRenderTarget.Get(), g_pMouseBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if ( mouseState.leftButton )
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pLMBBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if ( mouseState.rightButton )
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pRMBBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if ( mouseState.middleButton )
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pMMBBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if ( mouseStateTracker.scrollWheelDelta > 0 )
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pScrollUpBitmap.Get(), g_MousePosition, g_fMouseRotation );
+            if ( mouseStateTracker.scrollWheelDelta < 0 )
+                DrawRotatedBitmap( g_pRenderTarget.Get(), g_pScrollDownBitmap.Get(), g_MousePosition, g_fMouseRotation );
         }
 
         // Draw mouse state panel
         if ( g_pLeftTextFormat && g_pTextBrush )
         {
-            DrawMouseStatePanel( g_pRenderTarget.Get(), g_pLeftTextFormat.Get(), g_pTextBrush.Get() );
+            DrawMouseStatePanel( rtSize.width - 32 - PANEL_WIDTH, 32, g_pRenderTarget.Get(), g_pLeftTextFormat.Get(), g_pTextBrush.Get() );
+        }
+
+        // Draw gamepad state panels.
+        {
+            float margin = 32.0f;
+            float left   = rtSize.width - margin - PANEL_WIDTH;
+            float top    = margin * 2 + MOUSE_STATE_PANEL_HEIGHT;
+
+            for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+            {
+                auto gamepadState = Gamepad { i }.getState();
+
+                if ( gamepadState.connected )
+                {
+                    DrawGamepadStatePanel( left, top, gamepadState, i );
+                    top += margin + GAMEPAD_STATE_PANEL_HEIGHT;
+                }
+            }
         }
 
         g_pRenderTarget->EndDraw();
@@ -556,6 +880,102 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
         return -6;
     }
 
+    // Load LMB bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/LMB.png",
+        &g_pLMBBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load LMB bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load RMB bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/RMB.png",
+        &g_pRMBBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load RMB bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load MMB bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/MMB.png",
+        &g_pMMBBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load MMB bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load Scroll Up bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/Scroll_Up.png",
+        &g_pScrollUpBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load Scroll Up bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load Scroll Down bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/Scroll_Down.png",
+        &g_pScrollDownBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load Scroll Down bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load XBox Controller bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/XBox Controller.png",
+        &g_pXBoxControllerBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load XBox Controller bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load Left Bumper bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/Left_Bumper.png",
+        &g_pLeftBumperBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load Left Bumper bitmap." << std::endl;
+        return -6;
+    }
+
+    // Load Right Bumper bitmap
+    hr = LoadBitmapFromFile(
+        g_pRenderTarget.Get(),
+        wicFactory.Get(),
+        L"assets/Right_Bumper.png",
+        &g_pRightBumperBitmap );
+    if ( FAILED( hr ) )
+    {
+        std::cerr << "Failed to load Right Bumper bitmap." << std::endl;
+        return -6;
+    }
+
     // Initialize DirectWrite
     hr = DWriteCreateFactory(
         DWRITE_FACTORY_TYPE_SHARED,
@@ -637,20 +1057,21 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
     }
 
     // Cleanup
-    if ( g_pTextBrush )
-        g_pTextBrush.Reset();
-    if ( g_pCenterTextFormat )
-        g_pCenterTextFormat.Reset();
-    if ( g_pDWriteFactory )
-        g_pDWriteFactory.Reset();
-    if ( g_pKeyboardBitmap )
-        g_pKeyboardBitmap.Reset();
-    if ( g_pMouseBitmap )
-        g_pMouseBitmap.Reset();
-    if ( g_pRenderTarget )
-        g_pRenderTarget.Reset();
-    if ( g_pD2DFactory )
-        g_pD2DFactory.Reset();
+    SafeRelease( g_pTextBrush );
+    SafeRelease( g_pCenterTextFormat );
+    SafeRelease( g_pDWriteFactory );
+    SafeRelease( g_pKeyboardBitmap );
+    SafeRelease( g_pMouseBitmap );
+    SafeRelease( g_pLMBBitmap );
+    SafeRelease( g_pRMBBitmap );
+    SafeRelease( g_pMMBBitmap );
+    SafeRelease( g_pScrollUpBitmap );
+    SafeRelease( g_pScrollDownBitmap );
+    SafeRelease( g_pRenderTarget );
+    SafeRelease( g_pD2DFactory );
+    SafeRelease( g_pXBoxControllerBitmap );
+    SafeRelease( g_pLeftBumperBitmap );
+    SafeRelease( g_pRightBumperBitmap );
 
     CoUninitialize();
 
