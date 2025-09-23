@@ -801,7 +801,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
     HWND hwnd = CreateWindowEx(
         0,
         wc.lpszClassName,
-        "Game Development Toolkit (GDK)",
+        "Windows (Win32)",
         WS_OVERLAPPEDWINDOW,
         x, y, windowWidth, windowHeight,
         nullptr, nullptr, hInstance, nullptr );

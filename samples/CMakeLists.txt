@@ -9,22 +9,22 @@ function( add_sample DIR_NAME )
 	)
 endfunction()
 
-if(GDK_FOUND)
+if(INPUT_USE_GDK AND TARGET Microsoft::GDK)
     add_sample(GDK)
 endif()
 
-if(GLFW_FOUND)
+if(INPUT_USE_GLFW AND TARGET glfw)
     add_sample(GLFW)
 endif()
 
-if(SDL2_FOUND)
+if(INPUT_USE_SDL2 AND TARGET SDL2::SDL2)
     add_sample(SDL2)
 endif()
 
-if(SDL3_FOUND)
+if(INPUT_USE_SDL3 AND TARGET SDL3::SDL3)
     add_sample(SDL3)
 endif()
 
-if(WIN32)
+if(INPUT_USE_WIN32 AND WIN32)
     add_sample(Win32)
 endif()
