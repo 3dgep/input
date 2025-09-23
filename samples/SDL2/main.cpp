@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <SDL_ttf.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -37,9 +38,19 @@ SDL_Texture* LoadTexture(SDL_Renderer* renderer, const std::string& path)
     return texture;
 }
 
+void update()
+{
+    
+}
+
+void render()
+{
+    
+}
+
 int main( int argc, char* argv[] )
 {
-    if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER ) != 0 )
+    if ( SDL_Init( SDL_INIT_VIDEO ) != 0 )
     {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
         return -1;
