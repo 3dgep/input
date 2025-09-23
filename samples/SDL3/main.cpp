@@ -1,3 +1,5 @@
+#include <input/Input.hpp>
+
 #include <SDL3/SDL.h>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -5,6 +7,8 @@
 
 #include <iostream>
 #include <string>
+
+using namespace input;
 
 // Window dimensions
 constexpr int WINDOW_WIDTH  = 1920;
@@ -48,11 +52,14 @@ int main( int argc, char* argv[] )
         return -1;
     }
 
-    if ( !SDL_CreateWindowAndRenderer( "Simple DirectMedia Layer (SDL3)", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &g_pWindow, &g_pRenderer) )
+    if ( !SDL_CreateWindowAndRenderer( "Simple DirectMedia Layer (SDL3)", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &g_pWindow, &g_pRenderer ) )
     {
         SDL_LogError( SDL_LOG_CATEGORY_APPLICATION, "Failed to create window and renderer: %s", SDL_GetError() );
         throw std::runtime_error( SDL_GetError() );
     }
+
+    // Associate the window with the mouse
+    Mouse::get().setWindow( g_pWindow );
 
     // Load assets (example: keyboard, mouse, gamepad images)
     SDL_Texture* keyboardTexture = LoadTexture( g_pRenderer, "assets/ANSI_Keyboard_Layout.png" );
@@ -86,9 +93,11 @@ int main( int argc, char* argv[] )
         // Draw mouse image at center
         if ( mouseTexture )
         {
-            float texW = 0, texH = 0;
+            Mouse::State mouseState = Mouse::get().getState();
+            float        texW = 0, texH = 0;
             SDL_GetTextureSize( mouseTexture, &texW, &texH );
-            SDL_FRect dst = { ( WINDOW_WIDTH - texW ) / 2, ( WINDOW_HEIGHT - texH ) / 2, texW, texH };
+            // Center the texture at the mouse position
+            SDL_FRect dst = { mouseState.x - texW / 2.0f, mouseState.y - texH / 2.0f, texW, texH };
             SDL_RenderTexture( g_pRenderer, mouseTexture, nullptr, &dst );
         }
 
