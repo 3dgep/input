@@ -13,7 +13,7 @@ if(INPUT_USE_GDK AND TARGET Microsoft::GDK)
     add_sample(GDK)
 endif()
 
-if(INPUT_USE_GLFW AND TARGET glfw)
+if(INPUT_USE_GLFW AND TARGET glfw::glfw)
     add_sample(GLFW)
 endif()
 
