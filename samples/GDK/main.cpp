@@ -21,6 +21,11 @@
 using namespace input;
 using Microsoft::WRL::ComPtr;
 
+constexpr float KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
+constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamepad state panel.
+constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // The height of the moue state panel.
+constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state panels.
+
 // Forward declare callback functions.
 void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
@@ -46,11 +51,6 @@ ComPtr<ID2D1SolidColorBrush>  g_pTextBrush;
 MouseStateTracker mouseStateTracker;
 D2D1_POINT_2F     g_MousePosition { 0, 0 };
 float             g_fMouseRotation = 0.0f;
-
-constexpr float KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
-constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamepad state panel.
-constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // The height of the moue state panel.
-constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state panels.
 
 template<typename T>
 void SafeRelease( ComPtr<T>& ptr )
@@ -279,7 +279,7 @@ void DrawMouseStatePanel( float x, float y, ID2D1RenderTarget* renderTarget, IDW
 
     // Draw panel background
     ComPtr<ID2D1SolidColorBrush> panelBrush;
-    renderTarget->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::LightGray, 0.85f ), panelBrush.GetAddressOf() );
+    renderTarget->CreateSolidColorBrush( D2D1::ColorF( 0.94f, 0.94f, 0.94f, 0.85f ), panelBrush.GetAddressOf() );
 
     // Draw panel background with rounded corners
     D2D1_ROUNDED_RECT roundedPanelRect = {
@@ -290,22 +290,9 @@ void DrawMouseStatePanel( float x, float y, ID2D1RenderTarget* renderTarget, IDW
     renderTarget->FillRoundedRectangle( &roundedPanelRect, panelBrush.Get() );
 
     // Draw accent rectangle (darker, smaller, inset)
-    const float accentInset = 8.0f;
-    D2D1_RECT_F accentRect  = D2D1::RectF(
-        panelRect.left + accentInset,
-        panelRect.top + accentInset,
-        panelRect.right - accentInset,
-        panelRect.bottom - accentInset );
     ComPtr<ID2D1SolidColorBrush> accentBrush;
-    renderTarget->CreateSolidColorBrush( D2D1::ColorF( D2D1::ColorF::Gray, 0.85f ), accentBrush.GetAddressOf() );
-
-    // Draw accent rectangle with rounded corners
-    D2D1_ROUNDED_RECT roundedAccentRect = {
-        accentRect,
-        12.0f,  // radiusX
-        12.0f   // radiusY
-    };
-    renderTarget->FillRoundedRectangle( &roundedAccentRect, accentBrush.Get() );
+    renderTarget->CreateSolidColorBrush( D2D1::ColorF( 0.25f, 0.25f, 0.25f, 0.85f ), accentBrush.GetAddressOf() );
+    renderTarget->DrawRoundedRectangle( &roundedPanelRect, accentBrush.Get(), 8.0f );
 
     // Prepare mouse state text
     Mouse::State   mouseState = Mouse::get().getState();

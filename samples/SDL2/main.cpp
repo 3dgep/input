@@ -4,19 +4,34 @@
 #include <SDL_ttf.h>
 
 #define STB_IMAGE_IMPLEMENTATION
+#include "input/Gamepad.hpp"
 #include "stb_image.h"
 
 #include <format>
 #include <iostream>
+#include <numbers>
 #include <string>
 #include <unordered_map>
 
 using namespace input;
 
 // Window dimensions
-constexpr int WINDOW_WIDTH  = 1920;
-constexpr int WINDOW_HEIGHT = 1080;
-constexpr int KEY_SIZE      = 50.0f;  // The size of a key in the keyboard image (in pixels).
+constexpr int   WINDOW_WIDTH               = 1920;
+constexpr int   WINDOW_HEIGHT              = 1080;
+constexpr int   KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
+constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state panels.
+constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamepad state panel.
+constexpr float PI                         = std::numbers::pi_v<float>;
+
+enum class FillMode
+{
+    Solid,
+    Outline
+};
+
+const SDL_Color RED   = SDL_Color { 255, 0, 0, 127 };
+const SDL_Color BLACK = SDL_Color { 0, 0, 0, 255 };
+const SDL_Color WHITE = SDL_Color { 255, 255, 255, 255 };
 
 SDL_Renderer* g_pRenderer = nullptr;
 SDL_Window*   g_pWindow   = nullptr;
@@ -40,6 +55,11 @@ float             g_fMouseRotation = 0.0f;
 
 // Construct a RECT from x, y, width, height.
 constexpr SDL_Rect r( int x, int y, int width = KEY_SIZE, int height = KEY_SIZE )
+{
+    return { x, y, width, height };
+}
+
+constexpr SDL_FRect r( float x, float y, float width = static_cast<float>( KEY_SIZE ), float height = static_cast<float>( KEY_SIZE ) )
 {
     return { x, y, width, height };
 }
@@ -319,15 +339,165 @@ void renderMouse()
     }
 }
 
-void renderGamepads()
+// Helper function to draw a thick line using SDL_Renderer
+void drawThickLineF( SDL_Color color, float x1, float y1, float x2, float y2, int thickness )
+{
+    // Calculate direction vector
+    float dx     = x2 - x1;
+    float dy     = y2 - y1;
+    float length = std::sqrt( dx * dx + dy * dy );
+    if ( length == 0.0f ) return;
+
+    // Normalize perpendicular vector
+    float px = -dy / length;
+    float py = dx / length;
+
+    // Half thickness
+    float half = thickness / 2.0f;
+
+    // Four corners of the thick line quad
+    SDL_FPoint points[4] = {
+        { x1 + px * half, y1 + py * half },
+        { x1 - px * half, y1 - py * half },
+        { x2 - px * half, y2 - py * half },
+        { x2 + px * half, y2 + py * half }
+    };
+
+    // Convert to SDL_Vertex for filled polygon
+    SDL_Vertex verts[4];
+    for ( int i = 0; i < 4; ++i )
+    {
+        verts[i].position  = points[i];
+        verts[i].color     = color;
+        verts[i].tex_coord = SDL_FPoint { 0, 0 };
+    }
+    int indices[6] = { 0, 1, 2, 0, 2, 3 };
+    SDL_RenderGeometry( g_pRenderer, nullptr, verts, 4, indices, 6 );
+}
+// Helper function to draw a circle using SDL_Renderer
+void drawCircle( SDL_Color color, SDL_FPoint center, float radius )
+{
+    SDL_SetRenderDrawColor( g_pRenderer, color.r, color.g, color.b, color.a );
+
+    // Midpoint ellipse algorithm (simple version)
+    for ( float y = -radius; y <= radius; ++y )
+    {
+        float dx = radius * std::sqrt( 1.0f - ( y * y ) / ( radius * radius ) );
+        SDL_RenderDrawLineF( g_pRenderer, center.x - dx, center.y + y, center.x + dx, center.y + y );
+    }
+}
+
+void drawOutlineCircle( SDL_Color color, SDL_FPoint center, float radius )
+{
+    drawCircle( BLACK, center, radius );
+    drawCircle( color, center, radius - 4.0f );
+}
+
+SDL_FPoint operator+( const SDL_FPoint& lhs, const SDL_FPoint& rhs )
+{
+    return { lhs.x + rhs.x, lhs.y + rhs.y };
+}
+
+void renderThumbstick( float x, float y, bool pressed, SDL_FPoint center )
+{
+    constexpr float thumbstickRadius = 55.0f;
+    auto            offset           = SDL_FPoint { x * thumbstickRadius, y * thumbstickRadius };
+    if ( pressed )
+        drawCircle( RED, center, thumbstickRadius );
+
+    drawOutlineCircle( WHITE, center + offset, 30.0f );
+}
+
+void drawRectangle( SDL_Color color, SDL_FRect rect )
+{
+    SDL_SetRenderDrawColor( g_pRenderer, color.r, color.g, color.b, color.a );
+    SDL_RenderFillRectF( g_pRenderer, &rect );
+}
+
+void drawOutlineRectangle( SDL_Color color, SDL_FRect rect)
+{
+    if ( rect.w > 0.0f && rect.h > 0.0f )
+        drawRectangle( color, rect );
+    drawThickLineF( BLACK, rect.x, rect.y, rect.x + rect.w, rect.y, 4 );
+    drawThickLineF( BLACK, rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h, 4 );
+    drawThickLineF( BLACK, rect.x + rect.w, rect.y + rect.h, rect.x, rect.y + rect.h, 4 );
+    drawThickLineF( BLACK, rect.x, rect.y + rect.h, rect.x, rect.y, 4 );
+}
+
+void renderGamepad( const Gamepad::State& state, float x, float y )
 {
     // Draw gamepad image at top left
-    if ( g_pXBoxControllerTexture )
+    if ( g_pXBoxControllerTexture && g_pLeftBumperTexture && g_pRightBumperTexture && state.connected )
     {
         int texW = 0, texH = 0;
         SDL_QueryTexture( g_pXBoxControllerTexture, nullptr, nullptr, &texW, &texH );
-        SDL_Rect dst = { 32, 32, texW, texH };
-        SDL_RenderCopy( g_pRenderer, g_pXBoxControllerTexture, nullptr, &dst );
+        SDL_FRect dst = { x, y, static_cast<float>( texW ), static_cast<float>( texH ) };
+        SDL_RenderCopyF( g_pRenderer, g_pXBoxControllerTexture, nullptr, &dst );
+
+        if ( state.buttons.leftShoulder )
+            SDL_RenderCopyF( g_pRenderer, g_pLeftBumperTexture, nullptr, &dst );
+
+        if ( state.buttons.rightShoulder)
+            SDL_RenderCopyF( g_pRenderer, g_pRightBumperTexture, nullptr, &dst );
+
+        if ( state.buttons.a )
+            drawCircle( RED, { x + 503, y + 177 }, 23.0f );
+        if ( state.buttons.b )
+            drawCircle( RED, { x + 549, y + 133 }, 23.0f );
+        if ( state.buttons.x )
+            drawCircle( RED, { x + 457, y + 133 }, 23.0f );
+        if ( state.buttons.y )
+            drawCircle( RED, { x + 505, y + 88 }, 23.0f );
+        if ( state.buttons.view )
+            drawCircle( RED, { x + 287, y + 133 }, 16.0f );
+        if ( state.buttons.menu )
+            drawCircle( RED, { x + 381, y + 133 }, 16.0f );
+        if ( state.dPad.up )
+            drawRectangle( RED, r( x + 233.0f, y + 193.0f, 30.0f, 30.0f ) );
+        if ( state.dPad.down )
+            drawRectangle( RED, r( x + 233.0f, y + 251.0f, 30.0f, 30.0f ) );
+        if ( state.dPad.left )
+            drawRectangle( RED, r( x + 203.0f, y + 223.0f, 30.0f, 30.0f ) );
+        if ( state.dPad.right )
+            drawRectangle( RED, r( x + 261.0f, y + 223.0f, 32.0f, 27.0f ) );
+
+        renderThumbstick( state.thumbSticks.leftX, state.thumbSticks.leftY, state.buttons.leftStick, { x + 168.0f, y + 134.0f } );
+        renderThumbstick( state.thumbSticks.rightX, state.thumbSticks.rightY, state.buttons.rightStick, { x + 420.0f, y + 236.0f } );
+
+        // Triggers
+        drawOutlineRectangle( RED, r( x, y, 40.0f, state.triggers.left * 130.0f ) );
+        drawOutlineRectangle( RED, r( x + texW - 40.0f, y, 40.0f, state.triggers.right * 130.0f ) );
+    }
+}
+
+void renderGamepads()
+{
+    if ( g_pXBoxControllerTexture )
+    {
+        int rtW = 0, rtH = 0;
+        SDL_GetRendererOutputSize( g_pRenderer, &rtW, &rtH );
+
+        int texW = 0, texH = 0;
+        SDL_QueryTexture( g_pXBoxControllerTexture, nullptr, nullptr, &texW, &texH );
+        float margin = 32.0f;
+        float x      = margin;
+        float y      = margin;
+
+        for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+        {
+            auto state = Gamepad { i }.getState();
+            if ( state.connected )
+            {
+                renderGamepad( state, x, y );
+
+                x += texW + margin;
+                if ( x + texW > rtW - PANEL_WIDTH - margin * 2 )
+                {
+                    x = margin;
+                    y += texH + margin;
+                }
+            }
+        }
     }
 }
 
@@ -350,16 +520,17 @@ void renderMousePanel()
 
     // Draw panel background
     SDL_Rect panelRect = { panelX, panelY, panelWidth, panelHeight };
-    SDL_SetRenderDrawColor( g_pRenderer, 240, 240, 240, 220 );
+    SDL_SetRenderDrawColor( g_pRenderer, 240, 240, 240, 216 );
     SDL_SetRenderDrawBlendMode( g_pRenderer, SDL_BLENDMODE_BLEND );
     SDL_RenderFillRect( g_pRenderer, &panelRect );
 
     // Draw panel border
-    SDL_SetRenderDrawColor( g_pRenderer, 64, 64, 64, 255 );
+    SDL_SetRenderDrawColor( g_pRenderer, 64, 64, 64, 216 );
     const int borderThickness = 8;
-    for (int i = 0; i < borderThickness; ++i) {
+    for ( int i = 0; i < borderThickness; ++i )
+    {
         SDL_Rect borderRect = { panelRect.x - i, panelRect.y - i, panelRect.w + 2 * i, panelRect.h + 2 * i };
-        SDL_RenderDrawRect(g_pRenderer, &borderRect);
+        SDL_RenderDrawRect( g_pRenderer, &borderRect );
     }
 
     // Prepare mouse state text
@@ -387,8 +558,7 @@ void renderMousePanel()
         rightBtn,
         x1Btn,
         x2Btn,
-        state.scrollWheelValue 
-    );
+        state.scrollWheelValue );
 
     SDL_Color    textColor = { 32, 32, 32, 255 };
     SDL_Surface* surf      = TTF_RenderUTF8_Blended_Wrapped( g_pFontMono, text.c_str(), textColor, panelWidth - 32 );
