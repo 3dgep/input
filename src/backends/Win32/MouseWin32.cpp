@@ -266,8 +266,8 @@ private:
 
     int m_LastX { 0 };
     int m_LastY { 0 };
-    int m_RelativeX { INT32_MAX };
-    int m_RelativeY { INT32_MAX };
+    int m_RelativeX { INT_MAX };
+    int m_RelativeY { INT_MAX };
 
     bool m_InFocus { true };
     bool m_AutoReset { true };

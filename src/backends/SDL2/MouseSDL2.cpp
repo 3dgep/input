@@ -1,3 +1,5 @@
+#include "input/Mouse.hpp"
+
 #include <input/Mouse.hpp>
 
 #include <SDL.h>
@@ -20,7 +22,7 @@ public:
     {
         std::lock_guard lock( m_Mutex );
 
-        Mouse::State state {};
+        Mouse::State state;
         state.positionMode = m_Mode;
 
         int    x = 0, y = 0;
@@ -34,13 +36,13 @@ public:
 
         if ( m_Mode == Mouse::Mode::Absolute )
         {
-            state.x = x;
-            state.y = y;
+            state.x = static_cast<float>( x );
+            state.y = static_cast<float>( y );
         }
         else  // Relative mode
         {
-            state.x = m_RelativeX;
-            state.y = m_RelativeY;
+            state.x = static_cast<float>( m_RelativeX );
+            state.y = static_cast<float>( m_RelativeY );
         }
 
         state.scrollWheelValue = m_ScrollWheelValue;
@@ -56,16 +58,25 @@ public:
 
     void setMode( Mouse::Mode mode )
     {
-        std::lock_guard lock( m_Mutex );
-        if ( m_Mode == mode )
-            return;
+        {
+            std::lock_guard lock( m_Mutex );
+            if ( m_Mode == mode )
+                return;
 
-        m_Mode = mode;
+            m_Mode = mode;
+            if ( mode == Mouse::Mode::Relative )
+            {
+                m_RelativeX = 0;
+                m_RelativeY = 0;
+            }
+        }
+
+        // The mutex must be unlocked before calling
+        // these functions since they will call the SDLEventWatch method
+        // which also tries to lock the mutex.
         if ( mode == Mouse::Mode::Relative )
         {
             SDL_SetRelativeMouseMode( SDL_TRUE );
-            m_RelativeX = 0;
-            m_RelativeY = 0;
         }
         else
         {
@@ -129,10 +140,6 @@ private:
     }
 
     MouseSDL2()
-    : m_Mode( Mouse::Mode::Absolute )
-    , m_ScrollWheelValue( 0 )
-    , m_RelativeX( 0 )
-    , m_RelativeY( 0 )
     {
         SDL_SetRelativeMouseMode( SDL_FALSE );
         SDL_AddEventWatch( &SDLEventWatch, this );
@@ -144,10 +151,10 @@ private:
     }
 
     mutable std::mutex m_Mutex;
-    Mouse::Mode        m_Mode;
-    int                m_ScrollWheelValue;
-    int                m_RelativeX;
-    int                m_RelativeY;
+    Mouse::Mode        m_Mode = Mouse::Mode::Absolute;
+    int                m_ScrollWheelValue = 0;
+    int                m_RelativeX = 0;
+    int                m_RelativeY = 0;
 };
 
 // Bridge to Mouse interface

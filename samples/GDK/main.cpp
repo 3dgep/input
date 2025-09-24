@@ -52,17 +52,17 @@ constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamep
 constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // The height of the moue state panel.
 constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state panels.
 
-// Construct a RECT from x, y, width, height.
-constexpr D2D1_RECT_F r( float x, float y, float width = KEY_SIZE, float height = KEY_SIZE )
-{
-    return { x, y, x + width, y + height };
-}
-
 template<typename T>
 void SafeRelease( ComPtr<T>& ptr )
 {
     if ( ptr )
         ptr.Reset();
+}
+
+// Construct a RECT from x, y, width, height.
+constexpr D2D1_RECT_F r( float x, float y, float width = KEY_SIZE, float height = KEY_SIZE )
+{
+    return { x, y, x + width, y + height };
 }
 
 using K = Keyboard::Keys;
@@ -314,16 +314,16 @@ void DrawMouseStatePanel( float x, float y, ID2D1RenderTarget* renderTarget, IDW
     wchar_t mouseText[256];
     swprintf( mouseText, 256,
               L"Mouse State\n"
-              L"Position:\t(%.0f, %.0f)\n"
               L"Mode:\t%s\n"
+              L"Position:\t(%.0f, %.0f)\n"
               L"Left:\t%s\n"
               L"Middle:\t%s\n"
               L"Right:\t%s\n"
               L"X1:\t%s\n"
               L"X2:\t%s\n"
               L"Scroll:\t%d",
-              mouseState.x, mouseState.y,
               modeStr,
+              mouseState.x, mouseState.y,
               mouseState.leftButton ? L"Down" : L"Up",
               mouseState.middleButton ? L"Down" : L"Up",
               mouseState.rightButton ? L"Down" : L"Up",
