@@ -4,7 +4,6 @@
 #include <SDL_ttf.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "input/Gamepad.hpp"
 #include "stb_image.h"
 
 #include <format>

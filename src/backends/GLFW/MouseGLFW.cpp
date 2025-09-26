@@ -9,9 +9,9 @@ using namespace input;
 
 // Register these callbacks in your application after creating the window:
 // Forward-declare mouse callbacks.
-// void Mouse_ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-// void Mouse_CursorPosCallback(GLFWwindow* window, double x, double y);
-// void Mouse_ButtonCallback(GLFWwindow* /*window*/, int button, int action, int /*mods*/)
+// void Mouse_ScrollCallback(GLFWwindow*, double, double);
+// void Mouse_CursorPosCallback(GLFWwindow*, double, double);
+// void Mouse_ButtonCallback(GLFWwindow*, int, int, int)
 //
 // glfwSetScrollCallback(window, Mouse_ScrollCallback);
 // glfwSetCursorPosCallback(window, Mouse_CursorPosCallback);
