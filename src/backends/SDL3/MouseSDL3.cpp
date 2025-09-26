@@ -57,19 +57,26 @@ public:
 
     void setMode( Mouse::Mode mode )
     {
-        std::lock_guard lock( m_Mutex );
-        if ( m_Mode == mode )
-            return;
+        {
+            std::lock_guard lock( m_Mutex );
+            if ( m_Mode == mode )
+                return;
 
-        m_Mode = mode;
+            m_Mode = mode;
+            if ( mode == Mouse::Mode::Relative )
+            {
+                m_RelativeX = 0;
+                m_RelativeY = 0;
+            }
+        }
+
+        // The mutex must be unlocked before calling
+        // these functions since they will call the SDLEventWatch method
+        // which also tries to lock the mutex.
         if ( mode == Mouse::Mode::Relative )
         {
             assert( m_Window != nullptr );
-
             SDL_SetWindowRelativeMouseMode( m_Window, true );
-
-            m_RelativeX = 0;
-            m_RelativeY = 0;
         }
         else
         {
@@ -121,14 +128,18 @@ private:
         auto*           self = static_cast<MouseSDL3*>( userdata );
         std::lock_guard lock( self->m_Mutex );
 
-        if ( event->type == SDL_EVENT_MOUSE_WHEEL )
+        switch ( event->type )
         {
+        case SDL_EVENT_MOUSE_WHEEL:
             self->m_ScrollWheelValue += event->wheel.y * 120;  // 120 is Win32/DirectX standard
-        }
-        else if ( event->type == SDL_EVENT_MOUSE_MOTION && self->m_Mode == Mouse::Mode::Relative )
-        {
-            self->m_RelativeX += event->motion.xrel;
-            self->m_RelativeY += event->motion.yrel;
+            break;
+        case SDL_EVENT_MOUSE_MOTION:
+            if ( self->m_Mode == Mouse::Mode::Relative )
+            {
+                self->m_RelativeX += event->motion.xrel;
+                self->m_RelativeY += event->motion.yrel;
+            }
+            break;
         }
 
         return true;

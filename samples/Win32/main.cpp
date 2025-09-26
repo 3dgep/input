@@ -31,7 +31,7 @@ enum class FillMode
 const D2D1_COLOR_F RED              = D2D1::ColorF( D2D1::ColorF::Red, 0.5f );
 const D2D1_COLOR_F BLACK            = D2D1::ColorF( D2D1::ColorF::Black );
 const D2D1_COLOR_F WHITE            = D2D1::ColorF( D2D1::ColorF::White );
-const D2D1_COLOR_F PANEL_BACKGROUND = D2D1::ColorF( 0.94f, 0.94f, 0.95f, 0.85f );
+const D2D1_COLOR_F PANEL_BACKGROUND = D2D1::ColorF( 0.94f, 0.94f, 0.94f, 0.85f );
 const D2D1_COLOR_F PANEL_ACCENT     = D2D1::ColorF( 0.25f, 0.25f, 0.25f, 0.85f );
 
 constexpr float KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
