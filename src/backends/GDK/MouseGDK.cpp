@@ -215,7 +215,7 @@ public:
             throw std::system_error( std::error_code( static_cast<int>( GetLastError() ), std::system_category() ), "GetCursorInfo" );
         }
 
-        bool isVisible = ( info.flags & CURSOR_SHOWING ) != 0;
+        const bool isVisible = ( info.flags & CURSOR_SHOWING ) != 0;
         if ( isVisible != visible )
         {
             ShowCursor( visible );

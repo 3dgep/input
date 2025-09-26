@@ -19,7 +19,8 @@ using namespace input;
 constexpr int   WINDOW_WIDTH               = 1920;
 constexpr int   WINDOW_HEIGHT              = 1080;
 constexpr int   KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
-constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state panels.
+constexpr float PANEL_WIDTH                = 360.0f;  // The width of the state panels.
+constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // THe height of the mouse state panel.
 constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamepad state panel.
 constexpr float PI                         = std::numbers::pi_v<float>;
 
@@ -29,9 +30,11 @@ enum class FillMode
     Outline
 };
 
-const SDL_Color RED   = SDL_Color { 255, 0, 0, 127 };
-const SDL_Color BLACK = SDL_Color { 0, 0, 0, 255 };
-const SDL_Color WHITE = SDL_Color { 255, 255, 255, 255 };
+const SDL_Color RED              = SDL_Color { 255, 0, 0, 127 };
+const SDL_Color BLACK            = SDL_Color { 0, 0, 0, 255 };
+const SDL_Color WHITE            = SDL_Color { 255, 255, 255, 255 };
+const SDL_Color PANEL_BACKGROUND = SDL_Color { 240, 240, 240, 216 };
+const SDL_Color PANEL_ACCENT     = SDL_Color { 64, 64, 64, 216 };
 
 SDL_Renderer* g_pRenderer = nullptr;
 SDL_Window*   g_pWindow   = nullptr;
@@ -414,7 +417,7 @@ void drawRectangle( SDL_Color color, SDL_FRect rect )
     SDL_RenderFillRectF( g_pRenderer, &rect );
 }
 
-void drawOutlineRectangle( SDL_Color color, SDL_FRect rect)
+void drawOutlineRectangle( SDL_Color color, SDL_FRect rect )
 {
     if ( rect.w > 0.0f && rect.h > 0.0f )
         drawRectangle( color, rect );
@@ -437,7 +440,7 @@ void renderGamepad( const Gamepad::State& state, float x, float y )
         if ( state.buttons.leftShoulder )
             SDL_RenderCopyF( g_pRenderer, g_pLeftBumperTexture, nullptr, &dst );
 
-        if ( state.buttons.rightShoulder)
+        if ( state.buttons.rightShoulder )
             SDL_RenderCopyF( g_pRenderer, g_pRightBumperTexture, nullptr, &dst );
 
         if ( state.buttons.a )
@@ -501,6 +504,22 @@ void renderGamepads()
     }
 }
 
+void renderPanel( SDL_FRect panelRect )
+{
+    SDL_SetRenderDrawColor( g_pRenderer, PANEL_BACKGROUND.r, PANEL_BACKGROUND.g, PANEL_BACKGROUND.b, PANEL_BACKGROUND.a );
+    SDL_SetRenderDrawBlendMode( g_pRenderer, SDL_BLENDMODE_BLEND );
+    SDL_RenderFillRectF( g_pRenderer, &panelRect );
+
+    // Draw panel border
+    SDL_SetRenderDrawColor( g_pRenderer, PANEL_ACCENT.r, PANEL_ACCENT.g, PANEL_ACCENT.b, PANEL_ACCENT.a );
+    constexpr int borderThickness = 8;
+    for ( int i = 0; i < borderThickness; ++i )
+    {
+        SDL_FRect borderRect = { panelRect.x - i, panelRect.y - i, panelRect.w + 2 * i, panelRect.h + 2 * i };
+        SDL_RenderDrawRectF( g_pRenderer, &borderRect );
+    }
+}
+
 // Draws a mouse state panel on the right side of the screen.
 void renderMousePanel()
 {
@@ -513,25 +532,14 @@ void renderMousePanel()
     SDL_GetRendererOutputSize( g_pRenderer, &rtW, &rtH );
 
     // Panel dimensions
-    const int panelWidth  = 320;
-    const int panelHeight = 280;
-    const int panelX      = rtW - panelWidth - 32;
-    const int panelY      = 32;
+    const float panelWidth  = PANEL_WIDTH;
+    const float panelHeight = MOUSE_STATE_PANEL_HEIGHT;
+    const float panelX      = rtW - panelWidth - 32;
+    const float panelY      = 32;
 
     // Draw panel background
-    SDL_Rect panelRect = { panelX, panelY, panelWidth, panelHeight };
-    SDL_SetRenderDrawColor( g_pRenderer, 240, 240, 240, 216 );
-    SDL_SetRenderDrawBlendMode( g_pRenderer, SDL_BLENDMODE_BLEND );
-    SDL_RenderFillRect( g_pRenderer, &panelRect );
-
-    // Draw panel border
-    SDL_SetRenderDrawColor( g_pRenderer, 64, 64, 64, 216 );
-    const int borderThickness = 8;
-    for ( int i = 0; i < borderThickness; ++i )
-    {
-        SDL_Rect borderRect = { panelRect.x - i, panelRect.y - i, panelRect.w + 2 * i, panelRect.h + 2 * i };
-        SDL_RenderDrawRect( g_pRenderer, &borderRect );
-    }
+    SDL_FRect panelRect = { panelX, panelY, panelWidth, panelHeight };
+    renderPanel( panelRect );
 
     // Prepare mouse state text
     std::string mouseMode = ( state.positionMode == Mouse::Mode::Absolute ) ? "Absolute" : "Relative";
@@ -544,7 +552,7 @@ void renderMousePanel()
     std::string text = std::format(
         "Mouse State\n"
         "Mode:     {}\n"
-        "Position: ({:.0f}, {:.0f})\n"
+        "Position: ({:.1f}, {:.1f})\n"
         "Left:     {}\n"
         "Middle:   {}\n"
         "Right:    {}\n"
@@ -560,15 +568,106 @@ void renderMousePanel()
         x2Btn,
         state.scrollWheelValue );
 
-    SDL_Color    textColor = { 32, 32, 32, 255 };
-    SDL_Surface* surf      = TTF_RenderUTF8_Blended_Wrapped( g_pFontMono, text.c_str(), textColor, panelWidth - 32 );
+    SDL_Surface* surf      = TTF_RenderUTF8_Blended_Wrapped( g_pFontMono, text.c_str(), BLACK, panelWidth - 32 );
     if ( surf )
     {
         SDL_Texture* tex     = SDL_CreateTextureFromSurface( g_pRenderer, surf );
-        SDL_Rect     dstRect = { panelX + 16, panelY + 16, surf->w, surf->h };
-        SDL_RenderCopy( g_pRenderer, tex, nullptr, &dstRect );
+        SDL_FRect    dstRect = { panelX + 16, panelY + 16, static_cast<float>( surf->w ), static_cast<float>( surf->h ) };
+        SDL_RenderCopyF( g_pRenderer, tex, nullptr, &dstRect );
         SDL_DestroyTexture( tex );
         SDL_FreeSurface( surf );
+    }
+}
+
+void renderGamepadStatePanel( float x, float y, const Gamepad::State& gamepadState, int playerIndex )
+{
+    if ( !gamepadState.connected )
+        return;
+
+    // Panel dimensions
+    const float panelWidth  = PANEL_WIDTH;
+    const float panelHeight = GAMEPAD_STATE_PANEL_HEIGHT;
+    const float panelX      = x;
+    const float panelY      = y;
+
+    // Draw panel background and border
+    SDL_FRect panelRect = { panelX, panelY, panelWidth, panelHeight };
+    renderPanel( panelRect );
+
+    // Prepare gamepad state text
+    std::string text = std::format(
+        "Gamepad State {}\n"
+        "A:          {}\n"
+        "B:          {}\n"
+        "X:          {}\n"
+        "Y:          {}\n"
+        "View:       {}\n"
+        "Menu:       {}\n"
+        "LS:         {}\n"
+        "RS:         {}\n"
+        "LB:         {}\n"
+        "RB:         {}\n"
+        "DPad Up:    {}\n"
+        "DPad Down:  {}\n"
+        "DPad Left:  {}\n"
+        "DPad Right: {}\n"
+        "LT:         {:.2f}\n"
+        "RT:         {:.2f}\n"
+        "LS:         ({:.2f}, {:.2f})\n"
+        "RS:         ({:.2f}, {:.2f})\n",
+        playerIndex,
+        gamepadState.buttons.a ? "Down" : "Up",
+        gamepadState.buttons.b ? "Down" : "Up",
+        gamepadState.buttons.x ? "Down" : "Up",
+        gamepadState.buttons.y ? "Down" : "Up",
+        gamepadState.buttons.view ? "Down" : "Up",
+        gamepadState.buttons.menu ? "Down" : "Up",
+        gamepadState.buttons.leftStick ? "Down" : "Up",
+        gamepadState.buttons.rightStick ? "Down" : "Up",
+        gamepadState.buttons.leftShoulder ? "Down" : "Up",
+        gamepadState.buttons.rightShoulder ? "Down" : "Up",
+        gamepadState.dPad.up ? "Down" : "Up",
+        gamepadState.dPad.down ? "Down" : "Up",
+        gamepadState.dPad.left ? "Down" : "Up",
+        gamepadState.dPad.right ? "Down" : "Up",
+        gamepadState.triggers.left,
+        gamepadState.triggers.right,
+        gamepadState.thumbSticks.leftX,
+        gamepadState.thumbSticks.leftY,
+        gamepadState.thumbSticks.rightX,
+        gamepadState.thumbSticks.rightY );
+
+    if ( g_pFontMono && g_pRenderer )
+    {
+        SDL_Surface* surf      = TTF_RenderUTF8_Blended_Wrapped( g_pFontMono, text.c_str(), BLACK, panelWidth - 32 );
+        if ( surf )
+        {
+            SDL_Texture* tex     = SDL_CreateTextureFromSurface( g_pRenderer, surf );
+            SDL_FRect    dstRect = { panelX + 16, panelY + 16, static_cast<float>( surf->w ), static_cast<float>( surf->h ) };
+            SDL_RenderCopyF( g_pRenderer, tex, nullptr, &dstRect );
+            SDL_DestroyTexture( tex );
+            SDL_FreeSurface( surf );
+        }
+    }
+}
+
+void renderGamepadStatePanels()
+{
+    float margin = 32.0f;
+    int   rtW = 0, rtH = 0;
+    SDL_GetRendererOutputSize( g_pRenderer, &rtW, &rtH );
+    float left = rtW - margin - PANEL_WIDTH;
+    float top    = margin * 2 + MOUSE_STATE_PANEL_HEIGHT; // Start below the mouse state panel.
+
+    for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+    {
+        auto gamepadState = Gamepad { i }.getState();
+
+        if ( gamepadState.connected )
+        {
+            renderGamepadStatePanel( left, top, gamepadState, i );
+            top += margin + GAMEPAD_STATE_PANEL_HEIGHT;
+        }
     }
 }
 
@@ -581,6 +680,7 @@ void render()
     renderGamepads();
     renderMouse();
     renderMousePanel();
+    renderGamepadStatePanels();
 
     SDL_RenderPresent( g_pRenderer );
 }

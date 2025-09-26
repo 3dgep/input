@@ -36,7 +36,7 @@ const D2D1_COLOR_F PANEL_ACCENT     = D2D1::ColorF( 0.25f, 0.25f, 0.25f, 0.85f )
 
 constexpr float KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
 constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamepad state panel.
-constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // The height of the moue state panel.
+constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // The height of the mouse state panel.
 constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state panels.
 
 // Forward declare callback functions.
