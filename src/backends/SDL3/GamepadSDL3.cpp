@@ -122,9 +122,25 @@ public:
 private:
     static bool SDLEventWatch( void* userdata, SDL_Event* event )
     {
-        auto*           self = static_cast<GamepadSDL3*>( userdata );
+        auto* self = static_cast<GamepadSDL3*>( userdata );
 
-        if ( event->type == SDL_EVENT_GAMEPAD_ADDED )
+        switch ( event->type )
+        {
+        case SDL_EVENT_QUIT:
+        {
+            // Close all gamepads when quiting.
+            for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+            {
+                if ( self->m_Gamepads[i] )
+                {
+                    SDL_CloseGamepad( self->m_Gamepads[i] );
+                    self->m_Gamepads[i] = nullptr;
+                    break;
+                }
+            }
+        }
+        break;
+        case SDL_EVENT_GAMEPAD_ADDED:
         {
             SDL_JoystickID joyId = event->gdevice.which;
             if ( !SDL_IsGamepad( joyId ) )
@@ -145,20 +161,24 @@ private:
                 }
             }
         }
-        else if ( event->type == SDL_EVENT_GAMEPAD_REMOVED )
+        break;
+        case SDL_EVENT_GAMEPAD_REMOVED:
         {
-            SDL_JoystickID joyId = event->gdevice.which;
+            SDL_JoystickID  joyId = event->gdevice.which;
             std::lock_guard lock( self->m_Mutex );
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {
                 if ( self->m_Gamepads[i] && SDL_GetGamepadID( self->m_Gamepads[i] ) == joyId )
                 {
-                    // SDL_CloseGamepad( self->m_Gamepads[i] );
+                    SDL_CloseGamepad( self->m_Gamepads[i] );
                     self->m_Gamepads[i] = nullptr;
                     break;
                 }
             }
         }
+        break;
+        }
+
         return true;
     }
 
