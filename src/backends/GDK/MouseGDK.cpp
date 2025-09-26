@@ -113,12 +113,6 @@ public:
                             m_ScrollWheelCurrent += scrollDelta;
                         }
 
-                        if ( m_AutoReset )
-                        {
-                            m_RelativeX = mouseState.positionX;
-                            m_RelativeY = mouseState.positionY;
-                        }
-
                         m_LastX          = mouseState.positionX;
                         m_LastY          = mouseState.positionY;
                         m_RelativeWheelY = mouseState.wheelY;
@@ -178,8 +172,6 @@ public:
 
     void resetRelativeMotion()
     {
-        m_AutoReset = false;
-
         if ( m_Mode == Mouse::Mode::Relative )
         {
             m_RelativeX = m_LastX;
@@ -332,7 +324,6 @@ private:
     GameInputCallbackToken m_CallbackToken {};
     HWND                   m_Window { nullptr };
     Mouse::Mode            m_Mode      = Mouse::Mode::Absolute;
-    bool                   m_AutoReset = false;
 
     ScopedHandle m_ScrollWheelValue;
 

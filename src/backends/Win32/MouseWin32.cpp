@@ -99,11 +99,6 @@ public:
             {
                 state.x = state.y = 0;
             }
-
-            if ( m_AutoReset )
-            {
-                m_State.x = m_State.y = 0;
-            }
         }
 
         return state;
@@ -137,8 +132,6 @@ public:
 
     void resetRelativeMotion()
     {
-        m_AutoReset = false;
-
         if ( m_Mode == Mouse::Mode::Relative )
         {
             m_State.x = m_State.y = 0;
@@ -266,7 +259,6 @@ private:
     int m_RelativeY { INT_MAX };
 
     bool m_InFocus { true };
-    bool m_AutoReset { true };
 };
 
 void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
