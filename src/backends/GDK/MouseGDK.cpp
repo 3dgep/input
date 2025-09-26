@@ -332,7 +332,7 @@ private:
     GameInputCallbackToken m_CallbackToken {};
     HWND                   m_Window { nullptr };
     Mouse::Mode            m_Mode      = Mouse::Mode::Absolute;
-    bool                   m_AutoReset = true;
+    bool                   m_AutoReset = false;
 
     ScopedHandle m_ScrollWheelValue;
 

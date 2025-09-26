@@ -99,10 +99,6 @@ public:
             {
                 state.x = state.y = 0;
             }
-            else
-            {
-                SetEvent( m_RelativeRead.get() );
-            }
 
             if ( m_AutoReset )
             {
