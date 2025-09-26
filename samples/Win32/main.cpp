@@ -1023,7 +1023,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
         update();
         render();
 
-        Mouse::get().endOfInputFrame();
+        Mouse::get().resetRelativeMotion();
     }
 
     // Cleanup

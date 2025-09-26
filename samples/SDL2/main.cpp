@@ -751,7 +751,7 @@ int main( int argc, char* argv[] )
         render();
 
         // Call this at the end of the frame to reset the relative mouse position.
-        Mouse::get().endOfInputFrame();
+        Mouse::get().resetRelativeMotion();
     }
 
     // Cleanup

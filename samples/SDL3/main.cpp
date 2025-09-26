@@ -338,7 +338,7 @@ void renderMouse()
 }
 
 // Helper function to draw a thick line using SDL_Renderer
-void drawThickLineF( SDL_FColor color, float x1, float y1, float x2, float y2, int thickness )
+void drawThickLine( SDL_FColor color, float x1, float y1, float x2, float y2, int thickness )
 {
     // Calculate direction vector
     float dx     = x2 - x1;
@@ -375,7 +375,7 @@ void drawThickLineF( SDL_FColor color, float x1, float y1, float x2, float y2, i
 // Helper function to draw a circle using SDL_Renderer
 void drawCircle( SDL_FColor color, SDL_FPoint center, float radius )
 {
-    SDL_SetRenderDrawColor( g_pRenderer, color.r, color.g, color.b, color.a );
+    SDL_SetRenderDrawColorFloat( g_pRenderer, color.r, color.g, color.b, color.a );
 
     // Midpoint ellipse algorithm (simple version)
     for ( float y = -radius; y <= radius; ++y )
@@ -416,10 +416,10 @@ void drawOutlineRectangle( SDL_FColor color, SDL_FRect rect )
 {
     if ( rect.w > 0.0f && rect.h > 0.0f )
         drawRectangle( color, rect );
-    drawThickLineF( BLACK, rect.x, rect.y, rect.x + rect.w, rect.y, 4 );
-    drawThickLineF( BLACK, rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h, 4 );
-    drawThickLineF( BLACK, rect.x + rect.w, rect.y + rect.h, rect.x, rect.y + rect.h, 4 );
-    drawThickLineF( BLACK, rect.x, rect.y + rect.h, rect.x, rect.y, 4 );
+    drawThickLine( BLACK, rect.x, rect.y, rect.x + rect.w, rect.y, 4 );
+    drawThickLine( BLACK, rect.x + rect.w, rect.y, rect.x + rect.w, rect.y + rect.h, 4 );
+    drawThickLine( BLACK, rect.x + rect.w, rect.y + rect.h, rect.x, rect.y + rect.h, 4 );
+    drawThickLine( BLACK, rect.x, rect.y + rect.h, rect.x, rect.y, 4 );
 }
 
 void renderGamepad( const Gamepad::State& state, float x, float y )
@@ -739,7 +739,7 @@ int main( int argc, char* argv[] )
         render();
 
         // Call this at the end of the frame to reset the relative mouse position.
-        Mouse::get().endOfInputFrame();
+        Mouse::get().resetRelativeMotion();
     }
 
     // Cleanup

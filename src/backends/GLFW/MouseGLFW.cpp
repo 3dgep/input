@@ -62,7 +62,7 @@ public:
         }
     }
 
-    void endOfInputFrame() noexcept
+    void resetRelativeMotion() noexcept
     {
         std::lock_guard lock( m_Mutex );
         if ( m_Mode == Mouse::Mode::Relative )
@@ -191,9 +191,9 @@ void Mouse::setMode( Mode mode )
     MouseGLFW::get().setMode( mode );
 }
 
-void Mouse::endOfInputFrame() noexcept
+void Mouse::resetRelativeMotion() noexcept
 {
-    MouseGLFW::get().endOfInputFrame();
+    MouseGLFW::get().resetRelativeMotion();
 }
 
 bool Mouse::isConnected() const

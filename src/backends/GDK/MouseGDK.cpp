@@ -176,7 +176,7 @@ public:
         }
     }
 
-    void endOfInputFrame()
+    void resetRelativeMotion()
     {
         m_AutoReset = false;
 
@@ -482,9 +482,9 @@ void Mouse::setMode( Mode mode )
     MouseGDK::get().setMode( mode );
 }
 
-void Mouse::endOfInputFrame() noexcept
+void Mouse::resetRelativeMotion() noexcept
 {
-    MouseGDK::get().endOfInputFrame();
+    MouseGDK::get().resetRelativeMotion();
 }
 
 bool Mouse::isConnected() const

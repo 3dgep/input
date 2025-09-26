@@ -65,8 +65,8 @@ public:
             m_Mode = mode;
             if ( mode == Mouse::Mode::Relative )
             {
-                m_RelativeX = 0;
-                m_RelativeY = 0;
+                m_AccumulateX = m_RelativeX = 0;
+                m_AccumulateY = m_RelativeY = 0;
             }
         }
 
@@ -84,13 +84,16 @@ public:
         }
     }
 
-    void endOfInputFrame() noexcept
+    void resetRelativeMotion() noexcept
     {
         std::lock_guard lock( m_Mutex );
         if ( m_Mode == Mouse::Mode::Relative )
         {
-            m_RelativeX = 0;
-            m_RelativeY = 0;
+            m_RelativeX = m_AccumulateX;
+            m_RelativeY = m_AccumulateY;
+
+            m_AccumulateX = 0.0f;
+            m_AccumulateY = 0.0f;
         }
     }
 
@@ -136,8 +139,8 @@ private:
         case SDL_EVENT_MOUSE_MOTION:
             if ( self->m_Mode == Mouse::Mode::Relative )
             {
-                self->m_RelativeX += event->motion.xrel;
-                self->m_RelativeY += event->motion.yrel;
+                self->m_AccumulateX += event->motion.xrel;
+                self->m_AccumulateY += event->motion.yrel;
             }
             break;
         }
@@ -161,6 +164,8 @@ private:
     Mouse::Mode m_Mode             = Mouse::Mode::Absolute;
     SDL_Window* m_Window           = nullptr;
     float       m_ScrollWheelValue = 0.0f;
+    float       m_AccumulateX      = 0.0f;
+    float       m_AccumulateY      = 0.0f;
     float       m_RelativeX        = 0.0f;
     float       m_RelativeY        = 0.0f;
 };
@@ -181,9 +186,9 @@ void Mouse::setMode( Mode mode )
     MouseSDL3::get().setMode( mode );
 }
 
-void Mouse::endOfInputFrame() noexcept
+void Mouse::resetRelativeMotion() noexcept
 {
-    MouseSDL3::get().endOfInputFrame();
+    MouseSDL3::get().resetRelativeMotion();
 }
 
 bool Mouse::isConnected() const

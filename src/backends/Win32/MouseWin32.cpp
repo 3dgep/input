@@ -135,7 +135,7 @@ public:
         }
     }
 
-    void endOfInputFrame()
+    void resetRelativeMotion()
     {
         m_AutoReset = false;
 
@@ -515,9 +515,9 @@ void Mouse::setMode( Mode mode )
     MouseWin32::get().setMode( mode );
 }
 
-void Mouse::endOfInputFrame() noexcept
+void Mouse::resetRelativeMotion() noexcept
 {
-    MouseWin32::get().endOfInputFrame();
+    MouseWin32::get().resetRelativeMotion();
 }
 
 bool Mouse::isConnected() const

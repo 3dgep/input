@@ -115,7 +115,7 @@ public:
 
     void setMode( Mode mode );
 
-    void endOfInputFrame() noexcept;
+    void resetRelativeMotion() noexcept;
 
     bool isConnected() const;
 
