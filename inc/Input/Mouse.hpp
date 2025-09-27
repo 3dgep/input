@@ -85,7 +85,7 @@ public:
         int scrollWheelValue;
 
         /// <summary>
-        /// Whether the mouse's x and y cordinates are absolute (relative to the top-left corner of the window)
+        /// Whether the mouse's x and y coordinates are absolute (relative to the top-left corner of the window)
         /// or 
         /// </summary>
         Mode positionMode;

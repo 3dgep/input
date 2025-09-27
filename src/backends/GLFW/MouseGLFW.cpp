@@ -32,6 +32,12 @@ public:
 
         m_State.positionMode = m_Mode;
 
+        if ( m_Mode == Mouse::Mode::Relative )
+        {
+            m_State.x = m_RelativeX;
+            m_State.y = m_RelativeY;
+        }
+
         return m_State;
     }
 
@@ -48,16 +54,21 @@ public:
             return;
 
         m_Mode = mode;
+
+        assert( m_Window != nullptr );
+
         if ( mode == Mouse::Mode::Relative )
         {
-            assert( m_Window != nullptr );
-
             m_RelativeX = 0;
             m_RelativeY = 0;
-            glfwSetInputMode( m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED | GLFW_CURSOR_CAPTURED );
+
+            glfwSetInputMode( m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
         }
         else
         {
+            m_State.x = static_cast<float>( m_LastX );
+            m_State.y = static_cast<float>( m_LastY );
+
             glfwSetInputMode( m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL );
         }
     }
@@ -109,10 +120,10 @@ private:
     mutable std::mutex m_Mutex;
 
     Mouse::Mode  m_Mode      = Mouse::Mode::Absolute;
-    int          m_RelativeX = 0;
-    int          m_RelativeY = 0;
-    double       m_LastX     = 0;
-    double       m_LastY     = 0;
+    float        m_RelativeX = 0.0f;
+    float        m_RelativeY = 0.0f;
+    double       m_LastX     = 0.0f;
+    double       m_LastY     = 0.0f;
     GLFWwindow*  m_Window    = nullptr;
     Mouse::State m_State {};
 };
@@ -132,16 +143,15 @@ void Mouse_CursorPosCallback( GLFWwindow* /*window*/, double x, double y )
     std::lock_guard lock( impl.m_Mutex );
     if ( impl.m_Mode == Mouse::Mode::Relative )
     {
-        impl.m_RelativeX += static_cast<int>( x - impl.m_LastX );
-        impl.m_RelativeY += static_cast<int>( y - impl.m_LastY );
-        impl.m_State.x = impl.m_RelativeX;
-        impl.m_State.y = impl.m_RelativeY;
+        impl.m_RelativeX += static_cast<float>( x - impl.m_LastX );
+        impl.m_RelativeY += static_cast<float>( y - impl.m_LastY );
     }
     else
     {
-        impl.m_State.x = static_cast<int>( x );
-        impl.m_State.y = static_cast<int>( y );
+        impl.m_State.x = static_cast<float>( x );
+        impl.m_State.y = static_cast<float>( y );
     }
+
     impl.m_LastX = x;
     impl.m_LastY = y;
 }

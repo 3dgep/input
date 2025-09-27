@@ -6,7 +6,7 @@ using namespace input;
 
 // NOTE: You must register the Keyboard_Callback function with GLFW using glfwSetKeyCallback.
 // Example:
-// extern void Keyboard_Callback( GLFWwindow* window, int key, int scancode, int action, int mods );
+// void Keyboard_Callback( GLFWwindow* window, int key, int scancode, int action, int mods );
 // glfwSetKeyCallback(window, Keyboard_Callback);
 
 void Keyboard_Callback( GLFWwindow* window, int key, int scancode, int action, int mods );
