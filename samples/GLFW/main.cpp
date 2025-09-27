@@ -56,9 +56,9 @@ const Color PANEL_ACCENT { 0.25f, 0.25f, 0.25f, 0.85f };
 
 constexpr int   WINDOW_WIDTH               = 1920;
 constexpr int   WINDOW_HEIGHT              = 1080;
-constexpr int   KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
+constexpr float KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
 constexpr float PANEL_WIDTH                = 360.0f;  // The width of the state panels.
-constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // THe height of the mouse state panel.
+constexpr float MOUSE_STATE_PANEL_HEIGHT   = 270.0f;  // THe height of the mouse state panel.
 constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamepad state panel.
 constexpr float PI                         = std::numbers::pi_v<float>;
 
@@ -89,7 +89,7 @@ void Mouse_ButtonCallback( GLFWwindow*, int, int, int );
 void Keyboard_Callback( GLFWwindow* window, int key, int scancode, int action, int mods );
 
 // Construct a RECT from x, y, width, height.
-constexpr Rect r( float x, float y, float width = static_cast<float>( KEY_SIZE ), float height = static_cast<float>( KEY_SIZE ) )
+constexpr Rect r( float x, float y, float width = KEY_SIZE, float height = KEY_SIZE )
 {
     return { .x = x, .y = y, .w = width, .h = height };
 }
@@ -389,7 +389,7 @@ void measureText( const Font* font, const char* text, float& outWidth, float& ou
 }
 
 // Draw text at (x, y) in screen coordinates using a Font
-void drawText( const Font* font, const char* text, float x, float y, const Color& color )
+void drawText( const Font* font, const char* text, float x, float y, const Color& color = BLACK)
 {
     if ( !font || !text || !font->fontTexture )
         return;
@@ -412,13 +412,23 @@ void drawText( const Font* font, const char* text, float x, float y, const Color
     glColor4fv( &color.r );
 
     float         px       = x;
-    float         py       = y;
+    float         py       = y + font->ascent;
     constexpr int bmpWidth = 512, bmpHeight = 512;
 
     glBegin( GL_QUADS );
     for ( const char* p = text; *p; ++p )
     {
         unsigned char c = static_cast<unsigned char>( *p );
+
+        if ( c == '\r' )
+            continue; // Ignore carriage returns
+        if ( c == '\n' )
+        {
+            px = x;
+            py += font->ascent - font->descent + font->lineGap;
+            continue;
+        }
+
         if ( c < 32 || c >= 128 )
             continue;
 
@@ -582,6 +592,69 @@ void renderRect( const Rect& rect, const Color& color )
     glMatrixMode( GL_MODELVIEW );
 }
 
+void renderRectOutline( const Rect& rect, const Color& color, float borderSize = 8.0f )
+{
+    float rtW = 0, rtH = 0;
+    getRenderTargetSize( rtW, rtH );
+
+    glMatrixMode( GL_PROJECTION );
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho( 0, rtW, rtH, 0, -1, 1 );
+
+    glMatrixMode( GL_MODELVIEW );
+    glPushMatrix();
+    glLoadIdentity();
+
+    glDisable( GL_TEXTURE_2D );
+    glColor4fv( &color.r );
+
+    // Top border
+    glBegin( GL_QUADS );
+    {
+        glVertex2f( rect.x, rect.y );
+        glVertex2f( rect.x + rect.w, rect.y );
+        glVertex2f( rect.x + rect.w, rect.y + borderSize );
+        glVertex2f( rect.x, rect.y + borderSize );
+    }
+    glEnd();
+
+    // Bottom border
+    glBegin( GL_QUADS );
+    {
+        glVertex2f( rect.x, rect.y + rect.h - borderSize );
+        glVertex2f( rect.x + rect.w, rect.y + rect.h - borderSize );
+        glVertex2f( rect.x + rect.w, rect.y + rect.h );
+        glVertex2f( rect.x, rect.y + rect.h );
+    }
+    glEnd();
+
+    // Left border
+    glBegin( GL_QUADS );
+    {
+        glVertex2f( rect.x, rect.y + borderSize );
+        glVertex2f( rect.x + borderSize, rect.y + borderSize );
+        glVertex2f( rect.x + borderSize, rect.y + rect.h - borderSize );
+        glVertex2f( rect.x, rect.y + rect.h - borderSize );
+    }
+    glEnd();
+
+    // Right border
+    glBegin( GL_QUADS );
+    {
+        glVertex2f( rect.x + rect.w - borderSize, rect.y + borderSize );
+        glVertex2f( rect.x + rect.w, rect.y + borderSize );
+        glVertex2f( rect.x + rect.w, rect.y + rect.h - borderSize );
+        glVertex2f( rect.x + rect.w - borderSize, rect.y + rect.h - borderSize );
+    }
+    glEnd();
+
+    glPopMatrix();
+    glMatrixMode( GL_PROJECTION );
+    glPopMatrix();
+    glMatrixMode( GL_MODELVIEW );
+}
+
 void renderKeyboard()
 {
     // Get render target size
@@ -606,7 +679,7 @@ void renderKeyboard()
         float textWidth = 0.0f, textHeight = 0.0f;
         measureText( g_pFont, attribution, textWidth, textHeight );
         float textX = ( rtW - textWidth ) * 0.5f;
-        float textY = rtH + g_pFont->descent;
+        float textY = rtH - g_pFont->fontHeight;
 
         drawText( g_pFont, attribution, textX, textY, BLACK );
     }
@@ -647,6 +720,50 @@ void renderMouse()
         renderTextureRotated( g_pScrollDownTexture, g_MousePosition, g_fMouseRotation );
 }
 
+void renderPanel( const Rect& panelRect )
+{
+    renderRect( panelRect, PANEL_BACKGROUND );
+    renderRectOutline( panelRect, PANEL_ACCENT );
+}
+
+// Renders a panel showing the current mouse state (position, buttons, scroll)
+void renderMouseStatePanel()
+{
+    float rtW = 0, rtH = 0;
+    getRenderTargetSize( rtW, rtH );
+
+    // Panel dimensions
+    const float panelW = PANEL_WIDTH;
+    const float panelH = MOUSE_STATE_PANEL_HEIGHT;
+    const float panelX = rtW - panelW - 32;
+    const float panelY = 32;
+
+    renderPanel( { panelX, panelY, panelW, panelH } );
+
+    Mouse::State state = Mouse::get().getState();
+
+        std::string text = std::format(
+        "Mouse State\n"
+        "Mode:     {}\n"
+        "Position: ({:.1f}, {:.1f})\n"
+        "Left:     {}\n"
+        "Middle:   {}\n"
+        "Right:    {}\n"
+        "X1:       {}\n"
+        "X2:       {}\n"
+        "Scroll:   {}",
+        state.positionMode == Mouse::Mode::Absolute ? "Absolute" : "Relative",
+        state.x, state.y,
+        state.leftButton ? "Down" : "Up",
+        state.middleButton ? "Down" : "Up",
+        state.rightButton ? "Down" : "Up",
+        state.xButton1 ? "Down" : "Up",
+        state.xButton2 ? "Down" : "Up",
+        state.scrollWheelValue );
+
+    drawText( g_pFontMono, text.c_str(), panelX + 16, panelY + 16 );
+}
+
 void render()
 {
     // Clear screen
@@ -655,6 +772,7 @@ void render()
 
     renderKeyboard();
     renderMouse();
+    renderMouseStatePanel();
 
     glfwSwapBuffers( g_pWindow );
 }
@@ -720,8 +838,8 @@ int main()
     g_pLeftBumperTexture  = loadTexture( "assets/Left_Bumper.png" );
     g_pRightBumperTexture = loadTexture( "assets/Right_Bumper.png" );
 
-    g_pFont     = loadFont( "assets/Roboto/Regular.ttf", 22 );
-    g_pFontMono = loadFont( "assets/RobotoMono/Regular.ttf", 22 );
+    g_pFont     = loadFont( "assets/Roboto/Regular.ttf", 24 );
+    g_pFontMono = loadFont( "assets/RobotoMono/Regular.ttf", 26 );
 
     // Register window with input system
     Mouse::get().setWindow( g_pWindow );
