@@ -91,8 +91,8 @@ public:
         ApplyStickDeadZone( rawRightX, rawRightY, deadZoneMode, 1.0f, GLFWThumbDeadZone, state.thumbSticks.rightX, state.thumbSticks.rightY );
 
         // Triggers
-        state.triggers.left  = pad.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
-        state.triggers.right = pad.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER];
+        state.triggers.left  = pad.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] * 0.5f + 0.5f; // Map back in the range (0...1)
+        state.triggers.right = pad.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] * 0.5f + 0.5f ; // Map back in the range (0...1)
 
         return state;
     }

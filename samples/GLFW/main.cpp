@@ -592,6 +592,7 @@ void renderRect( const Rect& rect, const Color& color )
     glMatrixMode( GL_MODELVIEW );
 }
 
+// Draws an outline rectangle.
 void renderRectOutline( const Rect& rect, const Color& color, float borderSize = 8.0f )
 {
     float rtW = 0, rtH = 0;
@@ -646,6 +647,41 @@ void renderRectOutline( const Rect& rect, const Color& color, float borderSize =
         glVertex2f( rect.x + rect.w, rect.y + borderSize );
         glVertex2f( rect.x + rect.w, rect.y + rect.h - borderSize );
         glVertex2f( rect.x + rect.w - borderSize, rect.y + rect.h - borderSize );
+    }
+    glEnd();
+
+    glPopMatrix();
+    glMatrixMode( GL_PROJECTION );
+    glPopMatrix();
+    glMatrixMode( GL_MODELVIEW );
+}
+
+// Draws a filled circle at c with radius r and color
+void renderCircle( const Point& c, float r, const Color& color, int segments = 64 )
+{
+    float rtW = 0, rtH = 0;
+    getRenderTargetSize( rtW, rtH );
+
+    glMatrixMode( GL_PROJECTION );
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho( 0, rtW, rtH, 0, -1, 1 );
+
+    glMatrixMode( GL_MODELVIEW );
+    glPushMatrix();
+    glLoadIdentity();
+
+    glDisable( GL_TEXTURE_2D );
+    glColor4fv( &color.r );
+
+    glBegin( GL_TRIANGLE_FAN );
+    glVertex2f( c.x, c.y );
+    for ( int i = 0; i <= segments; ++i )
+    {
+        float theta = 2.0f * PI * static_cast<float>(i) / static_cast<float>(segments);
+        float x     = r * std::cos( theta );
+        float y     = r * std::sin( theta );
+        glVertex2f( c.x + x, c.y + y );
     }
     glEnd();
 
@@ -764,6 +800,194 @@ void renderMouseStatePanel()
     drawText( g_pFontMono, text.c_str(), panelX + 16, panelY + 16 );
 }
 
+Point operator+(const Point& lhs, const Point& rhs)
+{
+    return { lhs.x + rhs.x, lhs.y + rhs.y };
+}
+
+void renderOutlineCircle( const Point& c, float r, const Color& color )
+{
+    renderCircle( c, r, BLACK );
+    renderCircle( c, r - 4.0f, color );
+}
+
+void renderThumbstick( float x, float y, bool pressed, Point center )
+{
+    constexpr float thumbstickRadius = 55.0f;
+    Point offset           = Point { x * thumbstickRadius, y * thumbstickRadius };
+    if ( pressed )
+        renderCircle( center, thumbstickRadius, RED );
+
+    renderOutlineCircle( center + offset, 30.0f, WHITE );
+}
+
+
+void renderTrigger( const Rect& rect )
+{
+    renderRect( rect, RED );
+    renderRectOutline( rect, BLACK, 4 );
+}
+
+void renderGamepad( const Gamepad::State& state, float x, float y )
+{
+    // Draw gamepad image at top left
+    if ( g_pGamepadTexture && g_pLeftBumperTexture && g_pRightBumperTexture && state.connected )
+    {
+        float texW = 0, texH = 0;
+        getTextureSize( g_pGamepadTexture, texW, texH );
+        renderTexture( g_pGamepadTexture, x, y );
+
+        if ( state.buttons.leftShoulder )
+            renderTexture( g_pLeftBumperTexture, x, y );
+
+        if ( state.buttons.rightShoulder )
+            renderTexture( g_pRightBumperTexture, x, y );
+
+        if ( state.buttons.a )
+            renderCircle( { x + 503, y + 177 }, 23.0f, RED );
+        if ( state.buttons.b )
+            renderCircle( { x + 549, y + 133 }, 23.0f, RED );
+        if ( state.buttons.x )
+            renderCircle( { x + 457, y + 133 }, 23.0f, RED );
+        if ( state.buttons.y )
+            renderCircle( { x + 505, y + 88 }, 23.0f, RED );
+        if ( state.buttons.view )
+            renderCircle( { x + 287, y + 133 }, 16.0f, RED );
+        if ( state.buttons.menu )
+            renderCircle( { x + 381, y + 133 }, 16.0f, RED );
+        if ( state.dPad.up )
+            renderRect( { x + 233.0f, y + 193.0f, 30.0f, 30.0f }, RED );
+        if ( state.dPad.down )
+            renderRect( { x + 233.0f, y + 251.0f, 30.0f, 30.0f }, RED );
+        if ( state.dPad.left )
+            renderRect( { x + 203.0f, y + 223.0f, 30.0f, 30.0f }, RED );
+        if ( state.dPad.right )
+            renderRect( { x + 261.0f, y + 223.0f, 32.0f, 27.0f }, RED );
+
+        renderThumbstick( state.thumbSticks.leftX, state.thumbSticks.leftY, state.buttons.leftStick, { x + 168.0f, y + 134.0f } );
+        renderThumbstick( state.thumbSticks.rightX, state.thumbSticks.rightY, state.buttons.rightStick, { x + 420.0f, y + 236.0f } );
+
+        // Triggers
+        renderTrigger( { x, y, 40.0f, state.triggers.left * 130.0f } );
+        renderTrigger( { x + texW - 40.0f, y, 40.0f, state.triggers.right * 130.0f } );
+    }
+}
+
+void renderGamepads()
+{
+    if ( g_pGamepadTexture )
+    {
+        float rtW = 0, rtH = 0;
+        getRenderTargetSize( rtW, rtH );
+
+        float texW = 0, texH = 0;
+        getTextureSize( g_pGamepadTexture, texW, texH );
+        float margin = 32.0f;
+        float x      = margin;
+        float y      = margin;
+
+        for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+        {
+            auto state = Gamepad { i }.getState();
+            if ( state.connected )
+            {
+                renderGamepad( state, x, y );
+
+                x += texW + margin;
+                if ( x + texW > rtW - PANEL_WIDTH - margin * 2 )
+                {
+                    x = margin;
+                    y += texH + margin;
+                }
+            }
+        }
+    }
+}
+
+void renderGamepadStatePanel( float x, float y, const Gamepad::State& gamepadState, int playerIndex )
+{
+    if ( !gamepadState.connected )
+        return;
+
+    // Panel dimensions
+    const float panelWidth  = PANEL_WIDTH;
+    const float panelHeight = GAMEPAD_STATE_PANEL_HEIGHT;
+    const float panelX      = x;
+    const float panelY      = y;
+
+    // Draw panel background and border
+    Rect panelRect = { panelX, panelY, panelWidth, panelHeight };
+    renderPanel( panelRect );
+
+    // Prepare gamepad state text
+    std::string text = std::format(
+        "Gamepad State {}\n"
+        "A:          {}\n"
+        "B:          {}\n"
+        "X:          {}\n"
+        "Y:          {}\n"
+        "View:       {}\n"
+        "Menu:       {}\n"
+        "LS:         {}\n"
+        "RS:         {}\n"
+        "LB:         {}\n"
+        "RB:         {}\n"
+        "DPad Up:    {}\n"
+        "DPad Down:  {}\n"
+        "DPad Left:  {}\n"
+        "DPad Right: {}\n"
+        "LT:         {:.2f}\n"
+        "RT:         {:.2f}\n"
+        "LS:         ({:.2f}, {:.2f})\n"
+        "RS:         ({:.2f}, {:.2f})\n",
+        playerIndex,
+        gamepadState.buttons.a ? "Down" : "Up",
+        gamepadState.buttons.b ? "Down" : "Up",
+        gamepadState.buttons.x ? "Down" : "Up",
+        gamepadState.buttons.y ? "Down" : "Up",
+        gamepadState.buttons.view ? "Down" : "Up",
+        gamepadState.buttons.menu ? "Down" : "Up",
+        gamepadState.buttons.leftStick ? "Down" : "Up",
+        gamepadState.buttons.rightStick ? "Down" : "Up",
+        gamepadState.buttons.leftShoulder ? "Down" : "Up",
+        gamepadState.buttons.rightShoulder ? "Down" : "Up",
+        gamepadState.dPad.up ? "Down" : "Up",
+        gamepadState.dPad.down ? "Down" : "Up",
+        gamepadState.dPad.left ? "Down" : "Up",
+        gamepadState.dPad.right ? "Down" : "Up",
+        gamepadState.triggers.left,
+        gamepadState.triggers.right,
+        gamepadState.thumbSticks.leftX,
+        gamepadState.thumbSticks.leftY,
+        gamepadState.thumbSticks.rightX,
+        gamepadState.thumbSticks.rightY );
+
+    if ( g_pFontMono )
+    {
+        drawText( g_pFontMono, text.c_str(), x + 16, y + 16 );
+    }
+}
+
+void renderGamepadStatePanels()
+{
+    float margin = 32.0f;
+    float rtW = 0, rtH = 0;
+    getRenderTargetSize( rtW, rtH );
+    float left = rtW - margin - PANEL_WIDTH;
+    float top  = margin * 2 + MOUSE_STATE_PANEL_HEIGHT;  // Start below the mouse state panel.
+
+    for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+    {
+        auto gamepadState = Gamepad { i }.getState();
+
+        if ( gamepadState.connected )
+        {
+            renderGamepadStatePanel( left, top, gamepadState, i );
+            top += margin + GAMEPAD_STATE_PANEL_HEIGHT;
+        }
+    }
+}
+
 void render()
 {
     // Clear screen
@@ -771,8 +995,10 @@ void render()
     glClear( GL_COLOR_BUFFER_BIT );
 
     renderKeyboard();
+    renderGamepads();
     renderMouse();
     renderMouseStatePanel();
+    renderGamepadStatePanels();
 
     glfwSwapBuffers( g_pWindow );
 }
