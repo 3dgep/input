@@ -120,12 +120,12 @@ private:
     bool m_Suspended = false;
 };
 
-Gamepad::State Gamepad::getState( DeadZone deadZoneMode ) const
+Gamepad::State Gamepad::getState( int playerIndex, DeadZone deadZoneMode )
 {
     return GamepadGLFW::get().getState( playerIndex, deadZoneMode );
 }
 
-bool Gamepad::setVibration( float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
+bool Gamepad::setVibration( int playerIndex, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
 {
     return GamepadGLFW::get().setVibration( playerIndex, leftMotor, rightMotor, leftTrigger, rightTrigger );
 }

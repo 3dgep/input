@@ -381,12 +381,12 @@ private:
     EventRegistrationToken m_RemovedToken {};
 };
 
-Gamepad::State Gamepad::getState( DeadZone deadZoneMode ) const
+Gamepad::State Gamepad::getState( int playerIndex, DeadZone deadZoneMode )
 {
     return GamepadWin32::get().getState( playerIndex, deadZoneMode );
 }
 
-bool Gamepad::setVibration( float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
+bool Gamepad::setVibration( int playerIndex, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
 {
     return GamepadWin32::get().setVibration( playerIndex, leftMotor, rightMotor, leftTrigger, rightTrigger );
 }

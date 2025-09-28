@@ -34,7 +34,7 @@ const SDL_FColor RED              = SDL_FColor { 1, 0, 0, 0.5f };
 const SDL_FColor BLACK            = SDL_FColor { 0, 0, 0, 1 };
 const SDL_FColor WHITE            = SDL_FColor { 1, 1, 1, 1 };
 const SDL_FColor PANEL_BACKGROUND = SDL_FColor { 0.95f, 0.94f, 0.94f, 0.85f };
-const SDL_FColor PANEL_ACCENT     = SDL_FColor { 0.25f, 0.25f, 0.25f, 0.85f};
+const SDL_FColor PANEL_ACCENT     = SDL_FColor { 0.25f, 0.25f, 0.25f, 0.85f };
 
 SDL_Renderer* g_pRenderer = nullptr;
 SDL_Window*   g_pWindow   = nullptr;
@@ -482,7 +482,7 @@ void renderGamepads()
 
         for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
         {
-            auto state = Gamepad { i }.getState();
+            auto state = Gamepad::getState( i );
             if ( state.connected )
             {
                 renderGamepad( state, x, y );
@@ -562,8 +562,8 @@ void renderMousePanel()
         x2Btn,
         state.scrollWheelValue );
 
-    SDL_Color color = { 0, 0, 0, 255 };
-    SDL_Surface* surf = TTF_RenderText_Blended_Wrapped( g_pFontMono, text.c_str(), 0, color, panelWidth - 32 );
+    SDL_Color    color = { 0, 0, 0, 255 };
+    SDL_Surface* surf  = TTF_RenderText_Blended_Wrapped( g_pFontMono, text.c_str(), 0, color, panelWidth - 32 );
     if ( surf )
     {
         SDL_Texture* tex     = SDL_CreateTextureFromSurface( g_pRenderer, surf );
@@ -634,8 +634,8 @@ void renderGamepadStatePanel( float x, float y, const Gamepad::State& gamepadSta
 
     if ( g_pFontMono && g_pRenderer )
     {
-        SDL_Color color = { 0, 0, 0, 255 };
-        SDL_Surface* surf = TTF_RenderText_Blended_Wrapped( g_pFontMono, text.c_str(), 0, color, static_cast<int>( panelWidth ) - 32 );
+        SDL_Color    color = { 0, 0, 0, 255 };
+        SDL_Surface* surf  = TTF_RenderText_Blended_Wrapped( g_pFontMono, text.c_str(), 0, color, static_cast<int>( panelWidth ) - 32 );
         if ( surf )
         {
             SDL_Texture* tex     = SDL_CreateTextureFromSurface( g_pRenderer, surf );
@@ -657,7 +657,7 @@ void renderGamepadStatePanels()
 
     for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
     {
-        auto gamepadState = Gamepad { i }.getState();
+        auto gamepadState = Gamepad::getState( i );
 
         if ( gamepadState.connected )
         {
@@ -695,11 +695,11 @@ int main( int argc, char* argv[] )
         return -2;
     }
 
-    if ( !SDL_CreateWindowAndRenderer( 
-        "Simple DirectMedia Layer (SDL3)", 
-        WINDOW_WIDTH, WINDOW_HEIGHT, 
-        SDL_WINDOW_RESIZABLE,
-        &g_pWindow, &g_pRenderer) )
+    if ( !SDL_CreateWindowAndRenderer(
+             "Simple DirectMedia Layer (SDL3)",
+             WINDOW_WIDTH, WINDOW_HEIGHT,
+             SDL_WINDOW_RESIZABLE,
+             &g_pWindow, &g_pRenderer ) )
     {
         std::cerr << "SDL_CreateWindowAndRenderer Error: " << SDL_GetError() << std::endl;
         SDL_Quit();

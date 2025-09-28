@@ -71,6 +71,16 @@ Gamepad::Gamepad( int playerIndex )
 : playerIndex { playerIndex }
 {}
 
+Gamepad::State Gamepad::getState( DeadZone deadZoneMode ) const
+{
+    return getState( playerIndex, deadZoneMode );
+}
+bool  Gamepad::setVibration( float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
+{
+    return setVibration( playerIndex, leftMotor, rightMotor, leftTrigger, rightTrigger );
+}
+
+
 #define UPDATE_BUTTON_STATE( field ) field = static_cast<ButtonState>( ( !!state.buttons.field ) | ( ( !!state.buttons.field ^ !!lastState.buttons.field ) << 1 ) )
 
 void GamepadStateTracker::update( const Gamepad::State& state )

@@ -12,8 +12,6 @@
 #pragma comment( lib, "dwrite" )
 #pragma comment( lib, "windowscodecs" )
 
-#include "input/Gamepad.hpp"
-
 #include <cassert>
 #include <format>
 #include <iostream>
@@ -467,8 +465,7 @@ void update()
 
     for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
     {
-        Gamepad        gamepad { i };
-        Gamepad::State gamepadState = gamepad.getState();
+        Gamepad::State gamepadState = Gamepad::getState(i);
 
         // Test vibration.
         if ( gamepadState.connected )
@@ -484,7 +481,7 @@ void update()
             float leftTrigger  = gamepadState.triggers.left;
             float rightTrigger = gamepadState.triggers.right;
 
-            gamepad.setVibration( leftMotor, rightMotor, leftTrigger, rightTrigger );
+            Gamepad::setVibration( i, leftMotor, rightMotor, leftTrigger, rightTrigger );
         }
     }
 }
@@ -678,7 +675,7 @@ void render()
 
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {
-                auto gamepadState = Gamepad { i }.getState();
+                auto gamepadState = Gamepad::getState(i);
 
                 if ( gamepadState.connected )
                 {
@@ -725,7 +722,7 @@ void render()
 
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {
-                auto gamepadState = Gamepad { i }.getState();
+                auto gamepadState = Gamepad::getState(i);
 
                 if ( gamepadState.connected )
                 {

@@ -486,7 +486,7 @@ void renderGamepads()
 
         for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
         {
-            auto state = Gamepad { i }.getState();
+            auto state = Gamepad::getState( i );
             if ( state.connected )
             {
                 renderGamepad( state, x, y );
@@ -566,7 +566,7 @@ void renderMousePanel()
         x2Btn,
         state.scrollWheelValue );
 
-    SDL_Surface* surf      = TTF_RenderUTF8_Blended_Wrapped( g_pFontMono, text.c_str(), BLACK, panelWidth - 32 );
+    SDL_Surface* surf = TTF_RenderUTF8_Blended_Wrapped( g_pFontMono, text.c_str(), BLACK, panelWidth - 32 );
     if ( surf )
     {
         SDL_Texture* tex     = SDL_CreateTextureFromSurface( g_pRenderer, surf );
@@ -637,7 +637,7 @@ void renderGamepadStatePanel( float x, float y, const Gamepad::State& gamepadSta
 
     if ( g_pFontMono && g_pRenderer )
     {
-        SDL_Surface* surf      = TTF_RenderUTF8_Blended_Wrapped( g_pFontMono, text.c_str(), BLACK, panelWidth - 32 );
+        SDL_Surface* surf = TTF_RenderUTF8_Blended_Wrapped( g_pFontMono, text.c_str(), BLACK, panelWidth - 32 );
         if ( surf )
         {
             SDL_Texture* tex     = SDL_CreateTextureFromSurface( g_pRenderer, surf );
@@ -655,11 +655,11 @@ void renderGamepadStatePanels()
     int   rtW = 0, rtH = 0;
     SDL_GetRendererOutputSize( g_pRenderer, &rtW, &rtH );
     float left = rtW - margin - PANEL_WIDTH;
-    float top    = margin * 2 + MOUSE_STATE_PANEL_HEIGHT; // Start below the mouse state panel.
+    float top  = margin * 2 + MOUSE_STATE_PANEL_HEIGHT;  // Start below the mouse state panel.
 
     for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
     {
-        auto gamepadState = Gamepad { i }.getState();
+        auto gamepadState = Gamepad::getState( i );
 
         if ( gamepadState.connected )
         {

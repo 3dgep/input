@@ -886,7 +886,7 @@ void renderGamepads()
 
         for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
         {
-            auto state = Gamepad { i }.getState();
+            auto state = Gamepad::getState(i);
             if ( state.connected )
             {
                 renderGamepad( state, x, y );
@@ -976,7 +976,7 @@ void renderGamepadStatePanels()
 
     for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
     {
-        auto gamepadState = Gamepad { i }.getState();
+        auto gamepadState = Gamepad::getState(i);
 
         if ( gamepadState.connected )
         {

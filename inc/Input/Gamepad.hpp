@@ -240,6 +240,9 @@ struct Gamepad
     State getState( DeadZone deadZoneMode = DeadZone::IndependentAxis ) const;
     bool  setVibration( float leftMotor, float rightMotor, float leftTrigger = 0.0f, float rightTrigger = 0.0f );
 
+    static State getState( int playerIndex, DeadZone deadZoneMode = DeadZone::IndependentAxis );
+    static bool setVibration( int playerIndex, float leftMotor, float rightMotor, float leftTrigger = 0.0f, float rightTrigger = 0.0f );
+
     static void suspend() noexcept;
     static void resume() noexcept;
 

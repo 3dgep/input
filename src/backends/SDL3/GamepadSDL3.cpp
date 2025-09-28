@@ -237,12 +237,12 @@ private:
 };
 
 // Bridge to Gamepad interface
-Gamepad::State Gamepad::getState( Gamepad::DeadZone deadZoneMode ) const
+Gamepad::State Gamepad::getState( int playerIndex, Gamepad::DeadZone deadZoneMode )
 {
     return GamepadSDL3::get().getState( playerIndex, deadZoneMode );
 }
 
-bool Gamepad::setVibration( float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
+bool Gamepad::setVibration( int playerIndex, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
 {
     return GamepadSDL3::get().setVibration( playerIndex, leftMotor, rightMotor, leftTrigger, rightTrigger );
 }
