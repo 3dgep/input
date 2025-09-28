@@ -163,17 +163,21 @@ void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam ) noexc
     }
 }
 
-Keyboard::State Keyboard::getState() const
+namespace input::Keyboard
+{
+State getState()
 {
     return KeyboardWin32::get().getState();
 }
 
-void Keyboard::reset()
+void reset()
 {
     KeyboardWin32::get().reset();
 }
 
-bool Keyboard::isConnected()
+bool isConnected()
 {
     return KeyboardWin32::get().isConnected();
 }
+
+}  // namespace input::Keyboard

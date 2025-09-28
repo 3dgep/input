@@ -240,18 +240,20 @@ void Keyboard_Callback(GLFWwindow* /*window*/, int key, int /*scancode*/, int ac
     // GLFW_REPEAT is ignored for state
 }
 
-// Bridge to Keyboard interface
-Keyboard::State Keyboard::getState() const
+namespace input::Keyboard
+{
+State getState()
 {
     return KeyboardGLFW::get().getState();
 }
 
-void Keyboard::reset()
+void reset()
 {
     KeyboardGLFW::get().reset();
 }
 
-bool Keyboard::isConnected()
+bool isConnected()
 {
     return KeyboardGLFW::get().isConnected();
 }
+}  // namespace input::Keyboard

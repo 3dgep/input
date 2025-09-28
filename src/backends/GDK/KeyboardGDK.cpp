@@ -15,7 +15,7 @@
 // For a Win32 desktop application, call this function from your Window Message Procedure
 //
 // void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
-// 
+//
 // LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // {
 //     switch (message)
@@ -36,7 +36,6 @@
 //     }
 // }
 //
-
 
 using namespace input;
 using Microsoft::WRL::ComPtr;
@@ -191,18 +190,22 @@ private:
     GameInputCallbackToken m_CallbackToken = 0;
 };
 
-Keyboard::State Keyboard::getState() const
+namespace input::Keyboard
+{
+State getState()
 {
     return KeyboardGDK::get().getState();
 }
 
-void Keyboard::reset()
+void reset()
 {}
 
-bool Keyboard::isConnected()
+bool isConnected()
 {
     return KeyboardGDK::get().isConnected();
 }
+
+}  // namespace input::Keyboard
 
 void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
 {

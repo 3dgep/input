@@ -720,7 +720,7 @@ void renderKeyboard()
     }
 
     // Draw rectangles over pressed keys, offset by bitmap position
-    Keyboard::State keyboardState = Keyboard::get().getState();
+    Keyboard::State keyboardState = Keyboard::getState();
     for ( const auto& [key, rect]: g_KeyRects )
     {
         if ( keyboardState.isKeyDown( key ) )

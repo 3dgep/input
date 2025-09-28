@@ -7,13 +7,6 @@ using namespace input;
 // Keyboard state is exactly 32 bytes.
 static_assert( sizeof( Keyboard::State ) == ( 256 / 8 ) );
 
-Keyboard& Keyboard::get()
-{
-    static Keyboard keyboard;
-    return keyboard;
-}
-
-
 bool Keyboard::State::isKeyDown( Keys key ) const noexcept
 {
     auto k = static_cast<uint8_t>( key );

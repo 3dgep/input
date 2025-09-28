@@ -653,7 +653,7 @@ void render()
                 highlightBrush.GetAddressOf() );
 
             // Draw rectangles over pressed keys, offset by bitmap position
-            Keyboard::State keyboardState = Keyboard::get().getState();
+            Keyboard::State keyboardState = Keyboard::getState();
             for ( const auto& [key, rect]: g_KeyRects )
             {
                 if ( keyboardState.isKeyDown( key ) )
@@ -751,13 +751,22 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
     wc.lpszClassName = "SampleWindowClass";
     RegisterClass( &wc );
 
-    // Desired window size
     int windowWidth  = 1920;
     int windowHeight = 1080;
 
+    // Desired window size
     // Get screen size
     int screenWidth  = GetSystemMetrics( SM_CXSCREEN );
     int screenHeight = GetSystemMetrics( SM_CYSCREEN );
+
+    RECT windowRect = {
+        0, 0, windowWidth, windowHeight
+    };
+
+    AdjustWindowRect( &windowRect, WS_OVERLAPPEDWINDOW, FALSE );
+
+    windowWidth = windowRect.right - windowRect.left;
+    windowHeight = windowRect.bottom - windowRect.top;
 
     // Calculate top-left position to center the window
     int x = ( screenWidth - windowWidth ) / 2;
