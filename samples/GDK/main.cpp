@@ -313,28 +313,29 @@ void DrawMouseStatePanel( float x, float y, ID2D1RenderTarget* renderTarget, IDW
     DrawPanel( renderTarget, panelRect );
 
     // Prepare mouse state text
-    Mouse::State   mouseState = Mouse::get().getState();
+    Mouse::State   mouseState = Mouse::getState();
     const wchar_t* modeStr    = MouseModeToString( mouseState.positionMode );
 
-    wchar_t mouseText[256];
-    swprintf( mouseText, 256,
-              L"Mouse State\n"
-              L"Mode:\t%s\n"
-              L"Position:\t(%.1f, %.1f)\n"
-              L"Left:\t%s\n"
-              L"Middle:\t%s\n"
-              L"Right:\t%s\n"
-              L"X1:\t%s\n"
-              L"X2:\t%s\n"
-              L"Scroll:\t%d",
-              modeStr,
-              mouseState.x, mouseState.y,
-              mouseState.leftButton ? L"Down" : L"Up",
-              mouseState.middleButton ? L"Down" : L"Up",
-              mouseState.rightButton ? L"Down" : L"Up",
-              mouseState.xButton1 ? L"Down" : L"Up",
-              mouseState.xButton2 ? L"Down" : L"Up",
-              mouseState.scrollWheelValue );
+    std::wstring mouseText = std::format(
+        L"Mouse State\n"
+        L"Mode:\t{}\n"
+        L"Position:\t({:.1f}, {:.1f})\n"
+        L"Left:\t{}\n"
+        L"Middle:\t{}\n"
+        L"Right:\t{}\n"
+        L"X1:\t{}\n"
+        L"X2:\t{}\n"
+        L"Scroll:\t{}",
+        modeStr,
+        mouseState.x, mouseState.y,
+        mouseState.leftButton ? L"Down" : L"Up",
+        mouseState.middleButton ? L"Down" : L"Up",
+        mouseState.rightButton ? L"Down" : L"Up",
+        mouseState.xButton1 ? L"Down" : L"Up",
+        mouseState.xButton2 ? L"Down" : L"Up",
+        mouseState.scrollWheelValue
+    );
+
 
     // Draw mouse state text
     D2D1_RECT_F textRect = D2D1::RectF(
@@ -343,8 +344,8 @@ void DrawMouseStatePanel( float x, float y, ID2D1RenderTarget* renderTarget, IDW
         panelRect.right - 20.0f,
         panelRect.bottom - 20.0f );
     renderTarget->DrawText(
-        mouseText,
-        static_cast<UINT32>( wcslen( mouseText ) ),
+        mouseText.c_str(),
+        mouseText.length(),
         textFormat,
         textRect,
         textBrush );
@@ -368,48 +369,47 @@ void DrawGamepadStatePanel(
     DrawPanel( g_pRenderTarget.Get(), panelRect );
 
     // Prepare gamepad state text
-    wchar_t gamepadText[512];
-    swprintf( gamepadText, 512,
-              L"Gamepad %i\n"
-              L"A:\t\t%s\n"
-              L"B:\t\t%s\n"
-              L"X:\t\t%s\n"
-              L"Y:\t\t%s\n"
-              L"View:\t\t%s\n"
-              L"Menu:\t\t%s\n"
-              L"LB:\t\t%s\n"
-              L"RB:\t\t%s\n"
-              L"Left Stick:\t%s\n"
-              L"Right Stick:\t%s\n"
-              L"DPad Up:\t%s\n"
-              L"DPad Down:\t%s\n"
-              L"DPad Left:\t%s\n"
-              L"DPad Right:\t%s\n"
-              L"LT:\t\t%.2f\n"
-              L"RT:\t\t%.2f\n"
-              L"Left Stick:\t(%.2f, %.2f)\n"
-              L"Right Stick:\t(%.2f, %.2f)",
-              playerIndex,
-              gamepadState.buttons.a ? L"Down" : L"Up",
-              gamepadState.buttons.b ? L"Down" : L"Up",
-              gamepadState.buttons.x ? L"Down" : L"Up",
-              gamepadState.buttons.y ? L"Down" : L"Up",
-              gamepadState.buttons.view ? L"Down" : L"Up",
-              gamepadState.buttons.menu ? L"Down" : L"Up",
-              gamepadState.buttons.leftShoulder ? L"Down" : L"Up",
-              gamepadState.buttons.rightShoulder ? L"Down" : L"Up",
-              gamepadState.buttons.leftStick ? L"Down" : L"Up",
-              gamepadState.buttons.rightStick ? L"Down" : L"Up",
-              gamepadState.dPad.up ? L"Down" : L"Up",
-              gamepadState.dPad.down ? L"Down" : L"Up",
-              gamepadState.dPad.left ? L"Down" : L"Up",
-              gamepadState.dPad.right ? L"Down" : L"Up",
-              gamepadState.triggers.left,
-              gamepadState.triggers.right,
-              gamepadState.thumbSticks.leftX,
-              gamepadState.thumbSticks.leftY,
-              gamepadState.thumbSticks.rightX,
-              gamepadState.thumbSticks.rightY );
+    std::wstring gamepadText = std::format(
+        L"Gamepad {}\n"
+        L"A:\t\t{}\n"
+        L"B:\t\t{}\n"
+        L"X:\t\t{}\n"
+        L"Y:\t\t{}\n"
+        L"View:\t\t{}\n"
+        L"Menu:\t\t{}\n"
+        L"LB:\t\t{}\n"
+        L"RB:\t\t{}\n"
+        L"Left Stick:\t{}\n"
+        L"Right Stick:\t{}\n"
+        L"DPad Up:\t{}\n"
+        L"DPad Down:\t{}\n"
+        L"DPad Left:\t{}\n"
+        L"DPad Right:\t{}\n"
+        L"LT:\t\t{:.2f}\n"
+        L"RT:\t\t{:.2f}\n"
+        L"Left Stick:\t({:.2f}, {:.2f})\n"
+        L"Right Stick:\t({:.2f}, {:.2f})",
+        playerIndex,
+        gamepadState.buttons.a ? L"Down" : L"Up",
+        gamepadState.buttons.b ? L"Down" : L"Up",
+        gamepadState.buttons.x ? L"Down" : L"Up",
+        gamepadState.buttons.y ? L"Down" : L"Up",
+        gamepadState.buttons.view ? L"Down" : L"Up",
+        gamepadState.buttons.menu ? L"Down" : L"Up",
+        gamepadState.buttons.leftShoulder ? L"Down" : L"Up",
+        gamepadState.buttons.rightShoulder ? L"Down" : L"Up",
+        gamepadState.buttons.leftStick ? L"Down" : L"Up",
+        gamepadState.buttons.rightStick ? L"Down" : L"Up",
+        gamepadState.dPad.up ? L"Down" : L"Up",
+        gamepadState.dPad.down ? L"Down" : L"Up",
+        gamepadState.dPad.left ? L"Down" : L"Up",
+        gamepadState.dPad.right ? L"Down" : L"Up",
+        gamepadState.triggers.left,
+        gamepadState.triggers.right,
+        gamepadState.thumbSticks.leftX,
+        gamepadState.thumbSticks.leftY,
+        gamepadState.thumbSticks.rightX,
+        gamepadState.thumbSticks.rightY );
 
     // Draw gamepad state text
     D2D1_RECT_F textRect = D2D1::RectF(
@@ -418,8 +418,8 @@ void DrawGamepadStatePanel(
         panelRect.right - 20.0f,
         panelRect.bottom - 20.0f );
     g_pRenderTarget->DrawText(
-        gamepadText,
-        static_cast<UINT32>( wcslen( gamepadText ) ),
+        gamepadText.c_str(),
+        gamepadText.length(),
         g_pLeftTextFormat.Get(),
         textRect,
         g_pTextBrush.Get() );
@@ -435,8 +435,7 @@ void update()
     if ( !g_pRenderTarget )
         return;
 
-    Mouse&       mouse      = Mouse::get();
-    Mouse::State mouseState = mouse.getState();
+    Mouse::State mouseState = Mouse::getState();
 
     mouseStateTracker.update( mouseState );
 
@@ -445,10 +444,10 @@ void update()
         switch ( mouseState.positionMode )
         {
         case Absolute:
-            mouse.setMode( Relative );
+            Mouse::setMode( Relative );
             break;
         case Relative:
-            mouse.setMode( Absolute );
+            Mouse::setMode( Absolute );
             break;
         }
     }
@@ -699,7 +698,7 @@ void render()
 
         if ( g_pMouseBitmap && g_pLMBBitmap && g_pRMBBitmap && g_pMMBBitmap )
         {
-            auto mouseState = Mouse::get().getState();
+            auto mouseState = Mouse::getState();
 
             DrawRotatedBitmap( g_pRenderTarget.Get(), g_pMouseBitmap.Get(), g_MousePosition, g_fMouseRotation );
             if ( mouseState.leftButton )
@@ -782,7 +781,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
     }
 
     // Register window with mouse:
-    Mouse::get().setWindow( hwnd );
+    Mouse::setWindow( hwnd );
 
     ShowWindow( hwnd, nCmdShow );
 
@@ -1024,7 +1023,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
         update();
         render();
 
-        Mouse::get().resetRelativeMotion();
+        // Call this at the end of the frame to reset relative mouse movement.
+        Mouse::resetRelativeMotion();
     }
 
     // Cleanup

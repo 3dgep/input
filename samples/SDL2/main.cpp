@@ -224,8 +224,7 @@ void update()
     using MouseStateTracker::ButtonState::Pressed;
     using MouseStateTracker::ButtonState::Released;
 
-    Mouse&       mouse      = Mouse::get();
-    Mouse::State mouseState = mouse.getState();
+    Mouse::State mouseState = Mouse::getState();
 
     g_MouseStateTracker.update( mouseState );
 
@@ -234,10 +233,10 @@ void update()
         switch ( mouseState.positionMode )
         {
         case Absolute:
-            mouse.setMode( Relative );
+            Mouse::setMode( Relative );
             break;
         case Relative:
-            mouse.setMode( Absolute );
+            Mouse::setMode( Absolute );
             break;
         }
     }
@@ -322,7 +321,7 @@ void renderMouse()
 {
     if ( g_pMouseTexture && g_pLMBTexture && g_pRMBTexture && g_pMMBTexture && g_pScrollUpTexture && g_pScrollDownTexture )
     {
-        Mouse::State state = Mouse::get().getState();
+        Mouse::State state = Mouse::getState();
 
         int texW = 0, texH = 0;
         SDL_QueryTexture( g_pMouseTexture, nullptr, nullptr, &texW, &texH );
@@ -525,7 +524,7 @@ void renderMousePanel()
     if ( !g_pFontMono || !g_pRenderer )
         return;
 
-    Mouse::State state = Mouse::get().getState();
+    Mouse::State state = Mouse::getState();
 
     int rtW = 0, rtH = 0;
     SDL_GetRendererOutputSize( g_pRenderer, &rtW, &rtH );
@@ -750,7 +749,7 @@ int main( int argc, char* argv[] )
         render();
 
         // Call this at the end of the frame to reset the relative mouse position.
-        Mouse::get().resetRelativeMotion();
+        Mouse::resetRelativeMotion();
     }
 
     // Cleanup

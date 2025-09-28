@@ -185,43 +185,47 @@ void Mouse_ButtonCallback( GLFWwindow* /*window*/, int button, int action, int /
     }
 }
 
+namespace input::Mouse
+{
 // Bridge to Mouse interface
-Mouse::State Mouse::getState() const
+State getState()
 {
     return MouseGLFW::get().getState();
 }
 
-void Mouse::resetScrollWheelValue() noexcept
+void resetScrollWheelValue() noexcept
 {
     MouseGLFW::get().resetScrollWheelValue();
 }
 
-void Mouse::setMode( Mode mode )
+void setMode( Mode mode )
 {
     MouseGLFW::get().setMode( mode );
 }
 
-void Mouse::resetRelativeMotion() noexcept
+void resetRelativeMotion() noexcept
 {
     MouseGLFW::get().resetRelativeMotion();
 }
 
-bool Mouse::isConnected() const
+bool isConnected()
 {
     return MouseGLFW::get().isConnected();
 }
 
-bool Mouse::isVisible() const noexcept
+bool isVisible() noexcept
 {
     return MouseGLFW::get().isVisible();
 }
 
-void Mouse::setVisible( bool visible )
+void setVisible( bool visible )
 {
     MouseGLFW::get().setVisible( visible );
 }
 
-void Mouse::setWindow( void* window )
+void setWindow( void* window )
 {
     MouseGLFW::get().setWindow( static_cast<GLFWwindow*>( window ) );
+}
+
 }

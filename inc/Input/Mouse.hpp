@@ -6,15 +6,8 @@ namespace input
 {
 
 // Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Inc/Mouse.h
-class Mouse
+namespace Mouse
 {
-public:
-    static Mouse& get()
-    {
-        static Mouse mouse;
-        return mouse;
-    }
-
     enum class Mode : uint8_t
     {
         Absolute, ///< Mouse position is reported based on its location in the window.
@@ -82,7 +75,7 @@ public:
         /// <summary>
         /// The value of the mouse's scroll wheel.
         /// </summary>
-        int scrollWheelValue;
+        int64_t scrollWheelValue;
 
         /// <summary>
         /// Whether the mouse's x and y coordinates are absolute (relative to the top-left corner of the window)
@@ -109,7 +102,7 @@ public:
         bool operator!=( const State& ) const = default;
     };
 
-    State getState() const;
+    State getState();
 
     void resetScrollWheelValue() noexcept;
 
@@ -117,22 +110,12 @@ public:
 
     void resetRelativeMotion() noexcept;
 
-    bool isConnected() const;
+    bool isConnected();
 
-    bool isVisible() const noexcept;
+    bool isVisible() noexcept;
     void setVisible( bool visible );
 
     void setWindow( void* window );
-
-    Mouse( const Mouse& )     = delete;
-    Mouse( Mouse&& ) noexcept = delete;
-
-    Mouse& operator=( const Mouse& ) = delete;
-    Mouse& operator=( Mouse&& )      = delete;
-
-private:
-    Mouse() = default;
-    ~Mouse() = default;
 };
 
 class MouseStateTracker

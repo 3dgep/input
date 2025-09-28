@@ -492,42 +492,46 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
     }
 }
 
-Mouse::State Mouse::getState() const
+namespace input::Mouse
+{
+State getState()
 {
     return MouseWin32::get().getState();
 }
 
-void Mouse::resetScrollWheelValue() noexcept
+void resetScrollWheelValue() noexcept
 {
     MouseWin32::get().resetScrollWheelValue();
 }
 
-void Mouse::setMode( Mode mode )
+void setMode( Mode mode )
 {
     MouseWin32::get().setMode( mode );
 }
 
-void Mouse::resetRelativeMotion() noexcept
+void resetRelativeMotion() noexcept
 {
     MouseWin32::get().resetRelativeMotion();
 }
 
-bool Mouse::isConnected() const
+bool isConnected()
 {
     return MouseWin32::get().isConnected();
 }
 
-bool Mouse::isVisible() const noexcept
+bool isVisible() noexcept
 {
     return MouseWin32::get().isVisible();
 }
 
-void Mouse::setVisible( bool visible )
+void setVisible( bool visible )
 {
     MouseWin32::get().setVisible( visible );
 }
 
-void Mouse::setWindow( void* window )
+void setWindow( void* window )
 {
     MouseWin32::get().setWindow( static_cast<HWND>( window ) );
+}
+
 }

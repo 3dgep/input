@@ -1,5 +1,3 @@
-#include "input/Gamepad.hpp"
-
 #include <input/Mouse.hpp>
 
 #include <cassert>

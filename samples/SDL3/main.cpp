@@ -220,8 +220,7 @@ void update()
     using MouseStateTracker::ButtonState::Pressed;
     using MouseStateTracker::ButtonState::Released;
 
-    Mouse&       mouse      = Mouse::get();
-    Mouse::State mouseState = mouse.getState();
+    Mouse::State mouseState = Mouse::getState();
 
     g_MouseStateTracker.update( mouseState );
 
@@ -230,10 +229,10 @@ void update()
         switch ( mouseState.positionMode )
         {
         case Absolute:
-            mouse.setMode( Relative );
+            Mouse::setMode( Relative );
             break;
         case Relative:
-            mouse.setMode( Absolute );
+            Mouse::setMode( Absolute );
             break;
         }
     }
@@ -318,7 +317,7 @@ void renderMouse()
 {
     if ( g_pMouseTexture && g_pLMBTexture && g_pRMBTexture && g_pMMBTexture && g_pScrollUpTexture && g_pScrollDownTexture )
     {
-        Mouse::State state = Mouse::get().getState();
+        Mouse::State state = Mouse::getState();
 
         float texW = 0, texH = 0;
         SDL_GetTextureSize( g_pMouseTexture, &texW, &texH );
@@ -521,7 +520,7 @@ void renderMousePanel()
     if ( !g_pFontMono || !g_pRenderer )
         return;
 
-    Mouse::State state = Mouse::get().getState();
+    Mouse::State state = Mouse::getState();
 
     int rtW = 0, rtH = 0;
     SDL_GetRenderOutputSize( g_pRenderer, &rtW, &rtH );
@@ -708,7 +707,7 @@ int main( int argc, char* argv[] )
     }
 
     // Associate the window with the mouse.
-    Mouse::get().setWindow( g_pWindow );
+    Mouse::setWindow( g_pWindow );
 
     // Load assets (example: keyboard, mouse, gamepad images)
     g_pKeyboardTexture       = LoadTexture( g_pRenderer, "assets/ANSI_Keyboard_Layout.png" );
@@ -739,7 +738,7 @@ int main( int argc, char* argv[] )
         render();
 
         // Call this at the end of the frame to reset the relative mouse position.
-        Mouse::get().resetRelativeMotion();
+        Mouse::resetRelativeMotion();
     }
 
     // Cleanup

@@ -1,7 +1,7 @@
 #include <input/Mouse.hpp>
 
-#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_mouse.h>
 
 #include <cassert>
 #include <mutex>
@@ -115,9 +115,9 @@ public:
             SDL_HideCursor();
     }
 
-    void setWindow( void* window )
+    void setWindow( SDL_Window* window )
     {
-        m_Window = static_cast<SDL_Window*>( window );
+        m_Window = window;
     }
 
     MouseSDL3( const MouseSDL3& )            = delete;
@@ -170,43 +170,46 @@ private:
     float       m_RelativeY        = 0.0f;
 };
 
-// Bridge to Mouse interface
-Mouse::State Mouse::getState() const
+namespace input::Mouse
+{
+State getState()
 {
     return MouseSDL3::get().getState();
 }
 
-void Mouse::resetScrollWheelValue() noexcept
+void resetScrollWheelValue() noexcept
 {
     MouseSDL3::get().resetScrollWheelValue();
 }
 
-void Mouse::setMode( Mode mode )
+void setMode( Mode mode )
 {
     MouseSDL3::get().setMode( mode );
 }
 
-void Mouse::resetRelativeMotion() noexcept
+void resetRelativeMotion() noexcept
 {
     MouseSDL3::get().resetRelativeMotion();
 }
 
-bool Mouse::isConnected() const
+bool isConnected()
 {
     return MouseSDL3::get().isConnected();
 }
 
-bool Mouse::isVisible() const noexcept
+bool isVisible() noexcept
 {
     return MouseSDL3::get().isVisible();
 }
 
-void Mouse::setVisible( bool visible )
+void setVisible( bool visible )
 {
     MouseSDL3::get().setVisible( visible );
 }
 
-void Mouse::setWindow( void* window )
+void setWindow( void* window )
 {
-    MouseSDL3::get().setWindow( window );
+    MouseSDL3::get().setWindow( static_cast<SDL_Window*>( window ) );
+}
+
 }

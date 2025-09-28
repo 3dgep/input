@@ -329,8 +329,7 @@ void update()
     using MouseStateTracker::ButtonState::Pressed;
     using MouseStateTracker::ButtonState::Released;
 
-    Mouse&       mouse      = Mouse::get();
-    Mouse::State mouseState = mouse.getState();
+    Mouse::State mouseState = Mouse::getState();
 
     g_MouseStateTracker.update( mouseState );
 
@@ -339,10 +338,10 @@ void update()
         switch ( mouseState.positionMode )
         {
         case Absolute:
-            mouse.setMode( Relative );
+            Mouse::setMode( Relative );
             break;
         case Relative:
-            mouse.setMode( Absolute );
+            Mouse::setMode( Absolute );
             break;
         }
     }
@@ -740,8 +739,7 @@ void renderKeyboard()
 void renderMouse()
 {
     // Get current mouse position
-    Mouse&       mouse = Mouse::get();
-    Mouse::State state = mouse.getState();
+    Mouse::State state = Mouse::getState();
 
     renderTextureRotated( g_pMouseTexture, g_MousePosition, g_fMouseRotation );
     if ( state.rightButton )
@@ -776,7 +774,7 @@ void renderMouseStatePanel()
 
     renderPanel( { panelX, panelY, panelW, panelH } );
 
-    Mouse::State state = Mouse::get().getState();
+    Mouse::State state = Mouse::getState();
 
         std::string text = std::format(
         "Mouse State\n"
@@ -1068,7 +1066,7 @@ int main()
     g_pFontMono = loadFont( "assets/RobotoMono/Regular.ttf", 26 );
 
     // Register window with input system
-    Mouse::get().setWindow( g_pWindow );
+    Mouse::setWindow( g_pWindow );
 
     // Register mouse callback functions.
     glfwSetScrollCallback( g_pWindow, Mouse_ScrollCallback );
@@ -1086,7 +1084,8 @@ int main()
         update();
         render();
 
-        Mouse::get().resetRelativeMotion();
+        // Call this at the end of each frame to reset relative mouse movement.
+        Mouse::resetRelativeMotion();
     }
 
     GLuint textures[] = {

@@ -157,43 +157,45 @@ private:
     int                m_RelativeY = 0;
 };
 
-// Bridge to Mouse interface
-Mouse::State Mouse::getState() const
+namespace input::Mouse
+{
+State getState()
 {
     return MouseSDL2::get().getState();
 }
 
-void Mouse::resetScrollWheelValue() noexcept
+void resetScrollWheelValue() noexcept
 {
     MouseSDL2::get().resetScrollWheelValue();
 }
 
-void Mouse::setMode( Mode mode )
+void setMode( Mode mode )
 {
     MouseSDL2::get().setMode( mode );
 }
 
-void Mouse::resetRelativeMotion() noexcept
+void resetRelativeMotion() noexcept
 {
     MouseSDL2::get().resetRelativeMotion();
 }
 
-bool Mouse::isConnected() const
+bool isConnected()
 {
     return MouseSDL2::get().isConnected();
 }
 
-bool Mouse::isVisible() const noexcept
+bool isVisible() noexcept
 {
     return MouseSDL2::get().isVisible();
 }
 
-void Mouse::setVisible( bool visible )
+void setVisible( bool visible )
 {
     MouseSDL2::get().setVisible( visible );
 }
 
-void Mouse::setWindow( void* window )
+void setWindow( void* window )
 {
     MouseSDL2::get().setWindow( window );
+}
 }
