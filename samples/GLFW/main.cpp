@@ -1,5 +1,7 @@
 #include <input/Input.hpp>
 
+#include <input_test.hpp>
+
 #define NOMINMAX
 #define GLAD_GL_IMPLEMENTATION
 #include "glad/gl.h"
@@ -1083,6 +1085,8 @@ int main()
 
         update();
         render();
+
+        input_test();
 
         // Call this at the end of each frame to reset relative mouse movement.
         Mouse::resetRelativeMotion();

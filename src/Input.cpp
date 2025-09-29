@@ -72,6 +72,8 @@ std::unordered_map<std::string, Key> g_KeyMap = {
     { "[*]", Key::Multiply },
     { "[=]", Key::Separator },
     { "[/]", Key::Divide },
+    { "caps", Key::CapsLock },
+    { "capslock", Key::CapsLock },
     { "shift", Key::ShiftKey },
     { "left shift", Key::LeftShift },
     { "right shift", Key::RightShift },
@@ -81,6 +83,8 @@ std::unordered_map<std::string, Key> g_KeyMap = {
     { "alt", Key::AltKey },
     { "left alt", Key::LeftAlt },
     { "right alt", Key::RightAlt },
+    { "left super", Key::LeftSuper },
+    { "right super", Key::RightSuper },
     { "left win", Key::LeftSuper },
     { "right win", Key::RightSuper },
     { "backspace", Key::Back },
@@ -99,18 +103,46 @@ std::unordered_map<std::string, Key> g_KeyMap = {
     { "page up", Key::PageUp },
     { "pgdn", Key::PageDown },
     { "page down", Key::PageDown },
+    { ";", Key::OemSemicolon },
+    { "+", Key::OemPlus},
+    { ",", Key::OemComma },
+    { "-", Key::OemMinus },
+    { ".", Key::OemPeriod },
+    { "?", Key::OemQuestion },
+    { "~", Key::OemTilde },
+    { "`", Key::OemTilde },
+    { "[", Key::OemOpenBrackets },
+    { "{", Key::OemOpenBrackets },
+    { "]", Key::OemCloseBrackets },
+    { "}", Key::OemCloseBrackets },
+    { "'", Key::OemQuotes },
+    { "\"", Key::OemQuotes },
+    { "|", Key::OemPipe },
+    { "\\", Key::OemPipe },
     { "F1", Key::F1 },
+    { "f1", Key::F1 },
     { "F2", Key::F2 },
+    { "f2", Key::F2 },
     { "F3", Key::F3 },
+    { "f3", Key::F3 },
     { "F4", Key::F4 },
+    { "f4", Key::F4 },
     { "F5", Key::F5 },
+    { "f5", Key::F5 },
     { "F6", Key::F6 },
+    { "f6", Key::F6 },
     { "F7", Key::F7 },
+    { "f7", Key::F7 },
     { "F8", Key::F8 },
+    { "f8", Key::F8 },
     { "F9", Key::F9 },
+    { "f9", Key::F9 },
     { "F10", Key::F10 },
+    { "f10", Key::F10 },
     { "F11", Key::F11 },
+    { "f11", Key::F11 },
     { "F12", Key::F12 },
+    { "f12", Key::F12 },
 };
 
 std::unordered_map<std::string, AxisCallback> g_AxisMap = {
@@ -1345,16 +1377,16 @@ float Input::getAxis( std::string_view axisName )
 
 bool Input::getButton( std::string_view buttonName )
 {
-    // First check if there is a matching axis mapping.
-    if ( const auto& iter = g_AxisMap.find( std::string( buttonName ) ); iter != g_AxisMap.end() )
-    {
-        return iter->second( g_GamepadStateTrackers, g_KeyboardStateTracker, g_MouseStateTracker ) > 0.0f;
-    }
-
-    // Then check if there is a matching button mapping.
+    // First check if there is a matching button mapping.
     if ( const auto& iter = g_ButtonMap.find( std::string( buttonName ) ); iter != g_ButtonMap.end() )
     {
         return iter->second( g_GamepadStateTrackers, g_KeyboardStateTracker, g_MouseStateTracker );
+    }
+
+    // Then check if there is a matching axis mapping.
+    if ( const auto& iter = g_AxisMap.find( std::string( buttonName ) ); iter != g_AxisMap.end() )
+    {
+        return iter->second( g_GamepadStateTrackers, g_KeyboardStateTracker, g_MouseStateTracker ) > 0.0f;
     }
 
     return false;

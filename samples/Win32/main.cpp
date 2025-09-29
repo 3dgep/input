@@ -1,4 +1,5 @@
 #include <input/Input.hpp>
+#include <input_test.hpp>
 
 #include <d2d1.h>
 #include <d2d1_1.h>
@@ -1026,6 +1027,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
 
         update();
         render();
+
+        input_test();
 
         // Call this at the end of each frame to reset relative mouse movements.
         Mouse::resetRelativeMotion();

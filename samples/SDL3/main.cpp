@@ -1,4 +1,5 @@
 #include <input/Input.hpp>
+#include <input_test.hpp>
 
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -736,6 +737,8 @@ int main( int argc, char* argv[] )
 
         update();
         render();
+
+        input_test();
 
         // Call this at the end of the frame to reset the relative mouse position.
         Mouse::resetRelativeMotion();

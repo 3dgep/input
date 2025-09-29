@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 3.10...3.31)
 
 function( add_sample DIR_NAME )
+	if( NOT INPUT_TEST_INCLUDED )
+		add_subdirectory( input )
+		set( INPUT_TEST_INCLUDED TRUE PARENT_SCOPE)
+	endif()
 	add_subdirectory( ${DIR_NAME} )
-	set_target_properties( sample_${DIR_NAME}
+	if( TARGET sample_${DIR_NAME} )
+	set_target_properties( input_test sample_${DIR_NAME}
 		PROPERTIES 
 			FOLDER samples
-			VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	)
+			VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+	endif()
 endfunction()
 
 if(INPUT_USE_GDK AND TARGET Microsoft::GDK)

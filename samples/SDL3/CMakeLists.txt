@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12...3.31)
 
 add_executable(sample_SDL3 main.cpp ../../.clang-format)
-target_link_libraries(sample_SDL3 PRIVATE input::SDL3 SDL3_ttf::SDL3_ttf)
+target_link_libraries(sample_SDL3 PRIVATE input::SDL3 input::test SDL3_ttf::SDL3_ttf)
 
 set(DEPENDENCY_FILES $<TARGET_FILE:SDL3::SDL3>)
 

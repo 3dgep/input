@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12...3.31)
 
 add_executable(sample_SDL2 main.cpp stb_image.h ../../.clang-format)
-target_link_libraries(sample_SDL2 PRIVATE input::SDL2 SDL2::SDL2main)
+target_link_libraries(sample_SDL2 PRIVATE input::SDL2 input::test SDL2::SDL2main)
 
 set(DEPENDENCY_FILES $<TARGET_FILE:SDL2::SDL2> $<TARGET_FILE:SDL2::SDL2main>)
 
