@@ -323,7 +323,7 @@ private:
     ComPtr<IGameInput>     m_GameInput;
     GameInputCallbackToken m_CallbackToken {};
     HWND                   m_Window { nullptr };
-    Mouse::Mode            m_Mode      = Mouse::Mode::Absolute;
+    Mouse::Mode            m_Mode = Mouse::Mode::Absolute;
 
     ScopedHandle m_ScrollWheelValue;
 
@@ -458,7 +458,6 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
     }
 }
 
-
 namespace input::Mouse
 {
 State getState()
@@ -501,4 +500,4 @@ void setWindow( void* window )
     MouseGDK::get().setWindow( static_cast<HWND>( window ) );
 }
 
-}
+}  // namespace input::Mouse
