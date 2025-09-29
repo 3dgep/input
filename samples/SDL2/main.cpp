@@ -66,7 +66,7 @@ constexpr SDL_FRect r( float x, float y, float width = static_cast<float>( KEY_S
     return { x, y, width, height };
 }
 
-using K = Keyboard::Keys;
+using K = Keyboard::Key;
 
 std::unordered_map<K, SDL_Rect> g_KeyRects = {
     // Row 1
@@ -221,8 +221,8 @@ void update()
 {
     using Mouse::Mode::Absolute;
     using Mouse::Mode::Relative;
-    using MouseStateTracker::ButtonState::Pressed;
-    using MouseStateTracker::ButtonState::Released;
+    using ButtonState::Pressed;
+    using ButtonState::Released;
 
     Mouse::State mouseState = Mouse::getState();
 

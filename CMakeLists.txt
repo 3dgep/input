@@ -27,6 +27,7 @@ endif(MSVC)
 add_subdirectory(externals EXCLUDE_FROM_ALL)
 
 set(INC_FILES
+    inc/input/ButtonState.hpp
     inc/input/Gamepad.hpp
     inc/input/Input.hpp
     inc/input/Keyboard.hpp
@@ -35,6 +36,7 @@ set(INC_FILES
 
 set(SRC_FILES
     src/Gamepad.cpp
+    src/Input.cpp
     src/Keyboard.cpp
     src/Mouse.cpp
 )

@@ -1,14 +1,13 @@
 #pragma once
 
-#include <cstdint>
+#include "ButtonState.hpp"
 
 namespace input
 {
 // Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Inc/GamePad.h
 struct Gamepad
 {
-    static const int MAX_PLAYER_COUNT;  ///< Maximum number of gamepads is platform specific.
-
+    static constexpr int MAX_PLAYER_COUNT   = 8;   ///< Maximum number of connected gamepads.
     static constexpr int MOST_RECENT_PLAYER = -1;  ///< Use this player ID to get the most recently plugged-in gamepad.
 
     /// <summary>
@@ -241,7 +240,7 @@ struct Gamepad
     bool  setVibration( float leftMotor, float rightMotor, float leftTrigger = 0.0f, float rightTrigger = 0.0f );
 
     static State getState( int playerIndex, DeadZone deadZoneMode = DeadZone::IndependentAxis );
-    static bool setVibration( int playerIndex, float leftMotor, float rightMotor, float leftTrigger = 0.0f, float rightTrigger = 0.0f );
+    static bool  setVibration( int playerIndex, float leftMotor, float rightMotor, float leftTrigger = 0.0f, float rightTrigger = 0.0f );
 
     static void suspend() noexcept;
     static void resume() noexcept;
@@ -253,14 +252,6 @@ private:
 class GamepadStateTracker
 {
 public:
-    enum class ButtonState : uint8_t
-    {
-        UP       = 0,  // Button is up
-        HELD     = 1,  // Button is held down
-        RELEASED = 2,  // Button was just released
-        PRESSED  = 3,  // Buton was just pressed
-    };
-
     union
     {
         ButtonState a;

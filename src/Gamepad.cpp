@@ -75,11 +75,10 @@ Gamepad::State Gamepad::getState( DeadZone deadZoneMode ) const
 {
     return getState( playerIndex, deadZoneMode );
 }
-bool  Gamepad::setVibration( float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
+bool Gamepad::setVibration( float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
 {
     return setVibration( playerIndex, leftMotor, rightMotor, leftTrigger, rightTrigger );
 }
-
 
 #define UPDATE_BUTTON_STATE( field ) field = static_cast<ButtonState>( ( !!state.buttons.field ) | ( ( !!state.buttons.field ^ !!lastState.buttons.field ) << 1 ) )
 
@@ -87,10 +86,10 @@ void GamepadStateTracker::update( const Gamepad::State& state )
 {
     UPDATE_BUTTON_STATE( a );
 
-    assert( ( !state.buttons.a && !lastState.buttons.a ) == ( a == ButtonState::UP ) );
-    assert( ( state.buttons.a && lastState.buttons.a ) == ( a == ButtonState::HELD ) );
-    assert( ( !state.buttons.a && lastState.buttons.a ) == ( a == ButtonState::RELEASED ) );
-    assert( ( state.buttons.a && !lastState.buttons.a ) == ( a == ButtonState::PRESSED ) );
+    assert( ( !state.buttons.a && !lastState.buttons.a ) == ( a == ButtonState::Up ) );
+    assert( ( state.buttons.a && lastState.buttons.a ) == ( a == ButtonState::Held ) );
+    assert( ( !state.buttons.a && lastState.buttons.a ) == ( a == ButtonState::Released ) );
+    assert( ( state.buttons.a && !lastState.buttons.a ) == ( a == ButtonState::Pressed ) );
 
     UPDATE_BUTTON_STATE( b );
     UPDATE_BUTTON_STATE( x );
@@ -110,10 +109,10 @@ void GamepadStateTracker::update( const Gamepad::State& state )
     dPadLeft  = static_cast<ButtonState>( ( !!state.dPad.left ) | ( ( !!state.dPad.left ^ !!lastState.dPad.left ) << 1 ) );
     dPadRight = static_cast<ButtonState>( ( !!state.dPad.right ) | ( ( !!state.dPad.right ^ !!lastState.dPad.right ) << 1 ) );
 
-    assert( ( !state.dPad.up && !lastState.dPad.up ) == ( dPadUp == ButtonState::UP ) );
-    assert( ( state.dPad.up && lastState.dPad.up ) == ( dPadUp == ButtonState::HELD ) );
-    assert( ( !state.dPad.up && lastState.dPad.up ) == ( dPadUp == ButtonState::RELEASED ) );
-    assert( ( state.dPad.up && !lastState.dPad.up ) == ( dPadUp == ButtonState::PRESSED ) );
+    assert( ( !state.dPad.up && !lastState.dPad.up ) == ( dPadUp == ButtonState::Up ) );
+    assert( ( state.dPad.up && lastState.dPad.up ) == ( dPadUp == ButtonState::Held ) );
+    assert( ( !state.dPad.up && lastState.dPad.up ) == ( dPadUp == ButtonState::Released ) );
+    assert( ( state.dPad.up && !lastState.dPad.up ) == ( dPadUp == ButtonState::Pressed ) );
 
     // Handle 'threshold' tests which emulate buttons
 

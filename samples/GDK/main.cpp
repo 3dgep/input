@@ -78,7 +78,7 @@ constexpr D2D1_RECT_F r( float x, float y, float width = KEY_SIZE, float height 
     return { x, y, x + width, y + height };
 }
 
-using K = Keyboard::Keys;
+using K = Keyboard::Key;
 
 std::unordered_map<K, D2D1_RECT_F> g_KeyRects = {
     // Row 1
@@ -429,8 +429,8 @@ void update()
 {
     using Mouse::Mode::Absolute;
     using Mouse::Mode::Relative;
-    using MouseStateTracker::ButtonState::Pressed;
-    using MouseStateTracker::ButtonState::Released;
+    using ButtonState::Pressed;
+    using ButtonState::Released;
 
     if ( !g_pRenderTarget )
         return;

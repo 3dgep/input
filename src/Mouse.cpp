@@ -1,7 +1,7 @@
 #include <input/Mouse.hpp>
 
 #include <cassert>
-#include <cstring> // for memset
+#include <cstring>  // for memset
 
 using namespace input;
 
@@ -22,6 +22,17 @@ void MouseStateTracker::update( const Mouse::State& state ) noexcept
     UPDATE_BUTTON_STATE( xButton2 );
 
     scrollWheelDelta = state.scrollWheelValue - lastState.scrollWheelValue;
+
+    if ( state.positionMode == Mouse::Mode::Relative )
+    {
+        x = state.x;
+        y = state.y;
+    }
+    else
+    {
+        x = state.x - lastState.x;
+        y = state.y - lastState.y;
+    }
 
     lastState = state;
 }

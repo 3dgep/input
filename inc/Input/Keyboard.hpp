@@ -7,7 +7,7 @@ namespace input
 // Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Inc/Keyboard.h
 namespace Keyboard
 {
-enum class Keys : uint8_t
+enum class Key : uint8_t
 {
     None        = 0x00,         // No key was pressed
     LeftButton  = 0x01,         // Left mouse button
@@ -447,9 +447,9 @@ struct State
         // ============ ( 32 bytes ) ===========================
     // clang-format on
 
-    bool isKeyDown( Keys key ) const noexcept;
+    bool isKeyDown( Key key ) const noexcept;
 
-    bool isKeyUp( Keys key ) const noexcept;
+    bool isKeyUp( Key key ) const noexcept;
 
     bool operator==( const State& ) const = default;
     bool operator!=( const State& ) const = default;
@@ -478,12 +478,12 @@ public:
 
     void reset();
 
-    bool isKeyPressed( Keyboard::Keys key ) const noexcept
+    bool isKeyPressed( Keyboard::Key key ) const noexcept
     {
         return pressed.isKeyDown( key );
     }
 
-    bool isKeyReleased( Keyboard::Keys key ) const noexcept
+    bool isKeyReleased( Keyboard::Key key ) const noexcept
     {
         return released.isKeyDown( key );
     }

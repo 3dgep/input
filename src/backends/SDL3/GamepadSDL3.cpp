@@ -10,7 +10,6 @@
 
 using namespace input;
 
-const int       Gamepad::MAX_PLAYER_COUNT = 8;
 constexpr float SDLThumbDeadZone          = 0.24f;  // Consistent with XboxOneThumbDeadZone
 
 class GamepadSDL3

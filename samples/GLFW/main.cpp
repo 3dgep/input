@@ -94,7 +94,7 @@ constexpr Rect r( float x, float y, float width = KEY_SIZE, float height = KEY_S
     return { .x = x, .y = y, .w = width, .h = height };
 }
 
-using K = Keyboard::Keys;
+using K = Keyboard::Key;
 
 std::unordered_map<K, Rect> g_KeyRects = {
     // Row 1
@@ -326,8 +326,8 @@ void update()
 {
     using Mouse::Mode::Absolute;
     using Mouse::Mode::Relative;
-    using MouseStateTracker::ButtonState::Pressed;
-    using MouseStateTracker::ButtonState::Released;
+    using ButtonState::Pressed;
+    using ButtonState::Released;
 
     Mouse::State mouseState = Mouse::getState();
 

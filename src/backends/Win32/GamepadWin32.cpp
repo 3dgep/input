@@ -11,8 +11,6 @@
 using namespace input;
 using namespace Microsoft::WRL;
 
-const int Gamepad::MAX_PLAYER_COUNT = 8;
-
 constexpr float XboxOneThumbDeadZone = .24f;  // Recommended Xbox One controller deadzone
 
 namespace

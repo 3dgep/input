@@ -13,8 +13,6 @@
 using namespace input;
 using Microsoft::WRL::ComPtr;
 
-const int Gamepad::MAX_PLAYER_COUNT = 8;
-
 constexpr float XboxOneThumbDeadZone = .24f;  // Recommended Xbox One controller deadzone
 
 // Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Src/GamePad.cpp

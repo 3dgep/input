@@ -32,7 +32,7 @@ void KeyUp( int key, Keyboard::State& state ) noexcept
 // Map SDL scancode to Keyboard::Keys enum value or VK code
 int SDLScancodeToVirtualKey( SDL_Scancode scancode )
 {
-    using K = Keyboard::Keys;
+    using K = Keyboard::Key;
     switch ( scancode )
     {
     case SDL_SCANCODE_BACKSPACE:

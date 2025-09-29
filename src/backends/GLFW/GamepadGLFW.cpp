@@ -6,7 +6,6 @@
 
 using namespace input;
 
-const int       Gamepad::MAX_PLAYER_COUNT = 16;
 constexpr float GLFWThumbDeadZone         = 0.24f;  // Consistent with XboxOneThumbDeadZone
 
 class GamepadGLFW

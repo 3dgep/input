@@ -36,7 +36,7 @@ void KeyUp(int key, Keyboard::State& state) noexcept
 // Map GLFW key to Win32 virtual key code
 int GLFWKeyToVirtualKey(int glfwKey)
 {
-    using K = Keyboard::Keys;
+    using K = Keyboard::Key;
     switch (glfwKey)
     {
     // Printable keys
