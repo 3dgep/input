@@ -388,3 +388,15 @@ bool Gamepad::setVibration( int playerIndex, float leftMotor, float rightMotor, 
 {
     return GamepadWin32::get().setVibration( playerIndex, leftMotor, rightMotor, leftTrigger, rightTrigger );
 }
+
+void Gamepad::suspend() noexcept
+{
+    GamepadWin32::get().suspend();
+}
+
+void Gamepad::resume() noexcept
+{
+    GamepadWin32::get().resume();
+}
+
+

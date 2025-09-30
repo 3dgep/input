@@ -58,6 +58,8 @@ Include the headers from [`inc`](inc) folder and link against the appropriate ba
 ```cpp
 #include <input/Input.hpp>
 
+void updateInput();
+
 void main()
 {
     // Hook up any special callback functions, depending on the backend (see below).
@@ -92,6 +94,13 @@ void main()
 
         return std::clamp( down - up + leftY + rightY, -1.0f, 1.0f );
     } );
+
+    bool isRunning = true;
+
+    while(isRunning)
+    {
+        updateInput();
+    }
 }
 
 void updateInput() {
@@ -112,7 +121,7 @@ Some backends require certain functions provided by the input library to be "hoo
 
 ### Win32
 
-The Win32 backend requires that you call following functions in your application's message handler:
+The Win32 backend requires that you call the following functions in your application's message handler:
 
 ```cpp
 // Forward declare callback functions.
@@ -209,7 +218,7 @@ The [`Gamepad`](inc/input/Gamepad.hpp) class can be used as a singleton class, o
 The `Gampad` class provides the following functions:
 
 - `static Gamepad::State getState( int playerId, DeadZoneMode deadZoneMode )`: Get the current gamepad state for the player at index `playerId`.
-- `static bool setVibration( int playerId, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )`: Set the controller vibration (rumble). Note: The GLFW backend does not support controller rumble.
+- `static bool setVibration( int playerId, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )`: Set the controller vibration (rumble). Note: The GLFW backend does not support controller vibration.
 - `static void suspend()`: Call this function when your game window loses focus.
 - `static void resume()`: Call this function when your game window gains focus.
 
@@ -303,6 +312,20 @@ If a button is pressed or released in the current frame, the input system should
 You can also get the last state that the `GamepadStateTracker` was updated with using `GamepadStateTracker::getLastState`, but you can only determine if a button is up or down (held), but not if it was pressed/released this frame.
 
 ## Mouse
+
+Since most systems only have a single mouse connected to the system, the mouse is a singleton class (actually, it's just a namespace). The `Mouse` (class) has the following functions:
+
+- `Mouse::State getState()`: Get the current state of the mouse, including buttons, x, y position of the mouse, and the accumulated scroll wheel value.
+- `void resetScrollWheelValue()`: Reset the accumulated scroll wheel value.
+- `void setMode( Mode mode )`: Set the mouse mode to one of the following values:
+  - `Absolute`: Mouse position is reported relative to the window.
+  - `Relative`: Mouse position is reported in delta values (use the`resetRelativeMotion` function to reset the mouse deltas at the end of each frame)
+- `void resetRelativeMotion()`: Reset the relative mouse deltas. You should call this function at the end of each frame regardless of the mouse mode.
+- `bool isConnected()`: Returns `true` if a mouse is connected, `false` otherwise.
+- `bool isVisible()`: Returns `true` if the mouse cursor is visible.
+- `void setVisible( bool visible )`: Show or hide the mouse cursor.
+- `void setWindow( void* window )`: Set the OS window handle (the type of this pointer is based on the current backend).
+
 
 ## License
 

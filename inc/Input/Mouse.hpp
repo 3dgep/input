@@ -8,6 +8,7 @@ namespace input
 // Source (September 15, 2025): https://github.com/microsoft/DirectXTK/blob/main/Inc/Mouse.h
 namespace Mouse
 {
+
 enum class Button : uint8_t
 {
     Left,
@@ -125,20 +126,19 @@ bool isVisible() noexcept;
 void setVisible( bool visible );
 
 void setWindow( void* window );
-};  // namespace Mouse
+}  // namespace Mouse
 
 class MouseStateTracker
 {
 public:
-
     ButtonState leftButton;
     ButtonState middleButton;
     ButtonState rightButton;
     ButtonState xButton1;
     ButtonState xButton2;
 
-    float x = 0.0f; ///< The change in the x-position since the last update.
-    float y = 0.0f; ///< The change in the y-position since the last update.
+    float x = 0.0f;  ///< The change in the x-position since the last update.
+    float y = 0.0f;  ///< The change in the y-position since the last update.
 
     int scrollWheelDelta;
 

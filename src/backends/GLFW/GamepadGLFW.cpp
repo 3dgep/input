@@ -20,7 +20,6 @@ public:
 
     void suspend()
     {
-        
         m_Suspended = true;
     }
 

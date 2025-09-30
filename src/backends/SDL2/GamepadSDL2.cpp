@@ -102,7 +102,7 @@ public:
 
     void resume()
     {
-        std::lock_guard<std::mutex> lock( m_Mutex );
+        std::lock_guard lock( m_Mutex );
 
         // Close all currently open controllers
         for ( auto& ctrl: m_Controllers )
