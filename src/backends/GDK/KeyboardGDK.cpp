@@ -94,7 +94,7 @@ public:
             uint32_t          readCount = reading->GetKeyState( 256, keyState );
             for ( size_t i = 0; i < readCount; ++i )
             {
-                int vk = static_cast<int>( keyState[i].virtualKey );
+                int vk = keyState[i].virtualKey;
 
                 // Workaround for known issues with VK_RSHIFT and VK_NUMLOCK
                 if ( vk == 0 )

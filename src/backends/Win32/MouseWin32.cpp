@@ -173,7 +173,7 @@ public:
         }
     }
 
-    void setWindow( HWND window )
+   void setWindow( HWND window )
     {
         if ( m_Window == window )
             return;

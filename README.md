@@ -215,7 +215,7 @@ Sample applications are available in the [`samples`](samples) directory. Enable 
 
 The [`Gamepad`](inc/input/Gamepad.hpp) class can be used as a singleton class, or if you find it more convenient to create an instance of a `Gamepad` object with an associated player ID.
 
-The `Gampad` class provides the following functions:
+The `Gamepad` class provides the following functions:
 
 - `static Gamepad::State getState( int playerId, DeadZoneMode deadZoneMode )`: Get the current gamepad state for the player at index `playerId`.
 - `static bool setVibration( int playerId, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )`: Set the controller vibration (rumble). Note: The GLFW backend does not support controller vibration.
@@ -266,7 +266,7 @@ The analog sticks will have deadzone applied according to the recommended deadzo
 - `IndependentAxis`: Apply deadzone values to the X, and Y axis independently.
 - `Circular`: Apply deadzone based on the radial distance from the center point.
 
-Currently the deazone for the thumbsticks is currently not configurable. The recommended value for XBox controllers (0.24) is used in all backends.
+Currently the deadzone for the thumbsticks is currently not configurable. The recommended value for XBox controllers (0.24) is used in all backends.
 
 See the [Gamepad.hpp](inc/input/Gamepad.hpp) file for more information on the layout of the `Gamepad::State` structure.
 
@@ -276,11 +276,10 @@ The `GamepadStateTracker` class is used to check if a button was "just pressed" 
 
 ```cpp
 // Define a GamepadStateTracker for each gamepad you want to get pressed/released key states.
-GampadStateTracker gamepadStateTrackers[Gamepad::MAX_PLAYER_COUNT];
+GamepadStateTracker gamepadStateTrackers[Gamepad::MAX_PLAYER_COUNT];
 
 void updateGamepads()
 {
-   
     for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
     {
         // Get the current state of the gamepad, apply independent axis deadzone mode.
@@ -319,12 +318,98 @@ Since most systems only have a single mouse connected to the system, the mouse i
 - `void resetScrollWheelValue()`: Reset the accumulated scroll wheel value.
 - `void setMode( Mode mode )`: Set the mouse mode to one of the following values:
   - `Absolute`: Mouse position is reported relative to the window.
-  - `Relative`: Mouse position is reported in delta values (use the`resetRelativeMotion` function to reset the mouse deltas at the end of each frame)
+  - `Relative`: Mouse position is reported in delta values (use the`resetRelativeMotion` function to reset the mouse deltas at the end of each frame).
 - `void resetRelativeMotion()`: Reset the relative mouse deltas. You should call this function at the end of each frame regardless of the mouse mode.
 - `bool isConnected()`: Returns `true` if a mouse is connected, `false` otherwise.
 - `bool isVisible()`: Returns `true` if the mouse cursor is visible.
 - `void setVisible( bool visible )`: Show or hide the mouse cursor.
 - `void setWindow( void* window )`: Set the OS window handle (the type of this pointer is based on the current backend).
+
+### Absolute Mode
+
+Absolute mouse mode causes the mouse state to report the mouse position in window coordinates where the top-left corner of the window is (0,0). This is useful for menu navigation or pressing buttons in the game's UI.
+
+When using Absolute mouse mode, the mouse cursor can leave the window which could be annoying for the end-user if they are controlling a player or camera using the mouse. When the mouse cursor leaves the window bounds, your game will stop receiving mouse events. To prevent the game from losing control when the mouse cursor leave the window bounds, use the `Relative` mode instead.
+
+### Relative Mode
+
+Relative mouse mode will cause the mouse state to report relative mouse deltas in the states's x, and y values. Some backends will poll for mouse movement in a separate thread so it's not always obvious when the mouse deltas should be reset. For this reason, you should call `Mouse::resetRelativeMotion()` at the end of each frame.
+
+It's also not safe to reset the mouse delta's whenever `Mouse::getState()` is used. It is very important that `Mouse::getState` reports the *same* state when retrieving the state several times in the same frame. Resetting the mouse delta in the `Mouse::getState` function may cause unexpected behaviour if the mouse state is queried several times per frame. That's why the mouse deltas (and scroll wheel values) are not reset automatically when reading the mouse state and you should call `Mouse::resetRelativeMotion()` at the end of each frame to reset the delta values manually.
+
+```cpp
+void updateMouse()
+{
+    using Mouse::Mode::Absolute;
+    using Mouse::Mode::Relative;
+
+    Mouse::State mouseState = Mouse::getState();
+
+    auto windowSize = window->GetSize();
+
+    switch ( mouseState.positionMode )
+    {
+    case Absolute: // x, and y are in window space.
+        g_MousePosition  = { mouseState.x, mouseState.y };
+        g_fMouseRotation = 0.0f;
+        break;
+    case Relative: // x, and y are change in movement since the last call to resetRelativeMotion.
+        g_MousePosition = { windowSize.width / 2.0f, windowSize.height / 2.0f };
+        g_fMouseRotation += mouseState.x + mouseState.y; // Rotate the mouse based on delta movements.
+        break;
+    }
+}
+```
+
+Please refer to any of the [samples](samples) for more information on handing mouse input.
+
+## MouseStateTracker
+
+The `Mouse::State` only reports the *current* state, but if you want to know how much the mouse has moved (when using `Absolute` mode) or whether a mouse button was pressed or released *this frame*, you will need to keep track of the previous mouse state. That's what the MouseStateTracker class does for you.
+
+```cpp
+MouseStateTracker mouseStateTracker; // Defined somewhere in your code.
+
+void updateMouse()
+{
+    using ButtonState::Pressed;
+    using ButtonState::Released;
+
+    Mouse::State mouseState = Mouse::getState();
+
+    // Update the mouse state tracker once per frame!
+    mouseStateTracker.update( mouseState );
+
+    // Check if the right mouse button was pressed this frame.
+    if ( mouseStateTracker.rightButton == Pressed )
+    {
+        // Toggle the mouse mode.
+        switch ( mouseState.positionMode )
+        {
+        case Absolute:
+            Mouse::setMode( Relative );
+            break;
+        case Relative:
+            Mouse::setMode( Absolute );
+            break;
+        }
+    }
+}
+```
+
+It is important that the `MouseStateTracker` reports pressed/released state consistently across the entire frame. Multiple calls to `MouseStateTracker::rightButton` should report the same state during the frame.
+
+The `MouseStateTracker` class also has x, and y variables which will always report mouse deltas regardless of the mouse's input mode. It also keeps track of how much the scroll wheel has moved in the `scrollWheelDelta` member since the last call to `MouseStateTracker::update`.
+
+## Keyboard
+
+Similar to the mouse, there is usually only a single keyboard connected to your computer at a time. For this reason, the `Keyboard` is a singleton (actually, it's just a namespace) with the following functions:
+
+- `Keyboard::State getState()`: Retrieve the current keyboard state.
+- `void reset()`: Used by some of the backends to reset the internal keyboard state. This function should be called when game window loses focus.
+- `bool isConnected()`: Check to see if there is a keyboard connected.
+
+## KeyboardStateTracker
 
 
 ## License

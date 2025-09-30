@@ -2,7 +2,6 @@
 
 #include <SDL3/SDL_keyboard.h>
 
-#include <cstring>
 #include <mutex>
 
 using namespace input;
@@ -371,12 +370,6 @@ public:
         return state;
     }
 
-    void reset()
-    {
-        std::lock_guard lock( m_Mutex );
-        std::memset( &m_State, 0, sizeof( Keyboard::State ) );
-    }
-
     bool isConnected() const
     {
         return SDL_HasKeyboard();
@@ -392,7 +385,6 @@ private:
     ~KeyboardSDL3() = default;
 
     mutable std::mutex m_Mutex;
-    Keyboard::State    m_State {};
 };
 
 namespace input::Keyboard
@@ -403,9 +395,7 @@ State getState()
 }
 
 void reset()
-{
-    KeyboardSDL3::get().reset();
-}
+{}
 
 bool isConnected()
 {
