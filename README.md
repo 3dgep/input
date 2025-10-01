@@ -2,7 +2,43 @@
 
 # Input
 
-Input is a cross-platform C++ library for handling gamepad, keyboard, and mouse input. It provides a unified API for querying input states and supports multiple backends, including SDL2, SDL3, GDK, GLFW, and Win32.
+
+
+Input is a cross-platform C++ library for handling gamepad, keyboard, and mouse input.
+
+It provides a unified API for querying input states and supports multiple backends, including SDL2, SDL3, GDK, GLFW, and Win32.
+
+## Table of Contents
+
+- [Input](#input)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Building](#building)
+    - [Basic Usage](#basic-usage)
+  - [Backends](#backends)
+    - [Win32](#win32)
+    - [Microsoft Game Development Kit](#microsoft-game-development-kit)
+    - [GLFW](#glfw)
+    - [SDL2 \& SDL3](#sdl2--sdl3)
+  - [Samples](#samples)
+  - [Gamepad](#gamepad)
+  - [GamepadStateTracker](#gamepadstatetracker)
+  - [Mouse](#mouse)
+    - [Absolute Mode](#absolute-mode)
+    - [Relative Mode](#relative-mode)
+  - [MouseStateTracker](#mousestatetracker)
+  - [Keyboard](#keyboard)
+    - [Keyboard State](#keyboard-state)
+  - [KeyboardStateTracker](#keyboardstatetracker)
+  - [Input API](#input-api)
+    - [Key Names](#key-names)
+    - [Button Names](#button-names)
+    - [Axis Names](#axis-names)
+    - [Input Actions](#input-actions)
+  - [Known Issues](#known-issues)
+  - [License](#license)
 
 ## Features
 
@@ -454,11 +490,16 @@ In addition to the public member variables, the keyboard state tracker also prov
 - `bool isKeyReleased( Keyboard::Key key )`: Returns `true` if the key was released *this frame*.
 - `Keyboard::State getLastState()`: Get the keyboard state that was last used to update the `KeyboardStateTracker`.
 
-## Input
+## Input API
 
-The `Input` (namespace) is a singleton (namespace) that provides access to keyboard keys, gamepad & mouse buttons, and gamepad axes. This implementation is inspired by Unity's Input system (see [Input](https://docs.unity3d.com/ScriptReference/Input.html) in the Unity script reference).
 
-Internally, it stores a `KeyboardStateTracker`, `MouseStateTracker`, and a `GamepadStateTracker` for each connected gamepad. Calling the `Input::update` method (once per frame!) is required to let the `Input` class update its internal state. The `Input` (namespace) provides the following methods:
+The `Input` namespace provides access to keyboard keys, gamepad & mouse buttons, and gamepad axes. This implementation is inspired by Unity's Input system (see [Input](https://docs.unity3d.com/ScriptReference/Input.html) in the Unity script reference).
+
+Internally, it stores a `KeyboardStateTracker`, `MouseStateTracker`, and a `GamepadStateTracker` for each connected gamepad.
+
+Calling the `Input::update` method (once per frame) is required to let the `Input` class update its internal state.
+
+The `Input` namespace provides the following methods:
 
 - `void update()`: Call this once per frame to update the Input's internal state.
 - `bool getKey( std::string_view keyName )`: Return `true` while the key is being held down on the keyboard. See [Key Names](#key-names) below.
@@ -692,15 +733,25 @@ The following predefined axis names are available by default.
 | "Submit"            | Gamepad A button, Enter key, or Space key                                  |
 | "Cancel"            | Gamepad B button or Escape key                                             |
 
-> **Note**: Some axis names ("Jump", "Submit", and "Cancel") are mapped to gamepad buttons and keyboard keys. These actions will return 1.0 while the button on the gamepad or key on the keyboard is held down.
+> **Note:** Some axis names ("Jump", "Submit", and "Cancel") are mapped to gamepad buttons and keyboard keys. **These actions will return 1.0 while the button on the gamepad or key on the keyboard is held down.**
 
 You can add your own axis names at runtime using the `addAxisCallback` function. See [Input Actions](#input-actions) below.
 
 ### Input Actions
 
-You can define your own callback functions at runtime. Adding an input action with the same name as an existing action name will replace the existing action name.
+Input actions allow you to map game events (such as movement, jumping, or menu navigation) to custom callback functions. This enables flexible control schemes, remapping, and dynamic input configuration for your game or application.
 
-This is an example that creates the following actions for a 2D platforming game:
+You can define your own callback functions at runtime. **If you add an input action with a name that already exists, the previous callback will be replaced.** This makes it easy to update or remap actions as needed.
+
+**Common use cases:**
+
+- Remapping controls for accessibility or user preferences
+- Supporting multiple input devices
+- Dynamic configuration (e.g., changing actions based on game state)
+
+**API Reference:** See the [Input API](#input-api) section for details on callback signatures and usage.
+
+Below is an example that creates several actions for a 2D platforming game:
 
 | Action Name  | Description                                                                                                   |
 | ------------ | ------------------------------------------------------------------------------------------------------------- |
@@ -710,115 +761,87 @@ This is an example that creates the following actions for a 2D platforming game:
 | "Previous"   | Go to the previous level if the back button on any gamepad is pressed this frame.                             |
 | "Reload"     | Reload the current level if the B button is pressed on any gamepad.                                           |
 
-> **Note**: Input actions should provide both gamepad and keyboard input. In the case of the "Next", "Previous" and "Reload" actions, there is no keyboard input, but there are on screen buttons that the end user can click with the mouse.
+> **Note:** Input actions should provide both gamepad and keyboard input. In the case of the "Next", "Previous" and "Reload" actions, there is no keyboard input, but there are on-screen buttons that the end user can click with the mouse.
 
 ```cpp
-// Input that controls the characters horizontal movement.
+// Horizontal movement: combines gamepad thumbstick and keyboard keys (A/D/Left/Right)
 Input::addAxisCallback( "Horizontal", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
     float leftX = 0.0f;
-
-    for ( auto& gamepadState: gamepadStates )
-    {
+    for ( auto& gamepadState: gamepadStates ) {
         const auto state = gamepadState.getLastState();
-
         leftX += state.thumbSticks.leftX;
     }
-
     const auto keyState = keyboardState.getLastState();
-
     const float a     = keyState.A ? 1.0f : 0.0f;
     const float d     = keyState.D ? 1.0f : 0.0f;
     const float left  = keyState.Left ? 1.0f : 0.0f;
     const float right = keyState.Right ? 1.0f : 0.0f;
-
     return std::clamp( leftX - a + d - left + right, -1.0f, 1.0f );
 } );
 
-// Input that controls jumping.
+// Jump action: triggers when gamepad A or Space/W/Up on keyboard is pressed
 Input::addButtonDownCallback( "Jump", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
     bool a = false;
-
-    for ( auto& gamepadState: gamepadStates )
-    {
+    for ( auto& gamepadState: gamepadStates ) {
         a = a || gamepadState.a == ButtonState::Pressed;
     }
-
     const bool space = keyboardState.isKeyPressed( KeyCode::Space );
     const bool up    = keyboardState.isKeyPressed( KeyCode::Up );
     const bool w     = keyboardState.isKeyPressed( KeyCode::W );
-
     return a || space || up || w;
 } );
 
-// Input to go to the next map.
+// Next level: triggers when gamepad Start button is pressed
 Input::addButtonDownCallback( "Next", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
     bool start = false;
-
-    for ( auto& gamepadState: gamepadStates )
-    {
+    for ( auto& gamepadState: gamepadStates ) {
         start = start || gamepadState.start == ButtonState::Pressed;
     }
-
     return start;
 } );
 
-// Input to go to the previous map.
+// Previous level: triggers when gamepad Back button is pressed
 Input::addButtonDownCallback( "Previous", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
     bool back = false;
-
-    for ( auto& gamepadState: gamepadStates )
-    {
+    for ( auto& gamepadState: gamepadStates ) {
         back = back || gamepadState.back == ButtonState::Pressed;
     }
-
     return back;
 } );
 
-// Input to go to reload the current map.
+// Reload level: triggers when gamepad B or Enter on keyboard is pressed
 Input::addButtonDownCallback( "Reload", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
     bool b = false;
-
-    for ( auto& gamepadState: gamepadStates )
-    {
+    for ( auto& gamepadState: gamepadStates ) {
         b = b || gamepadState.b == ButtonState::Pressed;
     }
-
     const bool enter = keyboardState.isKeyPressed( KeyCode::Enter );
-
     return b || enter;
 } );
 ```
 
-With these actions defined, you can check if any of the actions are triggered by checking the appropriate functions in the input system:
+With these actions defined, you can check if any of the actions are triggered by calling the appropriate functions in the input system:
 
 ```cpp
-// Move the character if there is horizontal movement.
-if ( Input::getAxis( "Horizontal" ) != 0.0f )
-{
+// Example usage in your game loop:
+if ( Input::getAxis( "Horizontal" ) != 0.0f ) {
     setState( State::Run );
 }
-// Jump if the jump button is pressed this frame.
-if ( Input::getButtonDown( "Jump" ) )
-{
+if ( Input::getButtonDown( "Jump" ) ) {
     setState( State::Jump );
 }
-
-// Check if next/previous input buttons have been pressed.
-if ( Input::getButtonDown( "Next" ) )
-{
+if ( Input::getButtonDown( "Next" ) ) {
     onNextClicked();
 }
-if ( Input::getButtonDown( "Previous" ) )
-{
+if ( Input::getButtonDown( "Previous" ) ) {
     onPreviousClicked();
 }
-if ( Input::getButtonDown( "Reload" ) )
-{
+if ( Input::getButtonDown( "Reload" ) ) {
     onRestartClicked();
 }
 ```
 
-> **TODO**: It would be nice if there was a way to create custom input mappings or custom actions in scripts. This is not currently supported by the input system, but you can use axis and button callback functions to change the way an action is evaluated (including reading your game's own custom configuration settings to evaluate actions).
+> **TODO:** It would be nice if there was a way to create custom input mappings or custom actions in scripts. This is not currently supported by the input system, but you can use axis and button callback functions to change the way an action is evaluated (including reading your game's own custom configuration settings to evaluate actions).
 
 ## Known Issues
 
