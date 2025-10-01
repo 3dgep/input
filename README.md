@@ -353,9 +353,9 @@ void updateMouse()
         g_MousePosition  = { mouseState.x, mouseState.y };
         g_fMouseRotation = 0.0f;
         break;
-    case Relative: // x, and y are change in movement since the last call to resetRelativeMotion.
+    case Relative: // x, and y are changes in movement since the last call to resetRelativeMotion.
         g_MousePosition = { windowSize.width / 2.0f, windowSize.height / 2.0f };
-        g_fMouseRotation += mouseState.x + mouseState.y; // Rotate the mouse based on delta movements.
+        g_fMouseRotation += mouseState.x + mouseState.y; // Rotate the mouse based on delta. movements.
         break;
     }
 }
@@ -406,10 +406,78 @@ The `MouseStateTracker` class also has x, and y variables which will always repo
 Similar to the mouse, there is usually only a single keyboard connected to your computer at a time. For this reason, the `Keyboard` is a singleton (actually, it's just a namespace) with the following functions:
 
 - `Keyboard::State getState()`: Retrieve the current keyboard state.
-- `void reset()`: Used by some of the backends to reset the internal keyboard state. This function should be called when game window loses focus.
+- `void reset()`: Used by some of the backends to reset the internal keyboard state. This function should be called when game window loses focus to clear any "down" key states.
 - `bool isConnected()`: Check to see if there is a keyboard connected.
 
+### Keyboard State
+
+It is important to note that this input system is not appropriate for creating text editors. It is intended to be used with games. In game development, you are usually only concerned with what key was pressed, released, or held down, but not concerned with the actual character that is produced when the key is pressed. For example, if the `A` key on the keyboard is pressed, then the `Keyboard::State::A` value will be `true`, but you won't be able to tell exactly which glyph should be displayed. (See [Keyboard layout](https://en.wikipedia.org/wiki/Keyboard_layout) for more information about various keyboard layouts).
+
+> I've tested the keyboard mapping for all of the backends supported by this library, but I only have access to US Qwerty keyboards. If you do notice a discrepancy with your keyboard, please post an issue in the GitHub repo.
+
+The key value in the `Keyboard::Key` enumeration values are the 1:1 mapping to virtual key codes in Windows (See: [Virtual-key codes](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)) regardless of the backend you are using. All backend specific keys are mapped to the key value in the `Keyboard::Key` enumeration. (See [KeyboardGLFW.cpp](src/backends/GLFW/KeyboardGLFW.cpp) as an example).
+
 ## KeyboardStateTracker
+
+Similar to the `GamepadStateTracker` and the `MouseStateTracker`, the `KeyboardStateTracker` can be used to check if a key is pressed this frame or released this frame.
+
+```cpp
+KeyboardStateTracker keyboardStateTracker; // Defined somewhere in your code.
+
+void updateKeyboard()
+{
+    Keyboard::State state = Keyboard::getState();
+    
+    // Update the keyboard state tracker once per frame!
+    keyboardStateTracker.update(state);
+
+    if(keyboardStateTracker.pressed.A)
+        // The A key was pressed this frame.
+
+    if(keyboardStateTracker.released.A)
+        // The A key was released this frame.
+
+    if(keyboardStateTracker.lastState.A)
+        // The A key is down this frame.
+}
+```
+
+The KeyboardStateTracker class has the following (public) member variables:
+
+- `Keyboard::State pressed`: The corresponding key is `true` if it was pressed *this frame*.
+- `Keyboard::State released`: The corresponding key is `true` if it was released *this frame*.
+- `Keyboard::State lastState`: The keyboard state that was last used to update the `KeyboardStateTracker`.
+
+In addition to the public member variables, the keyboard state tracker also provides the following member functions:
+
+- `bool isKeyPressed( Keyboard::Key key )`: Returns `true` if the key was pressed *this frame*.
+- `bool isKeyReleased( Keyboard::Key key )`: Returns `true` if the key was released *this frame*.
+- `Keyboard::State getLastState()`: Get the keyboard state that was last used to update the `KeyboardStateTracker`.
+
+## Input
+
+The `Input` (namespace) is a singleton (namespace) that provides access to keys, buttons, and axes of the keyboard, mouse, and all connected gamepads. This implementation is inspired by Unity's Input system (see [Input](https://docs.unity3d.com/ScriptReference/Input.html) in the Unity script reference).
+
+Internally, it stores a `KeyboardStateTracker`, `MouseStateTracker`, and a `GamepadStateTracker` for each connected gamepad. Calling the `Input::update` method (once per frame!) is required to let the `Input` class update its internal state. The `Input` (namespace) provides the following methods:
+
+- `void update()`: Call this once per frame to update the Input's internal state.
+- `float getAxis( std::string_view axisName )`: Get the analog value of one of the axes. Depending on the axis, the value could be in the range of (0...1) or (-1...1). See [Axis Names](#axis-names) below.
+- `bool getButton( std::string_view buttonName )`: Get the state of a button. Returns `true` if the button is pressed down. See [Button Names](#button-names) below.
+- `bool getButtonDown( std::string_view buttonName )`: Check to see if a button was pressed *this frame*.
+- `bool getButtonUp( std::string_view buttonName )`: Check to see if a button was released *this frame*.
+- `bool getKey( std::string_view keyName )`: Return `true` while the key is being held down on the keyboard.
+- `bool getKeyDown( std::string_view keyName )`: Return `true` in the frame that the key is pressed.
+- `bool getKeyUp( std::string_view keyName )`: Return `true` in the frame that the key is released.
+- 
+
+### Key Names
+
+### Button Names
+
+### Axis Names
+
+### Input Actions
+
 
 
 ## License

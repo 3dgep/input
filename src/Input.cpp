@@ -1394,16 +1394,16 @@ bool Input::getButton( std::string_view buttonName )
 
 bool Input::getButtonDown( std::string_view buttonName )
 {
-    // First check to see if there is a matching button in the key map:
-    if ( const auto& iter = g_KeyMap.find( std::string( buttonName ) ); iter != g_KeyMap.end() )
-    {
-        return g_KeyboardStateTracker.isKeyPressed( iter->second );
-    }
-
-    // Otherwise, check the button down map
+    // First check the button down map
     if ( const auto& iter = g_ButtonDownMap.find( std::string( buttonName ) ); iter != g_ButtonDownMap.end() )
     {
         return iter->second( g_GamepadStateTrackers, g_KeyboardStateTracker, g_MouseStateTracker );
+    }
+
+    // Then check to see if there is a matching key in the key map:
+    if ( const auto& iter = g_KeyMap.find( std::string( buttonName ) ); iter != g_KeyMap.end() )
+    {
+        return g_KeyboardStateTracker.isKeyPressed( iter->second );
     }
 
     return false;
@@ -1411,16 +1411,16 @@ bool Input::getButtonDown( std::string_view buttonName )
 
 bool Input::getButtonUp( std::string_view buttonName )
 {
-    // First check to see if there is a matching button in the key map:
-    if ( const auto& iter = g_KeyMap.find( std::string( buttonName ) ); iter != g_KeyMap.end() )
-    {
-        return g_KeyboardStateTracker.isKeyReleased( iter->second );
-    }
-
-    // Otherwise, check the button up map
+    // First check the button up map
     if ( const auto& iter = g_ButtonUpMap.find( std::string( buttonName ) ); iter != g_ButtonUpMap.end() )
     {
         return iter->second( g_GamepadStateTrackers, g_KeyboardStateTracker, g_MouseStateTracker );
+    }
+
+    // Then check to see if there is a matching key in the key map:
+    if ( const auto& iter = g_KeyMap.find( std::string( buttonName ) ); iter != g_KeyMap.end() )
+    {
+        return g_KeyboardStateTracker.isKeyReleased( iter->second );
     }
 
     return false;
@@ -1428,7 +1428,7 @@ bool Input::getButtonUp( std::string_view buttonName )
 
 bool Input::getKey( std::string_view keyName )
 {
-    // First check to see if there is a matching button in the key map:
+    // First check to see if there is a matching key in the key map:
     if ( const auto& iter = g_KeyMap.find( std::string( keyName ) ); iter != g_KeyMap.end() )
     {
         return g_KeyboardStateTracker.getLastState().isKeyDown( iter->second );
@@ -1439,7 +1439,7 @@ bool Input::getKey( std::string_view keyName )
 
 bool Input::getKeyDown( std::string_view keyName )
 {
-    // First check to see if there is a matching button in the key map:
+    // First check to see if there is a matching key in the key map:
     if ( const auto& iter = g_KeyMap.find( std::string( keyName ) ); iter != g_KeyMap.end() )
     {
         return g_KeyboardStateTracker.isKeyPressed( iter->second );
