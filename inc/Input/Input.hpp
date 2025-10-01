@@ -12,14 +12,15 @@ namespace input
 {
 
 /// <summary>
-/// An AxisCallback function takes a GamePadStateTracker (for each connected GamePad), KeyboardStateTracker, and a MouseStateTracker and returns
-/// the value of the axis being queried (in the range [-1...1]).
+/// An AxisCallback function takes a GamePadStateTracker (for each connected GamePad),
+/// a KeyboardStateTracker, and a MouseStateTracker and returns the value of the axis
+/// being queried (in the range [-1...1]).
 /// </summary>
 using AxisCallback = std::function<float( std::span<const GamepadStateTracker>, const KeyboardStateTracker&, const MouseStateTracker& )>;
 
 /// <summary>
-/// A ButtonCallback function takes a GamePadStateTracker (for each connected GamePad), a KeyboardStateTracker, and a MouseStateTracker and returns
-/// the state of the button.
+/// A ButtonCallback function takes a GamePadStateTracker (for each connected GamePad),
+/// a KeyboardStateTracker, and a MouseStateTracker and returns the state of the button.
 /// </summary>
 using ButtonCallback = std::function<bool( std::span<const GamepadStateTracker>, const KeyboardStateTracker&, const MouseStateTracker& )>;
 

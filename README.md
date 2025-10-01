@@ -36,7 +36,7 @@ You can enable/disable backends using the following CMake options:
 | --------------------- | -------------------------------------------------------------------------------------------------- |
 | `INPUT_USE_SDL2`      | Build the input::SDL2 backend. SDL2 will be fetched if it is not already included in your project. |
 | `INPUT_USE_SDL3`      | Build the input::SDL3 backend. SDL3 will be fetched if it is not already included in your project. |
-| `INPUT_USE_GLFW`      | Build the GLFW backend. GLFW will be fetched if it is not already included in your project.          |
+| `INPUT_USE_GLFW`      | Build the GLFW backend. GLFW will be fetched if it is not already included in your project.        |
 | `INPUT_USE_GDK`       | Build the input::GDK backend. Requires Windows Game Development Toolkit.                           |
 | `INPUT_USE_WIN32`     | Build the Win32 backend. Only available if building for Windows.                                   |
 | `INPUT_BUILD_SAMPLES` | Build samples. Only samples for enabled backends will be built.                                    |
@@ -413,7 +413,7 @@ Similar to the mouse, there is usually only a single keyboard connected to your 
 
 It is important to note that this input system is not appropriate for creating text editors. It is intended to be used with games. In game development, you are usually only concerned with what key was pressed, released, or held down, but not concerned with the actual character that is produced when the key is pressed. For example, if the `A` key on the keyboard is pressed, then the `Keyboard::State::A` value will be `true`, but you won't be able to tell exactly which glyph should be displayed. (See [Keyboard layout](https://en.wikipedia.org/wiki/Keyboard_layout) for more information about various keyboard layouts).
 
-> I've tested the keyboard mapping for all of the backends supported by this library, but I only have access to US Qwerty keyboards. If you do notice a discrepancy with your keyboard, please post an issue in the GitHub repo.
+> I've tested the keyboard mapping for all of the backends supported by this library, but I only have access to US QWERTY keyboards. If you notice a discrepancy with your keyboard, please post an issue in this repo.
 
 The key value in the `Keyboard::Key` enumeration values are the 1:1 mapping to virtual key codes in Windows (See: [Virtual-key codes](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)) regardless of the backend you are using. All backend specific keys are mapped to the key value in the `Keyboard::Key` enumeration. (See [KeyboardGLFW.cpp](src/backends/GLFW/KeyboardGLFW.cpp) as an example).
 
@@ -456,29 +456,381 @@ In addition to the public member variables, the keyboard state tracker also prov
 
 ## Input
 
-The `Input` (namespace) is a singleton (namespace) that provides access to keys, buttons, and axes of the keyboard, mouse, and all connected gamepads. This implementation is inspired by Unity's Input system (see [Input](https://docs.unity3d.com/ScriptReference/Input.html) in the Unity script reference).
+The `Input` (namespace) is a singleton (namespace) that provides access to keyboard keys, gamepad & mouse buttons, and gamepad axes. This implementation is inspired by Unity's Input system (see [Input](https://docs.unity3d.com/ScriptReference/Input.html) in the Unity script reference).
 
 Internally, it stores a `KeyboardStateTracker`, `MouseStateTracker`, and a `GamepadStateTracker` for each connected gamepad. Calling the `Input::update` method (once per frame!) is required to let the `Input` class update its internal state. The `Input` (namespace) provides the following methods:
 
 - `void update()`: Call this once per frame to update the Input's internal state.
-- `float getAxis( std::string_view axisName )`: Get the analog value of one of the axes. Depending on the axis, the value could be in the range of (0...1) or (-1...1). See [Axis Names](#axis-names) below.
+- `bool getKey( std::string_view keyName )`: Return `true` while the key is being held down on the keyboard. See [Key Names](#key-names) below.
+- `bool getKeyDown( std::string_view keyName )`: Return `true` in the frame that the key is pressed. See [Key Names](#key-names) below.
+- `bool getKeyUp( std::string_view keyName )`: Return `true` in the frame that the key is released. See [Key Names](#key-names) below.
+- `bool getKey( Keyboard::Key key )`: Return `true` while the `Keyboard::Key` is being held down on the keyboard.
+- `bool getKeyDown( Keyboard::Key key )`: Return `true` in the frame that the `Keyboard::Key` is pressed.
+- `bool getKeyUp( Keyboard::Key key )`: Return `true` in the frame that the `Keyboard::Key` is released.
 - `bool getButton( std::string_view buttonName )`: Get the state of a button. Returns `true` if the button is pressed down. See [Button Names](#button-names) below.
-- `bool getButtonDown( std::string_view buttonName )`: Check to see if a button was pressed *this frame*.
-- `bool getButtonUp( std::string_view buttonName )`: Check to see if a button was released *this frame*.
-- `bool getKey( std::string_view keyName )`: Return `true` while the key is being held down on the keyboard.
-- `bool getKeyDown( std::string_view keyName )`: Return `true` in the frame that the key is pressed.
-- `bool getKeyUp( std::string_view keyName )`: Return `true` in the frame that the key is released.
-- 
+- `bool getButtonDown( std::string_view buttonName )`: Check to see if a button was pressed *this frame*. See [Button Names](#button-names) below.
+- `bool getButtonUp( std::string_view buttonName )`: Check to see if a button was released *this frame*. See [Button Names](#button-names) below.
+- `float getAxis( std::string_view axisName )`: Get the analog value of an axis. Depending on the axis, the value could be in the range of (0...1) or (-1...1). See [Axis Names](#axis-names) below.
+- `bool getMouseButton( Mouse::Button button )`: Returns `true` when the `Mouse::Button` is held down.
+- `bool getMouseButtonDown( Mouse::Button button )`: Returns `true` when the mouse button is pressed *this frame*.
+- `bool getMouseButtonUp( Mouse::Button button )`: Returns `true` when the mouse button is released *this frame*.
+- `float getMouseX()`: Return the X-coordinate of the mouse cursor.
+  > **Note**: This will return relative movement of the mouse if the mouse mode is `Mouse::Mode::Relative`.
+- `float getMouseY()`: Return the Y-coordinate of the mouse cursor.
+  > **Note**: This will return relative movement of the mouse if the mouse mode is `Mouse::Mode::Relative`.
+- `float getMouseMoveX()`: Return the horizontal movement of the mouse since the last call to `Input::update`.
+  > **Note**: This will return the same value in both `Mouse::Mode::Absolute` and `Mouse::Mode::Relative`.
+- `float getMouseMoveY()`: Return the vertical movement of the mouse since the last call to `Input::update`.
+  > **Note**: This will return the same value in both `Mouse::Mode::Absolute` and `Mouse::Mode::Relative`.
+- `void addAxisCallback( std::string_view axisName, AxisCallback callback )`: Add a callback function that is evaluated with the `getAxis( axisName )` function. See [Input Actions](#input-actions) below.
+- `void addButtonCallback( std::string_view buttonName, ButtonCallback callback )`: Add a callback function that is evaluated with the `getButton( buttonName )` function. See [Input Actions](#input-actions) below.
+- `void addButtonDownCallback( std::string_view buttonName, ButtonCallback callback )`: Add a callback function that is evaluated with the `getButtonDown( buttonName )` function. See [Input Actions](#input-actions) below.
+- `void addButtonUpCallback( std::string_view buttonName, ButtonCallback callback )`: Add a callback function that is evaluated with the `getButtonUp( buttonName ) function. See [Input Actions](#input-actions) below.
+
+The following type aliases are defined for `AxisCallback` and `ButtonCallback` callback functions:
+
+```cpp
+/// <summary>
+/// An AxisCallback function takes a GamepadStateTracker (for each connected GamePad),
+/// a KeyboardStateTracker, and a MouseStateTracker and returns the value of the axis
+/// being queried (in the range [-1...1]).
+/// </summary>
+using AxisCallback = std::function<float( std::span<const GamepadStateTracker>, const KeyboardStateTracker&, const MouseStateTracker& )>;
+
+/// <summary>
+/// A ButtonCallback function takes a GamepadStateTracker (for each connected GamePad),
+/// a KeyboardStateTracker, and a MouseStateTracker and returns the state of the button.
+/// </summary>
+using ButtonCallback = std::function<bool( std::span<const GamepadStateTracker>, const KeyboardStateTracker&, const MouseStateTracker& )>;
+```
+
+The primary difference between `AxisCallback` and `ButtonCallback` is that `AxisCallback` returns a `float` indicating the axis value, and `ButtonCallback` returns a `bool` which should be `true` if the button is pressed/held/released (depending on how the callback function is used). See [Input Actions](#input-actions) below.
 
 ### Key Names
 
+The following key names are available:
+
+| Key Name      | `Keyboard::Key` Value   |
+| ------------- | ----------------------- |
+| "a"           | `Key::A`                |
+| "b"           | `Key::B`                |
+| "c"           | `Key::C`                |
+| "d"           | `Key::D`                |
+| "e"           | `Key::E`                |
+| "f"           | `Key::F`                |
+| "g"           | `Key::G`                |
+| "h"           | `Key::H`                |
+| "i"           | `Key::I`                |
+| "j"           | `Key::J`                |
+| "k"           | `Key::K`                |
+| "l"           | `Key::L`                |
+| "m"           | `Key::M`                |
+| "n"           | `Key::N`                |
+| "o"           | `Key::O`                |
+| "p"           | `Key::P`                |
+| "q"           | `Key::Q`                |
+| "r"           | `Key::R`                |
+| "s"           | `Key::S`                |
+| "t"           | `Key::T`                |
+| "u"           | `Key::U`                |
+| "v"           | `Key::V`                |
+| "w"           | `Key::W`                |
+| "x"           | `Key::X`                |
+| "y"           | `Key::Y`                |
+| "z"           | `Key::Z`                |
+| "1"           | `Key::D1`               |
+| "2"           | `Key::D2`               |
+| "3"           | `Key::D3`               |
+| "4"           | `Key::D4`               |
+| "5"           | `Key::D5`               |
+| "6"           | `Key::D6`               |
+| "7"           | `Key::D7`               |
+| "8"           | `Key::D8`               |
+| "9"           | `Key::D9`               |
+| "0"           | `Key::D0`               |
+| "up"          | `Key::Up`               |
+| "down"        | `Key::Down`             |
+| "left"        | `Key::Left`             |
+| "right"       | `Key::Right`            |
+| "[1]"         | `Key::NumPad1`          |
+| "[2]"         | `Key::NumPad2`          |
+| "[3]"         | `Key::NumPad3`          |
+| "[4]"         | `Key::NumPad4`          |
+| "[5]"         | `Key::NumPad5`          |
+| "[6]"         | `Key::NumPad6`          |
+| "[7]"         | `Key::NumPad7`          |
+| "[8]"         | `Key::NumPad8`          |
+| "[9]"         | `Key::NumPad9`          |
+| "[0]"         | `Key::NumPad0`          |
+| "[+]"         | `Key::Add`              |
+| "[-]"         | `Key::Subtract`         |
+| "[*]"         | `Key::Multiply`         |
+| "[=]"         | `Key::Separator`        |
+| "[/]"         | `Key::Divide`           |
+| "caps"        | `Key::CapsLock`         |
+| "capslock"    | `Key::CapsLock`         |
+| "shift"       | `Key::ShiftKey`         |
+| "left shift"  | `Key::LeftShift`        |
+| "right shift" | `Key::RightShift`       |
+| "ctrl"        | `Key::ControlKey`       |
+| "left ctrl"   | `Key::LeftControl`      |
+| "right ctrl"  | `Key::RightControl`     |
+| "alt"         | `Key::AltKey`           |
+| "left alt"    | `Key::LeftAlt`          |
+| "right alt"   | `Key::RightAlt`         |
+| "left super"  | `Key::LeftSuper`        |
+| "right super" | `Key::RightSuper`       |
+| "left win"    | `Key::LeftSuper`        |
+| "right win"   | `Key::RightSuper`       |
+| "backspace"   | `Key::Back`             |
+| "tab"         | `Key::Tab`              |
+| "enter"       | `Key::Enter`            |
+| "return"      | `Key::Enter`            |
+| "esc"         | `Key::Escape`           |
+| "escape"      | `Key::Escape`           |
+| "space"       | `Key::Space`            |
+| "delete"      | `Key::Delete`           |
+| "ins"         | `Key::Insert`           |
+| "insert"      | `Key::Insert`           |
+| "home"        | `Key::Home`             |
+| "end"         | `Key::End`              |
+| "pgup"        | `Key::PageUp`           |
+| "page up"     | `Key::PageUp`           |
+| "pgdn"        | `Key::PageDown`         |
+| "page down"   | `Key::PageDown`         |
+| ";"           | `Key::OemSemicolon`     |
+| "+"           | `Key::OemPlus`          |
+| ","           | `Key::OemComma`         |
+| "-"           | `Key::OemMinus`         |
+| "."           | `Key::OemPeriod`        |
+| "?"           | `Key::OemQuestion`      |
+| "~"           | `Key::OemTilde`         |
+| "`"           | `Key::OemTilde`         |
+| "["           | `Key::OemOpenBrackets`  |
+| "{"           | `Key::OemOpenBrackets`  |
+| "]"           | `Key::OemCloseBrackets` |
+| "}"           | `Key::OemCloseBrackets` |
+| "'"           | `Key::OemQuotes`        |
+| "\""          | `Key::OemQuotes`        |
+| "\|"          | `Key::OemPipe`          |
+| "\\"          | `Key::OemPipe`          |
+| "F1"          | `Key::F1`               |
+| "f1"          | `Key::F1`               |
+| "F2"          | `Key::F2`               |
+| "f2"          | `Key::F2`               |
+| "F3"          | `Key::F3`               |
+| "f3"          | `Key::F3`               |
+| "F4"          | `Key::F4`               |
+| "f4"          | `Key::F4`               |
+| "F5"          | `Key::F5`               |
+| "f5"          | `Key::F5`               |
+| "F6"          | `Key::F6`               |
+| "f6"          | `Key::F6`               |
+| "F7"          | `Key::F7`               |
+| "f7"          | `Key::F7`               |
+| "F8"          | `Key::F8`               |
+| "f8"          | `Key::F8`               |
+| "F9"          | `Key::F9`               |
+| "f9"          | `Key::F9`               |
+| "F10"         | `Key::F10`              |
+| "f10"         | `Key::F10`              |
+| "F11"         | `Key::F11`              |
+| "f11"         | `Key::F11`              |
+| "F12"         | `Key::F12`              |
+| "f12"         | `Key::F12`              |
+
 ### Button Names
+
+The following button names are available (by default):
+
+| Button Name           | Description                                                        |
+| --------------------- | ------------------------------------------------------------------ |
+| "win"                 | Left or Right Windows/Super key                                    |
+| "mouse 0"             | Left mouse button                                                  |
+| "mouse 1"             | Right mouse button                                                 |
+| "mouse 2"             | Middle mouse button                                                |
+| "mouse x1"            | Mouse XButton1                                                     |
+| "mouse x2"            | Mouse XButton2                                                     |
+| "joystick button 1"   | Gamepad A button (any connected gamepad)                           |
+| "joystick button 2"   | Gamepad B button (any connected gamepad)                           |
+| "joystick button 3"   | Gamepad X button (any connected gamepad)                           |
+| "joystick button 4"   | Gamepad Y button (any connected gamepad)                           |
+| "joystick button 5"   | Gamepad Left Shoulder (any connected gamepad)                      |
+| "joystick button 6"   | Gamepad Right Shoulder (any connected gamepad)                     |
+| "joystick button 7"   | Gamepad View/Back button (any connected gamepad)                   |
+| "joystick button 8"   | Gamepad Menu/Start button (any connected gamepad)                  |
+| "joystick button 9"   | Gamepad Left Stick (any connected gamepad)                         |
+| "joystick button 10"  | Gamepad Right Stick (any connected gamepad)                        |
+| "joystick dpad up"    | Gamepad D-pad Up (any connected gamepad)                           |
+| "joystick dpad down"  | Gamepad D-pad Down (any connected gamepad)                         |
+| "joystick dpad left"  | Gamepad D-pad Left (any connected gamepad)                         |
+| "joystick dpad right" | Gamepad D-pad Right (any connected gamepad)                        |
+| "joystick N button M" | Gamepad M button for gamepad N (N=1-4, M=1-10)                     |
+| "joystick N dpad dir" | Gamepad D-pad direction (up/down/left/right) for gamepad N (N=1-4) |
+| "Submit"              | Gamepad A, Enter, or Space                                         |
+| "Cancel"              | Gamepad B or Escape                                                |
+
+These button names can be used with `getButton` to check if the button is held down, `getButtonDown` to check if the button was pressed this frame, and `getButtonUp` to check if the button was released this frame.
+
+You can add you own button names at runtime using the `addButtonCallback`, `addButtonDownCallback` and `addButtonCallback` functions. See [Input Actions](#input-actions) below.
 
 ### Axis Names
 
+The following predefined axis names are available by default.
+
+| Axis Name           | Description                                                                |
+| ------------------- | -------------------------------------------------------------------------- |
+| "Horizontal"        | Left/right movement from gamepad thumbsticks and keyboard (A/D/Left/Right) |
+| "Vertical"          | Up/down movement from gamepad thumbsticks and keyboard (W/S/Up/Down)       |
+| "Fire1"             | Gamepad right trigger, left control key, or left mouse button              |
+| "Fire2"             | Gamepad left trigger, left alt key, or right mouse button                  |
+| "Fire3"             | Left shift key or middle mouse button is held down                         |
+| "Jump"              | Gamepad A button or space key is held down                                 |
+| "Mouse X"           | Mouse X movement (relative motion when using Mouse::Mode::Relative)        |
+| "Mouse Y"           | Mouse Y movement (relative motion when using Mouse::Mode::Relative)        |
+| "Mouse ScrollWheel" | Mouse scroll wheel value                                                   |
+| "Submit"            | Gamepad A button, Enter key, or Space key                                  |
+| "Cancel"            | Gamepad B button or Escape key                                             |
+
+> **Note**: Some axis names ("Jump", "Submit", and "Cancel") are mapped to gamepad buttons and keyboard keys. These actions will return 1.0 while the button on the gamepad or key on the keyboard is held down.
+
+You can add your own axis names at runtime using the `addAxisCallback` function. See [Input Actions](#input-actions) below.
+
 ### Input Actions
 
+You can define your own callback functions at runtime. Adding an input action with the same name as an existing action name will replace the existing action name.
 
+This is an example that creates the following actions for a 2D platforming game:
+
+| Action Name  | Description                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------------- |
+| "Horizontal" | Left/right movement of the left thumbstick on any gamepad or A/D/Left/Right keys are pressed on the keyboard. |
+| "Jump"       | The A button on any gamepad is pressed or Space/W/Up on the keyboard is pressed (this frame).                 |
+| "Next"       | Load the next level if the start button on any gamepad is pressed this frame.                                 |
+| "Previous"   | Go to the previous level if the back button on any gamepad is pressed this frame.                             |
+| "Reload"     | Reload the current level if the B button is pressed on any gamepad.                                           |
+
+> **Note**: Input actions should provide both gamepad and keyboard input. In the case of the "Next", "Previous" and "Reload" actions, there is no keyboard input, but there are on screen buttons that the end user can click with the mouse.
+
+```cpp
+// Input that controls the characters horizontal movement.
+Input::addAxisCallback( "Horizontal", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
+    float leftX = 0.0f;
+
+    for ( auto& gamepadState: gamepadStates )
+    {
+        const auto state = gamepadState.getLastState();
+
+        leftX += state.thumbSticks.leftX;
+    }
+
+    const auto keyState = keyboardState.getLastState();
+
+    const float a     = keyState.A ? 1.0f : 0.0f;
+    const float d     = keyState.D ? 1.0f : 0.0f;
+    const float left  = keyState.Left ? 1.0f : 0.0f;
+    const float right = keyState.Right ? 1.0f : 0.0f;
+
+    return std::clamp( leftX - a + d - left + right, -1.0f, 1.0f );
+} );
+
+// Input that controls jumping.
+Input::addButtonDownCallback( "Jump", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
+    bool a = false;
+
+    for ( auto& gamepadState: gamepadStates )
+    {
+        a = a || gamepadState.a == ButtonState::Pressed;
+    }
+
+    const bool space = keyboardState.isKeyPressed( KeyCode::Space );
+    const bool up    = keyboardState.isKeyPressed( KeyCode::Up );
+    const bool w     = keyboardState.isKeyPressed( KeyCode::W );
+
+    return a || space || up || w;
+} );
+
+// Input to go to the next map.
+Input::addButtonDownCallback( "Next", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
+    bool start = false;
+
+    for ( auto& gamepadState: gamepadStates )
+    {
+        start = start || gamepadState.start == ButtonState::Pressed;
+    }
+
+    return start;
+} );
+
+// Input to go to the previous map.
+Input::addButtonDownCallback( "Previous", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
+    bool back = false;
+
+    for ( auto& gamepadState: gamepadStates )
+    {
+        back = back || gamepadState.back == ButtonState::Pressed;
+    }
+
+    return back;
+} );
+
+// Input to go to reload the current map.
+Input::addButtonDownCallback( "Reload", []( std::span<const GamepadStateTracker> gamepadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
+    bool b = false;
+
+    for ( auto& gamepadState: gamepadStates )
+    {
+        b = b || gamepadState.b == ButtonState::Pressed;
+    }
+
+    const bool enter = keyboardState.isKeyPressed( KeyCode::Enter );
+
+    return b || enter;
+} );
+```
+
+With these actions defined, you can check if any of the actions are triggered by checking the appropriate functions in the input system:
+
+```cpp
+// Move the character if there is horizontal movement.
+if ( Input::getAxis( "Horizontal" ) != 0.0f )
+{
+    setState( State::Run );
+}
+// Jump if the jump button is pressed this frame.
+if ( Input::getButtonDown( "Jump" ) )
+{
+    setState( State::Jump );
+}
+
+// Check if next/previous input buttons have been pressed.
+if ( Input::getButtonDown( "Next" ) )
+{
+    onNextClicked();
+}
+if ( Input::getButtonDown( "Previous" ) )
+{
+    onPreviousClicked();
+}
+if ( Input::getButtonDown( "Reload" ) )
+{
+    onRestartClicked();
+}
+```
+
+> **TODO**: It would be nice if there was a way to create custom input mappings or custom actions in scripts. This is not currently supported by the input system, but you can use axis and button callback functions to change the way an action is evaluated (including reading your games own custom configuration settings to evaluate actions).
+
+## Known Issues
+
+- The Win32 and GDK backends only support XBox controllers (as far as I can tell).
+- The GLFW backend does not treat the Nintendo Switch Pro controller correctly (more research is required). If you want to support Nintendo Switch Pro controllers, you should use the SDL2 or SDL3 backends.
+- SDL2 swaps the A/B and X/Y values on Nintendo controllers. It reports the face values, not the face position (north, east, south, west). SDL3 maps these buttons correctly based on their face position, not the face value.
+- SDL2, SDL3, and GLFW invert the Y-axis on the thumbsticks (compared to the Win32 and GDK backends). Personally, I think pushing up on the thumbstick should result in +1.0, but SDL2, SDL3, and GLFW report the raw USB values reported from the controller. I intentionally left this behaviour to avoid unexpected behaviour for those backends.
+- I only tested this input library with controllers I have at my disposal (XBox One, XBox Elite, PS4, PS5, and Nintendo Switch Pro). If you have another gamepad that you can test it with, let me know (jeremiah at 3dgep.com)!
+- Currently no (built-in) way to create custom configurations.
+- Currently no Steam Input support (but if you're using Steam Input, maybe you won't use this library?).
+
+If you encounter any other issues, please report them in the issues for this repo.
 
 ## License
 
