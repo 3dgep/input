@@ -49,7 +49,7 @@ For example, if you are creating an SDL3 application, make sure you enable the `
 target_link_libraries( MySDL3App PUBLIC input::SDL3 )
 ```
 
-Optionally, you can just copy the contents of the [inc](inc) folder into your project's include folder and the source files in the [src](src) folder *and* **one** of the folders in the [backends](src/backends) folder and compile it with your project.
+Optionally, you can just copy the contents of the [inc](inc) folder into your project's include folder, the source files in the [src](src) folder, and **one** of the folders in the [backends](src/backends) folder, then compile it with your project.
 
 ### Basic Usage
 
@@ -306,7 +306,7 @@ void updateGamepads()
 }
 ```
 
-If a button is pressed or released in the current frame, the input system should report that regardless to how many times the input state is queried each frame. For this reason, it is important that each instance of the `GamepadStateTracker` is only updated once per frame. Multiple calls to `gamepadStateTracker.a` in the same frame should return the same up/held/pressed/released state.
+If a button is pressed or released in the current frame, the input system should report that regardless of how many times the input state is queried each frame. For this reason, it is important that each instance of the `GamepadStateTracker` is only updated once per frame. Multiple calls to `gamepadStateTracker.a` in the same frame should return the same up/held/pressed/released state.
 
 You can also get the last state that the `GamepadStateTracker` was updated with using `GamepadStateTracker::getLastState`, but you can only determine if a button is up or down (held), but not if it was pressed/released this frame.
 
@@ -335,7 +335,7 @@ When using Absolute mouse mode, the mouse cursor can leave the window which coul
 
 Relative mouse mode will cause the mouse state to report relative mouse deltas in the states's x, and y values. Some backends will poll for mouse movement in a separate thread so it's not always obvious when the mouse deltas should be reset. For this reason, you should call `Mouse::resetRelativeMotion()` at the end of each frame.
 
-It's also not safe to reset the mouse delta's whenever `Mouse::getState()` is used. It is very important that `Mouse::getState` reports the *same* state when retrieving the state several times in the same frame. Resetting the mouse delta in the `Mouse::getState` function may cause unexpected behaviour if the mouse state is queried several times per frame. That's why the mouse deltas (and scroll wheel values) are not reset automatically when reading the mouse state and you should call `Mouse::resetRelativeMotion()` at the end of each frame to reset the delta values manually.
+It's also not safe to reset the mouse deltas whenever `Mouse::getState()` is used. It is very important that `Mouse::getState` reports the *same* state when retrieving the state several times in the same frame. Resetting the mouse delta in the `Mouse::getState` function may cause unexpected behavior if the mouse state is queried several times per frame. That's why the mouse deltas (and scroll wheel values) are not reset automatically when reading the mouse state, and you should call `Mouse::resetRelativeMotion()` at the end of each frame to reset the delta values manually.
 
 ```cpp
 void updateMouse()
@@ -361,7 +361,7 @@ void updateMouse()
 }
 ```
 
-Please refer to any of the [samples](samples) for more information on handing mouse input.
+Please refer to any of the [samples](samples) for more information on handling mouse input.
 
 ## MouseStateTracker
 
@@ -672,7 +672,7 @@ The following button names are available (by default):
 
 These button names can be used with `getButton` to check if the button is held down, `getButtonDown` to check if the button was pressed this frame, and `getButtonUp` to check if the button was released this frame.
 
-You can add you own button names at runtime using the `addButtonCallback`, `addButtonDownCallback` and `addButtonCallback` functions. See [Input Actions](#input-actions) below.
+You can add your own button names at runtime using the `addButtonCallback`, `addButtonDownCallback`, and `addButtonCallback` functions. See [Input Actions](#input-actions) below.
 
 ### Axis Names
 
@@ -818,7 +818,7 @@ if ( Input::getButtonDown( "Reload" ) )
 }
 ```
 
-> **TODO**: It would be nice if there was a way to create custom input mappings or custom actions in scripts. This is not currently supported by the input system, but you can use axis and button callback functions to change the way an action is evaluated (including reading your games own custom configuration settings to evaluate actions).
+> **TODO**: It would be nice if there was a way to create custom input mappings or custom actions in scripts. This is not currently supported by the input system, but you can use axis and button callback functions to change the way an action is evaluated (including reading your game's own custom configuration settings to evaluate actions).
 
 ## Known Issues
 
