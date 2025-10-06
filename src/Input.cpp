@@ -104,7 +104,7 @@ std::unordered_map<std::string, Key> g_KeyMap = {
     { "pgdn", Key::PageDown },
     { "page down", Key::PageDown },
     { ";", Key::OemSemicolon },
-    { "+", Key::OemPlus},
+    { "+", Key::OemPlus },
     { ",", Key::OemComma },
     { "-", Key::OemMinus },
     { ".", Key::OemPeriod },
@@ -197,7 +197,7 @@ std::unordered_map<std::string, AxisCallback> g_AxisMap = {
              rightTrigger += state.triggers.right;
          }
 
-         const float ctrl            = keyboardState.getLastState().isKeyDown( Key::LeftControl ) ? 1.0f : 0.0f;
+         const float ctrl       = keyboardState.getLastState().isKeyDown( Key::LeftControl ) ? 1.0f : 0.0f;
          const float leftButton = mouseState.getLastState().leftButton ? 1.0f : 0.0f;
 
          return std::clamp( rightTrigger + ctrl + leftButton, 0.0f, 1.0f );
@@ -211,13 +211,13 @@ std::unordered_map<std::string, AxisCallback> g_AxisMap = {
              leftTrigger += state.triggers.left;
          }
 
-         const float alt              = keyboardState.getLastState().isKeyDown( Key::LeftAlt ) ? 1.0f : 0.0f;
+         const float alt         = keyboardState.getLastState().isKeyDown( Key::LeftAlt ) ? 1.0f : 0.0f;
          const float rightButton = mouseState.getLastState().rightButton ? 1.0f : 0.0f;
 
          return std::clamp( leftTrigger + alt + rightButton, 0.0f, 1.0f );
      } },
     { "Fire3", []( std::span<const GamepadStateTracker>, const KeyboardStateTracker& keyboardState, const MouseStateTracker& mouseState ) {
-         const float shift             = keyboardState.getLastState().isKeyDown( Key::LeftShift ) ? 1.0f : 0.0f;
+         const float shift        = keyboardState.getLastState().isKeyDown( Key::LeftShift ) ? 1.0f : 0.0f;
          const float middleButton = mouseState.getLastState().middleButton ? 1.0f : 0.0f;
 
          return std::clamp( shift + middleButton, 0.0f, 1.0f );
@@ -245,32 +245,35 @@ std::unordered_map<std::string, AxisCallback> g_AxisMap = {
          return static_cast<float>( mouseState.getLastState().scrollWheelValue );
      } },
     { "Submit", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
-         float a = 0.0f;
+         float a     = 0.0f;
+         float start = 0.0f;
 
          for ( auto& gamePadState: gamePadStates )
          {
              const auto state = gamePadState.getLastState();
              a += state.buttons.a ? 1.0f : 0.0f;
+             start += state.buttons.start ? 1.0f : 0.0f;
          }
 
          auto        keyState = keyboardState.getLastState();
          const float enter    = keyState.isKeyDown( Key::Enter ) ? 1.0f : 0.0f;
          const float space    = keyState.isKeyDown( Key::Space ) ? 1.0f : 0.0f;
 
-         return std::clamp( a + enter + space, 0.0f, 1.0f );
+         return std::clamp( a + start + enter + space, 0.0f, 1.0f );
      } },
     { "Cancel", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
-         float b = 0.0f;
-
+         float b    = 0.0f;
+         float back = 0.0f;
          for ( auto& gamePadState: gamePadStates )
          {
              const auto state = gamePadState.getLastState();
              b += state.buttons.b ? 1.0f : 0.0f;
+             back += state.buttons.back ? 1.0f : 0.0f;
          }
 
          const float esc = keyboardState.getLastState().isKeyDown( Key::Escape ) ? 1.0f : 0.0f;
 
-         return std::clamp( b + esc, 0.0f, 1.0f );
+         return std::clamp( b + back + esc, 0.0f, 1.0f );
      } },
 };
 
@@ -616,33 +619,37 @@ std::unordered_map<std::string, ButtonCallback> g_ButtonMap = {
          return gamePadStates[3].getLastState().dPad.right;
      } },
     { "Submit", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
-         bool a = false;
+         bool a     = false;
+         bool start = false;
 
          for ( auto& gamePadState: gamePadStates )
          {
              const auto state = gamePadState.getLastState();
              a                = a || state.buttons.a;
+             start            = start || state.buttons.start;
          }
 
          auto       keyState = keyboardState.getLastState();
          const bool enter    = keyState.isKeyDown( Key::Enter );
          const bool space    = keyState.isKeyDown( Key::Space );
 
-         return a || enter || space;
+         return a || start || enter || space;
      } },
     { "Cancel", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
-         bool b = false;
+         bool b    = false;
+         bool back = false;
 
          for ( auto& gamePadState: gamePadStates )
          {
              const auto state = gamePadState.getLastState();
              b                = b || state.buttons.b;
+             back             = back || state.buttons.back;
          }
 
          auto       keyState = keyboardState.getLastState();
          const bool esc      = keyState.isKeyDown( Key::Escape );
 
-         return b || esc;
+         return b || back || esc;
      } },
 };
 
@@ -974,29 +981,33 @@ std::unordered_map<std::string, ButtonCallback> g_ButtonDownMap = {
          return gamePadStates[3].dPadRight == ButtonState::Pressed;
      } },
     { "Submit", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
-         bool a = false;
+         bool a     = false;
+         bool start = false;
 
          for ( auto& gamePadState: gamePadStates )
          {
-             a = a || gamePadState.a == ButtonState::Pressed;
+             a     = a || gamePadState.a == ButtonState::Pressed;
+             start = start || gamePadState.start == ButtonState::Pressed;
          }
 
          const bool enter = keyboardState.isKeyPressed( Key::Enter );
          const bool space = keyboardState.isKeyPressed( Key::Space );
 
-         return a || enter || space;
+         return a || start || enter || space;
      } },
     { "Cancel", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
-         bool b = false;
+         bool b    = false;
+         bool back = false;
 
          for ( auto& gamePadState: gamePadStates )
          {
              b = b || gamePadState.b == ButtonState::Pressed;
+             back = back || gamePadState.back == ButtonState::Pressed;
          }
 
          const bool esc = keyboardState.isKeyPressed( Key::Escape );
 
-         return b || esc;
+         return b || back || esc;
      } },
 };
 
@@ -1329,10 +1340,12 @@ std::unordered_map<std::string, ButtonCallback> g_ButtonUpMap = {
      } },
     { "Submit", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
          bool a = false;
+         bool start = false;
 
          for ( auto& gamePadState: gamePadStates )
          {
              a = a || gamePadState.a == ButtonState::Released;
+             start = start || gamePadState.start == ButtonState::Released;
          }
 
          const bool enter = keyboardState.isKeyReleased( Key::Enter );
@@ -1342,10 +1355,12 @@ std::unordered_map<std::string, ButtonCallback> g_ButtonUpMap = {
      } },
     { "Cancel", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
          bool b = false;
+         bool back = false;
 
          for ( auto& gamePadState: gamePadStates )
          {
              b = b || gamePadState.b == ButtonState::Released;
+             back = back || gamePadState.back == ButtonState::Released;
          }
 
          const bool esc = keyboardState.isKeyReleased( Key::Escape );
