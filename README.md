@@ -708,8 +708,8 @@ The following button names are available (by default):
 | "joystick dpad right" | Gamepad D-pad Right (any connected gamepad)                        |
 | "joystick N button M" | Gamepad M button for gamepad N (N=1-4, M=1-10)                     |
 | "joystick N dpad dir" | Gamepad D-pad direction (up/down/left/right) for gamepad N (N=1-4) |
-| "Submit"              | Gamepad A, Enter, or Space                                         |
-| "Cancel"              | Gamepad B or Escape                                                |
+| "Submit"              | Gamepad A/Start, Enter, or Space                                   |
+| "Cancel"              | Gamepad B/Back or Escape                                           |
 
 These button names can be used with `getButton` to check if the button is held down, `getButtonDown` to check if the button was pressed this frame, and `getButtonUp` to check if the button was released this frame.
 
@@ -730,8 +730,8 @@ The following predefined axis names are available by default.
 | "Mouse X"           | Mouse X movement (relative motion when using Mouse::Mode::Relative)        |
 | "Mouse Y"           | Mouse Y movement (relative motion when using Mouse::Mode::Relative)        |
 | "Mouse ScrollWheel" | Mouse scroll wheel value                                                   |
-| "Submit"            | Gamepad A button, Enter key, or Space key                                  |
-| "Cancel"            | Gamepad B button or Escape key                                             |
+| "Submit"            | Gamepad A/Start, Enter key, or Space key                                   |
+| "Cancel"            | Gamepad B/Back or Escape key                                               |
 
 > **Note:** Some axis names ("Jump", "Submit", and "Cancel") are mapped to gamepad buttons and keyboard keys. **These actions will return 1.0 while the button on the gamepad or key on the keyboard is held down.**
 
