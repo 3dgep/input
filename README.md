@@ -785,9 +785,9 @@ Input::addButtonDownCallback( "Jump", []( std::span<const GamepadStateTracker> g
     for ( auto& gamepadState: gamepadStates ) {
         a = a || gamepadState.a == ButtonState::Pressed;
     }
-    const bool space = keyboardState.isKeyPressed( KeyCode::Space );
-    const bool up    = keyboardState.isKeyPressed( KeyCode::Up );
-    const bool w     = keyboardState.isKeyPressed( KeyCode::W );
+    const bool space = keyboardState.isKeyPressed( Key::Space );
+    const bool up    = keyboardState.isKeyPressed( Key::Up );
+    const bool w     = keyboardState.isKeyPressed( Key::W );
     return a || space || up || w;
 } );
 
@@ -815,7 +815,7 @@ Input::addButtonDownCallback( "Reload", []( std::span<const GamepadStateTracker>
     for ( auto& gamepadState: gamepadStates ) {
         b = b || gamepadState.b == ButtonState::Pressed;
     }
-    const bool enter = keyboardState.isKeyPressed( KeyCode::Enter );
+    const bool enter = keyboardState.isKeyPressed( Key::Enter );
     return b || enter;
 } );
 ```
