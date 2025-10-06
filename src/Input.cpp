@@ -264,6 +264,7 @@ std::unordered_map<std::string, AxisCallback> g_AxisMap = {
     { "Cancel", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
          float b    = 0.0f;
          float back = 0.0f;
+
          for ( auto& gamePadState: gamePadStates )
          {
              const auto state = gamePadState.getLastState();
@@ -1001,7 +1002,7 @@ std::unordered_map<std::string, ButtonCallback> g_ButtonDownMap = {
 
          for ( auto& gamePadState: gamePadStates )
          {
-             b = b || gamePadState.b == ButtonState::Pressed;
+             b    = b || gamePadState.b == ButtonState::Pressed;
              back = back || gamePadState.back == ButtonState::Pressed;
          }
 
@@ -1339,33 +1340,33 @@ std::unordered_map<std::string, ButtonCallback> g_ButtonUpMap = {
          return gamePadStates[3].dPadRight == ButtonState::Released;
      } },
     { "Submit", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
-         bool a = false;
+         bool a     = false;
          bool start = false;
 
          for ( auto& gamePadState: gamePadStates )
          {
-             a = a || gamePadState.a == ButtonState::Released;
+             a     = a || gamePadState.a == ButtonState::Released;
              start = start || gamePadState.start == ButtonState::Released;
          }
 
          const bool enter = keyboardState.isKeyReleased( Key::Enter );
          const bool space = keyboardState.isKeyReleased( Key::Space );
 
-         return a || enter || space;
+         return a || start || enter || space;
      } },
     { "Cancel", []( std::span<const GamepadStateTracker> gamePadStates, const KeyboardStateTracker& keyboardState, const MouseStateTracker& ) {
-         bool b = false;
+         bool b    = false;
          bool back = false;
 
          for ( auto& gamePadState: gamePadStates )
          {
-             b = b || gamePadState.b == ButtonState::Released;
+             b    = b || gamePadState.b == ButtonState::Released;
              back = back || gamePadState.back == ButtonState::Released;
          }
 
          const bool esc = keyboardState.isKeyReleased( Key::Escape );
 
-         return b || esc;
+         return b || back || esc;
      } },
 };
 
