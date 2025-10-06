@@ -10,7 +10,7 @@ macro(set_targets_folder TARGETS FOLDER)
     endforeach()
 endmacro()
 
-if(INPUT_USE_SDL2)
+if(INPUT_USE_SDL2 AND NOT TARGET SDL2 AND NOT TARGET SDL2::SDL2)
     message(STATUS "Looking for SDL2...")
     FetchContent_Declare(
         SDL2
@@ -26,7 +26,7 @@ if(INPUT_USE_SDL2)
     )
 endif()
 
-if(INPUT_USE_SDL3)
+if(INPUT_USE_SDL3 AND NOT TARGET SDL3 AND NOT TARGET SDL3::SDL3)
     message(STATUS "Looking for SDL3...")
     FetchContent_Declare(
         SDL3
@@ -42,7 +42,7 @@ if(INPUT_USE_SDL3)
     )
 endif()
 
-if(INPUT_USE_GLFW)
+if(INPUT_USE_GLFW AND NOT TARGET glfw AND NOT TARGET glfw::glfw)
     message(STATUS "Looking for GLFW...")
     FetchContent_Declare(
         glfw
@@ -122,7 +122,7 @@ if(INPUT_BUILD_SAMPLES AND (INPUT_USE_SDL2 OR INPUT_USE_SDL3))
     )
 endif()
 
-if(INPUT_BUILD_SAMPLES AND INPUT_USE_SDL2)
+if(INPUT_BUILD_SAMPLES AND INPUT_USE_SDL2 AND NOT TARGET SDL2_ttf AND NOT TARGET SDL2_ttf::SDL2_ttf)
     message(STATUS "Fetching SDL2_ttf...")
 
     set(SDL2TTF_VENDORED OFF CACHE BOOL "" FORCE) # Don't use the provided libraries, as we want to build against our fetched dependencies.
@@ -141,7 +141,7 @@ if(INPUT_BUILD_SAMPLES AND INPUT_USE_SDL2)
     )
 endif()
 
-if(INPUT_BUILD_SAMPLES AND INPUT_USE_SDL3)
+if(INPUT_BUILD_SAMPLES AND INPUT_USE_SDL3 AND NOT TARGET SDL3_ttf AND NOT TARGET SDL3_ttf::SDL3_ttf)
     message(STATUS "Fetching SDL3_ttf...")
 
     set(SDLTTF_VENDORED OFF CACHE BOOL "" FORCE) # Don't use the provided libraries, as we want to build against our fetched dependencies.
