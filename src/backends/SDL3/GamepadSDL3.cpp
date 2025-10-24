@@ -90,7 +90,7 @@ public:
         Uint16 lowFreq  = static_cast<Uint16>( leftMotor * 0xFFFF );
         Uint16 highFreq = static_cast<Uint16>( rightMotor * 0xFFFF );
 
-        return SDL_RumbleGamepad( pad, lowFreq, highFreq, 100 ) == 0;
+        return SDL_RumbleGamepad( pad, lowFreq, highFreq, UINT32_MAX ) == 0;
     }
 
     void suspend()

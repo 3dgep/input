@@ -486,7 +486,7 @@ void update()
             float rightTrigger = gamepadState.triggers.right;
 
             // BUG: Vibrating multiple motors when using GDK causes the controller to start vibrating continuously.
-            // gamepad.setVibration( leftMotor, rightMotor, leftTrigger, rightTrigger );
+            // Gamepad::setVibration( i, leftMotor, rightMotor, leftTrigger, rightTrigger );
         }
     }
 }

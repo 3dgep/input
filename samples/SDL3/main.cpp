@@ -216,10 +216,10 @@ SDL_Texture* LoadTexture( SDL_Renderer* renderer, const std::string& path )
 
 void update()
 {
-    using Mouse::Mode::Absolute;
-    using Mouse::Mode::Relative;
     using ButtonState::Pressed;
     using ButtonState::Released;
+    using Mouse::Mode::Absolute;
+    using Mouse::Mode::Relative;
 
     Mouse::State mouseState = Mouse::getState();
 
@@ -251,6 +251,28 @@ void update()
         g_MousePosition = SDL_FPoint { static_cast<float>( rtW ) / 2.0f, static_cast<float>( rtH ) / 2.0f };
         g_fMouseRotation += mouseState.x + mouseState.y;
         break;
+    }
+
+    for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
+    {
+        Gamepad::State gamepadState = Gamepad::getState( i );
+
+        // Test vibration.
+        if ( gamepadState.connected )
+        {
+            float lx        = gamepadState.thumbSticks.leftX;
+            float ly        = gamepadState.thumbSticks.leftY;
+            float leftMotor = std::sqrt( lx * lx + ly * ly );
+
+            float rx         = gamepadState.thumbSticks.rightX;
+            float ry         = gamepadState.thumbSticks.rightY;
+            float rightMotor = std::sqrt( rx * rx + ry * ry );
+
+            float leftTrigger  = gamepadState.triggers.left;
+            float rightTrigger = gamepadState.triggers.right;
+
+            Gamepad::setVibration( i, leftMotor, rightMotor, leftTrigger, rightTrigger );
+        }
     }
 }
 
