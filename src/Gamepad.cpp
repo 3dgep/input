@@ -3,6 +3,7 @@
 #include <algorithm>  // for std::min & std::max
 #include <cassert>    // for assert.
 #include <cstring>    // for std::memset.
+#include <cmath>      // for std::sqrtf.
 
 namespace input
 {
@@ -47,7 +48,7 @@ void ApplyStickDeadZone(
 
     case Gamepad::DeadZone::Circular:
     {
-        const float dist   = sqrtf( x * x + y * y );
+        const float dist   = std::sqrt( x * x + y * y );
         const float wanted = ApplyLinearDeadZone( dist, maxValue, deadZoneSize );
 
         const float scale = ( wanted > 0.f ) ? ( wanted / dist ) : 0.f;
