@@ -1,6 +1,10 @@
 #include <input/Input.hpp>
+#include <input/Touch.hpp>
 
 #include <input_test.hpp>
+
+// Note: Touch input is included but not supported by GLFW backend.
+// Touch::isSupported() will return false on GLFW platforms.
 
 #define NOMINMAX
 #define GLAD_GL_IMPLEMENTATION

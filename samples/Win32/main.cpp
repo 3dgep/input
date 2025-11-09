@@ -1,4 +1,5 @@
 #include <input/Input.hpp>
+#include <input/Touch.hpp>
 #include <input_test.hpp>
 
 #include <d2d1.h>
@@ -42,6 +43,9 @@ constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state 
 // Forward declare callback functions.
 void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+// Note: Touch input is supported via Touch::getState().
+// For Win32 backend, call Touch_ProcessMessage() and Touch::setWindow() as needed.
+// See TouchWin32.cpp for implementation details.
 
 // Globals
 ComPtr<ID2D1Factory1>         g_pD2DFactory;
