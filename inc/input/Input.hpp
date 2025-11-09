@@ -3,6 +3,7 @@
 #include "Gamepad.hpp"
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
+#include "Touch.hpp"
 
 #include <functional>
 #include <span>

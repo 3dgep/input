@@ -1,5 +1,9 @@
 #include <input/Input.hpp>
+#include <input/Touch.hpp>
 #include <input_test.hpp>
+
+// Note: Touch input is included but not supported by GDK backend (Xbox/Console).
+// Touch::isSupported() will return false on GDK platforms.
 
 #include <d2d1.h>
 #include <d2d1_1.h>
@@ -1036,6 +1040,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
 
         // Call this at the end of the frame to reset relative mouse movement.
         Mouse::resetRelativeMotion();
+        Touch::endFrame();
     }
 
     // Cleanup

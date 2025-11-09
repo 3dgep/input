@@ -1,4 +1,5 @@
 #include <input/Input.hpp>
+#include <input/Touch.hpp>
 #include <input_test.hpp>
 
 #include <SDL.h>
@@ -21,6 +22,7 @@ constexpr int   WINDOW_HEIGHT              = 1080;
 constexpr int   KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
 constexpr float PANEL_WIDTH                = 360.0f;  // The width of the state panels.
 constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // THe height of the mouse state panel.
+constexpr float TOUCH_STATE_PANEL_HEIGHT   = 380.0f;  // The height of the touch state panel.
 constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamepad state panel.
 constexpr float PI                         = std::numbers::pi_v<float>;
 
@@ -31,6 +33,7 @@ enum class FillMode
 };
 
 const SDL_Color RED              = SDL_Color { 255, 0, 0, 127 };
+const SDL_Color BLUE             = SDL_Color { 0, 127, 255, 153 };
 const SDL_Color BLACK            = SDL_Color { 0, 0, 0, 255 };
 const SDL_Color WHITE            = SDL_Color { 255, 255, 255, 255 };
 const SDL_Color PANEL_BACKGROUND = SDL_Color { 240, 240, 240, 216 };
@@ -53,6 +56,7 @@ TTF_Font*    g_pFont                  = nullptr;
 TTF_Font*    g_pFontMono              = nullptr;
 
 MouseStateTracker g_MouseStateTracker;
+TouchStateTracker g_TouchStateTracker;
 SDL_FPoint        g_MousePosition { 0, 0 };
 float             g_fMouseRotation = 0.0f;
 
@@ -226,8 +230,10 @@ void update()
     using ButtonState::Released;
 
     Mouse::State mouseState = Mouse::getState();
+    Touch::State touchState = Touch::getState();
 
     g_MouseStateTracker.update( mouseState );
+    g_TouchStateTracker.update( touchState );
 
     if ( g_MouseStateTracker.rightButton == Released )
     {
@@ -600,6 +606,112 @@ void renderMousePanel()
     }
 }
 
+// Visualize touch points on screen
+void renderTouch()
+{
+    Touch::State state = Touch::getState();
+
+    int rtW = 0, rtH = 0;
+    SDL_GetRendererOutputSize( g_pRenderer, &rtW, &rtH );
+
+    for ( const auto& touch : state.touches )
+    {
+        // Convert normalized coordinates to screen coordinates
+        float screenX = touch.x * rtW;
+        float screenY = touch.y * rtH;
+
+        // Draw outer circle with ID
+        float radius = 30.0f + touch.pressure * 70.0f;  // Radius varies with pressure
+        drawOutlineCircle( BLUE, { screenX, screenY }, radius );
+
+        // Draw inner filled circle
+        drawCircle( BLUE, { screenX, screenY }, 30.0f );
+
+        // Draw touch ID
+        if ( g_pFontMono )
+        {
+            std::string  idText = std::format( "#{}", touch.id );
+            SDL_Color    color  = { 255, 255, 255, 255 };
+            SDL_Surface* surf   = TTF_RenderText_Blended( g_pFontMono, idText.c_str(), color );
+            if ( surf )
+            {
+                SDL_Texture* tex     = SDL_CreateTextureFromSurface( g_pRenderer, surf );
+                SDL_FRect    dstRect = { screenX - surf->w / 2.0f, screenY - surf->h / 2.0f,
+                                         static_cast<float>( surf->w ), static_cast<float>( surf->h ) };
+                SDL_RenderCopyF( g_pRenderer, tex, nullptr, &dstRect );
+                SDL_DestroyTexture( tex );
+                SDL_FreeSurface( surf );
+            }
+        }
+    }
+}
+
+// Draws a touch state panel on the right side of the screen.
+void renderTouchPanel()
+{
+    if ( !g_pFontMono || !g_pRenderer )
+        return;
+
+    Touch::State state = Touch::getState();
+
+    int rtW = 0, rtH = 0;
+    SDL_GetRendererOutputSize( g_pRenderer, &rtW, &rtH );
+
+    // Panel dimensions
+    const float panelWidth  = PANEL_WIDTH;
+    const float panelHeight = TOUCH_STATE_PANEL_HEIGHT;
+    const float panelX      = rtW - panelWidth - 32;
+    const float panelY      = 32 + MOUSE_STATE_PANEL_HEIGHT + 32;  // Below mouse panel
+
+    // Draw panel background
+    SDL_FRect panelRect = { panelX, panelY, panelWidth, panelHeight };
+    renderPanel( panelRect );
+
+    // Prepare touch state text
+    std::string text = std::format(
+        "Touch State\n"
+        "Supported: {}\n"
+        "Devices:   {}\n"
+        "Touches:   {}\n",
+        Touch::isSupported() ? "Yes" : "No",
+        Touch::getDeviceCount(),
+        state.touches.size() );
+
+    // Add info for each touch
+    for ( size_t i = 0; i < state.touches.size() && i < 5; ++i )
+    {
+        const auto& touch      = state.touches[i];
+        const char* phaseNames[] = { "Began", "Moved", "Stationary", "Ended", "Cancelled" };
+        const char* phaseName    = phaseNames[static_cast<int>( touch.phase )];
+
+        text += std::format(
+            "Touch #{}\n"
+            "  Pos:      ({:.3f}, {:.3f})\n"
+            "  Pressure: {:.2f}\n"
+            "  Phase:    {}\n",
+            touch.id,
+            touch.x, touch.y,
+            touch.pressure,
+            phaseName );
+    }
+
+    if ( state.touches.size() > 5 )
+    {
+        text += std::format( "\n...and {} more", state.touches.size() - 5 );
+    }
+
+    SDL_Color    color = { 0, 0, 0, 255 };
+    SDL_Surface* surf  = TTF_RenderText_Blended_Wrapped( g_pFontMono, text.c_str(), color, static_cast<int>( panelWidth ) - 32 );
+    if ( surf )
+    {
+        SDL_Texture* tex     = SDL_CreateTextureFromSurface( g_pRenderer, surf );
+        SDL_FRect    dstRect = { panelX + 16, panelY + 16, static_cast<float>( surf->w ), static_cast<float>( surf->h ) };
+        SDL_RenderCopyF( g_pRenderer, tex, nullptr, &dstRect );
+        SDL_DestroyTexture( tex );
+        SDL_FreeSurface( surf );
+    }
+}
+
 void renderGamepadStatePanel( float x, float y, const Gamepad::State& gamepadState, int playerIndex )
 {
     if ( !gamepadState.connected )
@@ -678,7 +790,7 @@ void renderGamepadStatePanels()
     int   rtW = 0, rtH = 0;
     SDL_GetRendererOutputSize( g_pRenderer, &rtW, &rtH );
     float left = rtW - margin - PANEL_WIDTH;
-    float top  = margin * 2 + MOUSE_STATE_PANEL_HEIGHT;  // Start below the mouse state panel.
+    float top  = margin * 3 + MOUSE_STATE_PANEL_HEIGHT + TOUCH_STATE_PANEL_HEIGHT;  // Start below the touch state panel.
 
     for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
     {
@@ -700,7 +812,9 @@ void render()
     renderKeyboard();
     renderGamepads();
     renderMouse();
+    renderTouch();
     renderMousePanel();
+    renderTouchPanel();
     renderGamepadStatePanels();
 
     SDL_RenderPresent( g_pRenderer );
@@ -775,6 +889,7 @@ int main( int argc, char* argv[] )
 
         // Call this at the end of the frame to reset the relative mouse position.
         Mouse::resetRelativeMotion();
+        Touch::endFrame();
     }
 
     // Cleanup
