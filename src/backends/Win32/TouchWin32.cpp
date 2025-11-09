@@ -156,8 +156,15 @@ void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
                 RECT rect;
                 GetClientRect( impl.m_Window, &rect );
 
-                const float normalizedX = static_cast<float>( pt.x ) / static_cast<float>( rect.right - rect.left );
-                const float normalizedY = static_cast<float>( pt.y ) / static_cast<float>( rect.bottom - rect.top );
+                const int width  = rect.right - rect.left;
+                const int height = rect.bottom - rect.top;
+                float normalizedX = 0.0f;
+                float normalizedY = 0.0f;
+                if (width != 0 && height != 0)
+                {
+                    normalizedX = static_cast<float>( pt.x ) / static_cast<float>( width );
+                    normalizedY = static_cast<float>( pt.y ) / static_cast<float>( height );
+                }
 
                 // Find existing touch
                 auto it = std::find_if( impl.m_Touches.begin(), impl.m_Touches.end(),
