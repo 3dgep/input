@@ -32,6 +32,7 @@ set(INC_FILES
     inc/input/Input.hpp
     inc/input/Keyboard.hpp
     inc/input/Mouse.hpp
+    inc/input/Touch.hpp
 )
 
 set(SRC_FILES
@@ -39,6 +40,7 @@ set(SRC_FILES
     src/Input.cpp
     src/Keyboard.cpp
     src/Mouse.cpp
+    src/Touch.cpp
 )
 
 if(INPUT_USE_WIN32 AND WIN32)
@@ -47,6 +49,7 @@ if(INPUT_USE_WIN32 AND WIN32)
         src/backends/Win32/GamepadWin32.cpp
         src/backends/Win32/KeyboardWin32.cpp
         src/backends/Win32/MouseWin32.cpp
+        src/backends/Win32/TouchWin32.cpp
     )
     source_group(backends/Win32 FILES ${WIN32_SRC_FILES})
 
@@ -70,6 +73,7 @@ if(INPUT_USE_GDK)
             src/backends/GDK/GamepadGDK.cpp
             src/backends/GDK/KeyboardGDK.cpp
             src/backends/GDK/MouseGDK.cpp
+            src/backends/GDK/TouchGDK.cpp
         )
 
         source_group(backends/GDK FILES ${GDK_SRC_FILES})
@@ -98,6 +102,7 @@ if(INPUT_USE_SDL2)
             src/backends/SDL2/GamepadSDL2.cpp
             src/backends/SDL2/KeyboardSDL2.cpp
             src/backends/SDL2/MouseSDL2.cpp
+            src/backends/SDL2/TouchSDL2.cpp
         )
 
         source_group(backends/SDL2 FILES ${SDL2_SRC_FILES})
@@ -123,6 +128,7 @@ if(INPUT_USE_SDL3)
             src/backends/SDL3/GamepadSDL3.cpp
             src/backends/SDL3/KeyboardSDL3.cpp
             src/backends/SDL3/MouseSDL3.cpp
+            src/backends/SDL3/TouchSDL3.cpp
         )
 
         source_group(backends/SDL3 FILES ${SDL3_SRC_FILES})
@@ -148,6 +154,7 @@ if(INPUT_USE_GLFW)
             src/backends/GLFW/GamepadGLFW.cpp
             src/backends/GLFW/KeyboardGLFW.cpp
             src/backends/GLFW/MouseGLFW.cpp
+            src/backends/GLFW/TouchGLFW.cpp
         )
 
         source_group(backends/GLFW FILES ${GLFW_SRC_FILES})

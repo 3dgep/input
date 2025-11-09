@@ -1,4 +1,5 @@
 #include <input/Input.hpp>
+#include <input/Touch.hpp>
 
 #include <algorithm>
 #include <string>
@@ -12,6 +13,7 @@ namespace
 GamepadStateTracker  g_GamepadStateTrackers[Gamepad::MAX_PLAYER_COUNT];
 KeyboardStateTracker g_KeyboardStateTracker;
 MouseStateTracker    g_MouseStateTracker;
+TouchStateTracker    g_TouchStateTracker;
 
 using Keyboard::Key;
 using Mouse::Button;
@@ -1379,6 +1381,7 @@ void Input::update()
 
     g_KeyboardStateTracker.update( Keyboard::getState() );
     g_MouseStateTracker.update( Mouse::getState() );
+    g_TouchStateTracker.update( Touch::getState() );
 }
 
 float Input::getAxis( std::string_view axisName )
