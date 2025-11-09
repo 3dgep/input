@@ -30,6 +30,7 @@ enum class FillMode
 
 // Commonly used colors.
 const D2D1_COLOR_F RED              = D2D1::ColorF( D2D1::ColorF::Red, 0.5f );
+const D2D1_COLOR_F BLUE             = D2D1::ColorF( 0.0f, 0.5f, 1.0f, 0.6f );
 const D2D1_COLOR_F BLACK            = D2D1::ColorF( D2D1::ColorF::Black );
 const D2D1_COLOR_F WHITE            = D2D1::ColorF( D2D1::ColorF::White );
 const D2D1_COLOR_F PANEL_BACKGROUND = D2D1::ColorF( 0.94f, 0.94f, 0.94f, 0.85f );
@@ -38,6 +39,7 @@ const D2D1_COLOR_F PANEL_ACCENT     = D2D1::ColorF( 0.25f, 0.25f, 0.25f, 0.85f )
 constexpr float KEY_SIZE                   = 50.0f;   // The size of a key in the keyboard image (in pixels).
 constexpr float GAMEPAD_STATE_PANEL_HEIGHT = 550.0f;  // The height of the gamepad state panel.
 constexpr float MOUSE_STATE_PANEL_HEIGHT   = 280.0f;  // The height of the mouse state panel.
+constexpr float TOUCH_STATE_PANEL_HEIGHT   = 380.0f;  // The height of the touch state panel.
 constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state panels.
 
 // Forward declare callback functions.
@@ -354,6 +356,64 @@ void DrawMouseStatePanel( float x, float y, ID2D1RenderTarget* renderTarget, IDW
         textBrush );
 }
 
+void DrawTouchStatePane( float x, float y, ID2D1RenderTarget* renderTarget, IDWriteTextFormat* textFormat, ID2D1SolidColorBrush* textBrush )
+{
+    Touch::State state = Touch::getState();
+
+    D2D1_RECT_F panelRect = D2D1::RectF(
+        x,
+        y,
+        x + PANEL_WIDTH,
+        y + TOUCH_STATE_PANEL_HEIGHT );
+
+    DrawPanel( renderTarget, panelRect );
+
+    // Prepare touch state text
+    std::wstring text = std::format(
+        L"Touch State\n"
+        L"Supported: {}\n"
+        L"Devices:   {}\n"
+        L"Touches:   {}\n",
+        Touch::isSupported() ? L"Yes" : L"No",
+        Touch::getDeviceCount(),
+        state.touches.size() );
+
+    // Add info for each touch
+    for ( size_t i = 0; i < state.touches.size() && i < 2; ++i )
+    {
+        const auto& touch        = state.touches[i];
+        const wchar_t* phaseNames[] = { L"Began", L"Moved", L"Stationary", L"Ended", L"Cancelled" };
+        const wchar_t* phaseName    = phaseNames[static_cast<int>( touch.phase )];
+
+        text += std::format(
+            L"Touch #{}\n"
+            L"  Pos:      ({:.3f}, {:.3f})\n"
+            L"  Pressure: {:.2f}\n"
+            L"  Phase:    {}\n",
+            touch.id,
+            touch.x, touch.y,
+            touch.pressure,
+            phaseName );
+    }
+
+    if ( state.touches.size() > 2 )
+    {
+        text += std::format( L"\n...and {} more", state.touches.size() - 2 );
+    }
+
+    D2D1_RECT_F textRect = D2D1::RectF(
+        panelRect.left + 20.0f,
+        panelRect.top + 20.0f,
+        panelRect.right - 20.0f,
+        panelRect.bottom - 20.0f );
+    renderTarget->DrawText(
+        text.c_str(),
+        text.length(),
+        textFormat,
+        textRect,
+        textBrush );
+}
+
 void DrawGamepadStatePanel(
     float                 x,
     float                 y,
@@ -430,10 +490,10 @@ void DrawGamepadStatePanel(
 
 void update()
 {
-    using Mouse::Mode::Absolute;
-    using Mouse::Mode::Relative;
     using ButtonState::Pressed;
     using ButtonState::Released;
+    using Mouse::Mode::Absolute;
+    using Mouse::Mode::Relative;
 
     if ( !g_pRenderTarget )
         return;
@@ -471,7 +531,7 @@ void update()
 
     for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
     {
-        Gamepad::State gamepadState = Gamepad::getState(i);
+        Gamepad::State gamepadState = Gamepad::getState( i );
 
         // Test vibration.
         if ( gamepadState.connected )
@@ -611,6 +671,46 @@ void renderGamepad( const Gamepad::State& state, float left, float top )
     }
 }
 
+void DrawTouches()
+{
+    Touch::State state = Touch::getState();
+
+    ComPtr<ID2D1SolidColorBrush> brush;
+    g_pRenderTarget->CreateSolidColorBrush( WHITE, brush.GetAddressOf() );
+
+    D2D1_SIZE_F rtSize = g_pRenderTarget->GetSize();
+
+    for ( const auto& touch: state.touches )
+    {
+        // Convert normalized coordinates to screen coordinates
+        float screenX = touch.x * rtSize.width;
+        float screenY = touch.y * rtSize.height;
+
+        // Draw outer circle with ID
+        float radius = 30.0f + touch.pressure * 50.0f;  // Radius varies with pressure
+        renderOutlineCircle( BLUE, { screenX, screenY }, radius );
+
+        // Draw inner filled circle
+        renderCircle( BLUE, { screenX, screenY }, 30.0f );
+
+        std::wstring touchText = std::format( L"#{}", touch.id );
+
+        D2D1_RECT_F textRect = {
+            screenX - radius,
+            screenY - radius,
+            screenX + radius,
+            screenY + radius
+        };
+
+        g_pRenderTarget->DrawText(
+            touchText.c_str(),
+            touchText.length(),
+            g_pCenterTextFormat.Get(),
+            textRect,
+            brush.Get() );
+    }
+}
+
 void render()
 {
     if ( g_pRenderTarget )
@@ -681,7 +781,7 @@ void render()
 
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {
-                auto gamepadState = Gamepad::getState(i);
+                auto gamepadState = Gamepad::getState( i );
 
                 if ( gamepadState.connected )
                 {
@@ -714,21 +814,24 @@ void render()
                 DrawRotatedBitmap( g_pRenderTarget.Get(), g_pScrollDownBitmap.Get(), g_MousePosition, g_fMouseRotation );
         }
 
+        DrawTouches();
+
         // Draw mouse state panel
         if ( g_pLeftTextFormat && g_pTextBrush )
         {
             DrawMouseStatePanel( rtSize.width - 32 - PANEL_WIDTH, 32, g_pRenderTarget.Get(), g_pLeftTextFormat.Get(), g_pTextBrush.Get() );
+            DrawTouchStatePane( rtSize.width - 32 - PANEL_WIDTH, 64 + MOUSE_STATE_PANEL_HEIGHT, g_pRenderTarget.Get(), g_pLeftTextFormat.Get(), g_pTextBrush.Get() );
         }
 
         // Draw gamepad state panels.
         {
             float margin = 32.0f;
             float left   = rtSize.width - margin - PANEL_WIDTH;
-            float top    = margin * 2 + MOUSE_STATE_PANEL_HEIGHT;
+            float top    = margin * 4 + MOUSE_STATE_PANEL_HEIGHT + TOUCH_STATE_PANEL_HEIGHT;
 
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {
-                auto gamepadState = Gamepad::getState(i);
+                auto gamepadState = Gamepad::getState( i );
 
                 if ( gamepadState.connected )
                 {
@@ -768,7 +871,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
 
     AdjustWindowRect( &windowRect, WS_OVERLAPPEDWINDOW, FALSE );
 
-    windowWidth = windowRect.right - windowRect.left;
+    windowWidth  = windowRect.right - windowRect.left;
     windowHeight = windowRect.bottom - windowRect.top;
 
     // Calculate top-left position to center the window
@@ -984,8 +1087,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
 
     // Center align text horizontally
     g_pCenterTextFormat->SetTextAlignment( DWRITE_TEXT_ALIGNMENT_CENTER );
-    // Align text vertically to the top of the layout rectangle
-    g_pCenterTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
+    // Align text vertically to the center of the layout rectangle
+    g_pCenterTextFormat->SetParagraphAlignment( DWRITE_PARAGRAPH_ALIGNMENT_CENTER );
 
     // Create a solid color brush for text
     hr = g_pRenderTarget->CreateSolidColorBrush(

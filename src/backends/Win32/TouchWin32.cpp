@@ -1,9 +1,11 @@
+#include <algorithm>
 #include <input/Touch.hpp>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 #include <algorithm>
+#include <chrono>
 #include <mutex>
 #include <system_error>
 #include <vector>
@@ -29,12 +31,19 @@ void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 // {
 //     switch (message)
 //     {
-//     case WM_TOUCH:
+//     case WM_POINTERDOWN:
+//     case WM_POINTERUPDATE:
+//     case WM_POINTERUP:
 //         Touch_ProcessMessage(message, wParam, lParam);
 //         break;
 //     }
 // }
 //
+static uint64_t getTimestamp()
+{
+    using namespace std::chrono;
+    return duration_cast<nanoseconds>( steady_clock::now().time_since_epoch() ).count();
+}
 
 class TouchWin32
 {
@@ -57,10 +66,13 @@ public:
 
     void endFrame()
     {
+        uint64_t timestamp = getTimestamp();
         // Remove ended touches
         std::erase_if( m_Touches,
-                       []( const Touch::TouchPoint& t ) {
-                           return t.phase == Touch::Phase::Ended || t.phase == Touch::Phase::Cancelled;
+                       [timestamp]( const Touch::TouchPoint& t ) {
+                           return t.phase == Touch::Phase::Ended ||
+                                  t.phase == Touch::Phase::Cancelled ||
+                                  ( t.phase == Touch::Phase::Stationary && ( timestamp - t.timestamp ) > 1000000000ull );  // Stale touch points.
                        } );
 
         // Update phase for touches that haven't changed
@@ -125,25 +137,13 @@ void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
 {
     auto& impl = TouchWin32::get();
 
-    if ( message != WM_TOUCH )
-        return;
-
-    const UINT cInputs = LOWORD( wParam );
-    auto       pInputs = std::make_unique<TOUCHINPUT[]>( cInputs );
-
-    if ( GetTouchInputInfo( reinterpret_cast<HTOUCHINPUT>( lParam ), cInputs, pInputs.get(), sizeof( TOUCHINPUT ) ) )
+    if ( message == WM_POINTERDOWN || message == WM_POINTERUPDATE || message == WM_POINTERUP )
     {
-        std::lock_guard lock( impl.m_Mutex );
-
-        for ( UINT i = 0; i < cInputs; ++i )
+        const UINT32 pointerId = GET_POINTERID_WPARAM( wParam );
+        POINTER_INFO pointerInfo;
+        if ( GetPointerInfo( pointerId, &pointerInfo ) )
         {
-            const TOUCHINPUT& ti = pInputs[i];
-
-            // Convert screen coordinates to normalized coordinates
-            POINT pt;
-            pt.x = TOUCH_COORD_TO_PIXEL( ti.x );
-            pt.y = TOUCH_COORD_TO_PIXEL( ti.y );
-
+            POINT pt = pointerInfo.ptPixelLocation;
             if ( impl.m_Window )
             {
                 ScreenToClient( impl.m_Window, &pt );
@@ -161,33 +161,78 @@ void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
                     normalizedY = static_cast<float>( pt.y ) / static_cast<float>( height );
                 }
 
-                // Find existing touch
-                auto it = std::find_if( impl.m_Touches.begin(), impl.m_Touches.end(),
-                                        [&]( const Touch::TouchPoint& t ) {
-                                            return t.id == static_cast<int64_t>( ti.dwID );
+                float              pressure = 1.0f;
+                POINTER_INPUT_TYPE pointerType;
+                bool               isPen   = false;
+                bool               isTouch = false;
+                if ( GetPointerType( pointerId, &pointerType ) )
+                {
+                    isPen   = ( pointerType == PT_PEN );
+                    isTouch = ( pointerType == PT_TOUCH );
+                    if ( isPen )
+                    {
+                        POINTER_PEN_INFO penInfo;
+                        if ( GetPointerPenInfo( pointerId, &penInfo ) )
+                        {
+                            pressure = static_cast<float>( penInfo.pressure ) / 1024.0f;
+                            pressure = std::clamp( pressure, 0.0f, 1.0f );
+                        }
+                    }
+                }
+
+                std::lock_guard lock( impl.m_Mutex );
+                auto            it = std::find_if( impl.m_Touches.begin(), impl.m_Touches.end(),
+                                                   [&]( const Touch::TouchPoint& t ) {
+                                            return t.id == static_cast<int64_t>( pointerId );
                                         } );
 
-                if ( ti.dwFlags & TOUCHEVENTF_DOWN )
-                {
-                    // New touch
-                    Touch::TouchPoint touch;
-                    touch.id       = static_cast<int64_t>( ti.dwID );
-                    touch.x        = normalizedX;
-                    touch.y        = normalizedY;
-                    touch.pressure = 1.0f;  // Windows doesn't provide pressure in basic touch
-                    touch.phase    = Touch::Phase::Began;
-                    impl.m_Touches.push_back( touch );
-                }
-                else if ( ti.dwFlags & TOUCHEVENTF_MOVE )
+                // Handle pointer cancel
+                if ( pointerInfo.pointerFlags & POINTER_FLAG_CANCELED )
                 {
                     if ( it != impl.m_Touches.end() )
                     {
-                        it->x     = normalizedX;
-                        it->y     = normalizedY;
-                        it->phase = Touch::Phase::Moved;
+                        it->x        = normalizedX;
+                        it->y        = normalizedY;
+                        it->pressure = 0.0f;
+                        it->phase    = Touch::Phase::Cancelled;
+                    }
+                    return;
+                }
+
+                if ( message == WM_POINTERDOWN )
+                {
+                    if ( it != impl.m_Touches.end() )
+                    {
+                        it->timestamp = getTimestamp();
+                        it->x         = normalizedX;
+                        it->y         = normalizedY;
+                        it->pressure  = pressure;
+                        it->phase     = Touch::Phase::Began;
+                    }
+                    else
+                    {
+                        Touch::TouchPoint touch;
+                        touch.id        = static_cast<int64_t>( pointerId );
+                        touch.timestamp = getTimestamp();
+                        touch.x         = normalizedX;
+                        touch.y         = normalizedY;
+                        touch.pressure  = pressure;
+                        touch.phase     = Touch::Phase::Began;
+                        impl.m_Touches.push_back( touch );
                     }
                 }
-                else if ( ti.dwFlags & TOUCHEVENTF_UP )
+                else if ( message == WM_POINTERUPDATE )
+                {
+                    if ( it != impl.m_Touches.end() )
+                    {
+                        it->timestamp = getTimestamp();
+                        it->x         = normalizedX;
+                        it->y         = normalizedY;
+                        it->pressure  = pressure;
+                        it->phase     = Touch::Phase::Moved;
+                    }
+                }
+                else if ( message == WM_POINTERUP )
                 {
                     if ( it != impl.m_Touches.end() )
                     {
@@ -199,8 +244,6 @@ void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
                 }
             }
         }
-
-        CloseTouchInputHandle( reinterpret_cast<HTOUCHINPUT>( lParam ) );
     }
 }
 

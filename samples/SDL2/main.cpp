@@ -685,7 +685,7 @@ void renderTouchPanel()
         const char* phaseName    = phaseNames[static_cast<int>( touch.phase )];
 
         text += std::format(
-            "\nTouch #{}\n"
+            "Touch #{}\n"
             "  Pos:      ({:.3f}, {:.3f})\n"
             "  Pressure: {:.2f}\n"
             "  Phase:    {}\n",

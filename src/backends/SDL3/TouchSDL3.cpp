@@ -77,11 +77,12 @@ private:
         case SDL_EVENT_FINGER_DOWN:
         {
             Touch::TouchPoint touch;
-            touch.id       = event->tfinger.fingerID;
-            touch.x        = event->tfinger.x;
-            touch.y        = event->tfinger.y;
-            touch.pressure = event->tfinger.pressure;
-            touch.phase    = Touch::Phase::Began;
+            touch.id        = event->tfinger.fingerID;
+            touch.timestamp = event->tfinger.timestamp;
+            touch.x         = event->tfinger.x;
+            touch.y         = event->tfinger.y;
+            touch.pressure  = event->tfinger.pressure;
+            touch.phase     = Touch::Phase::Began;
             self->m_Touches.push_back( touch );
             break;
         }
@@ -93,10 +94,11 @@ private:
                                     } );
             if ( it != self->m_Touches.end() )
             {
-                it->x        = event->tfinger.x;
-                it->y        = event->tfinger.y;
-                it->pressure = event->tfinger.pressure;
-                it->phase    = Touch::Phase::Moved;
+                it->timestamp = event->tfinger.timestamp;
+                it->x         = event->tfinger.x;
+                it->y         = event->tfinger.y;
+                it->pressure  = event->tfinger.pressure;
+                it->phase     = Touch::Phase::Moved;
             }
             break;
         }

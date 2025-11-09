@@ -42,6 +42,15 @@ struct TouchPoint
     uint64_t id;
 
     /// <summary>
+    /// Timestamp in nanoseconds.
+    /// <remarks>
+    /// Touch events can become and stuck in a stationary state.
+    /// Stationary touch points are removed after 1 second.
+    /// </remarks>
+    /// </summary>
+    uint64_t timestamp;
+
+    /// <summary>
     /// The x-coordinate of the touch point, normalized to [0.0, 1.0] where 0.0 is left and 1.0 is right.
     /// </summary>
     float x;
