@@ -120,6 +120,11 @@ bool isSupported();
 /// <returns>The number of touch devices.</returns>
 int getDeviceCount();
 
+/// <summary>
+/// Set the window handle for touch input (Win32 only).
+/// </summary>
+/// <param name="window">Pointer to the window handle.</param>
+void setWindow(void* window);
 }  // namespace Touch
 
 /// <summary>
