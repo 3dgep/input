@@ -618,7 +618,7 @@ void renderTouch()
         float screenY = touch.y * rtH;
 
         // Draw outer circle with ID
-        float radius = 60.0f + touch.pressure * 20.0f;  // Radius varies with pressure
+        float radius = 30.0f + touch.pressure * 70.0f;  // Radius varies with pressure
         drawOutlineCircle( BLUE, { screenX, screenY }, radius );
 
         // Draw inner filled circle
@@ -878,6 +878,7 @@ int main( int argc, char* argv[] )
 
         // Call this at the end of the frame to reset the relative mouse position.
         Mouse::resetRelativeMotion();
+        Touch::endFrame();
     }
 
     // Cleanup

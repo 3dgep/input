@@ -43,6 +43,7 @@ constexpr float PANEL_WIDTH                = 340.0f;  // The width of the state 
 // Forward declare callback functions.
 void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 // Note: Touch input is supported via Touch::getState().
 // For Win32 backend, call Touch_ProcessMessage() and Touch::setWindow() as needed.
 // See TouchWin32.cpp for implementation details.
@@ -791,6 +792,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
 
     // Register window with mouse:
     Mouse::setWindow( hwnd );
+    // Register window with touch:
+    Touch::setWindow( hwnd );
 
     ShowWindow( hwnd, nCmdShow );
 
@@ -1036,6 +1039,8 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
 
         // Call this at the end of each frame to reset relative mouse movements.
         Mouse::resetRelativeMotion();
+        // Call this to remove ended touches and reset moved touches to stationary.
+        Touch::endFrame();
     }
 
     // Cleanup
@@ -1065,6 +1070,7 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
     // Keyboard callback.
     Keyboard_ProcessMessage( msg, wParam, lParam );
     Mouse_ProcessMessage( msg, wParam, lParam );
+    Touch_ProcessMessage( msg, wParam, lParam );
 
     switch ( msg )
     {

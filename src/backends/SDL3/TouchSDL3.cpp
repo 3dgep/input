@@ -27,14 +27,38 @@ public:
         return state;
     }
 
+    void endFrame()
+    {
+        std::lock_guard lock( m_Mutex );
+
+        // Remove touches that ended in the previous frame
+        std::erase_if( m_Touches,
+                       []( const Touch::TouchPoint& t ) {
+                           return t.phase == Touch::Phase::Ended || t.phase == Touch::Phase::Cancelled;
+                       } );
+
+        // Mark remaining touches as stationary (they will be updated to Moved if motion events occur)
+        for ( auto& touch: m_Touches )
+        {
+            if ( touch.phase != Touch::Phase::Began )
+            {
+                touch.phase = Touch::Phase::Stationary;
+            }
+        }
+    }
+
     bool isSupported() const
     {
-        return SDL_GetNumTouchDevices() > 0;
+        return getDeviceCount() > 0;
     }
 
     int getDeviceCount() const
     {
-        return SDL_GetNumTouchDevices();
+        int          numTouchDevices = 0;
+        SDL_TouchID* touchId         = SDL_GetTouchDevices( &numTouchDevices );
+        SDL_free( touchId );
+
+        return numTouchDevices;
     }
 
     TouchSDL3( const TouchSDL3& )            = delete;
@@ -53,7 +77,7 @@ private:
         case SDL_EVENT_FINGER_DOWN:
         {
             Touch::TouchPoint touch;
-            touch.id       = static_cast<int64_t>( event->tfinger.fingerID );
+            touch.id       = event->tfinger.fingerID;
             touch.x        = event->tfinger.x;
             touch.y        = event->tfinger.y;
             touch.pressure = event->tfinger.pressure;
@@ -65,7 +89,7 @@ private:
         {
             auto it = std::find_if( self->m_Touches.begin(), self->m_Touches.end(),
                                     [&]( const Touch::TouchPoint& t ) {
-                                        return t.id == static_cast<int64_t>( event->tfinger.fingerID );
+                                        return t.id == event->tfinger.fingerID;
                                     } );
             if ( it != self->m_Touches.end() )
             {
@@ -89,7 +113,7 @@ private:
                 it->pressure = 0.0f;
                 it->phase    = Touch::Phase::Ended;
                 // Keep the touch for one more frame so it can be detected as Released
-                // It will be removed on the next frame update
+                // It will be removed when endFrame is called.
             }
             break;
         }
@@ -114,41 +138,17 @@ private:
     friend class TouchSDL3Updater;
 };
 
-// Helper class to clean up ended touches
-class TouchSDL3Updater
-{
-public:
-    static void update()
-    {
-        auto&           instance = TouchSDL3::get();
-        std::lock_guard lock( instance.m_Mutex );
-
-        // Remove touches that ended in the previous frame
-        instance.m_Touches.erase(
-            std::remove_if( instance.m_Touches.begin(), instance.m_Touches.end(),
-                            []( const Touch::TouchPoint& t ) {
-                                return t.phase == Touch::Phase::Ended || t.phase == Touch::Phase::Cancelled;
-                            } ),
-            instance.m_Touches.end() );
-
-        // Mark remaining touches as stationary (they will be updated to Moved if motion events occur)
-        for ( auto& touch : instance.m_Touches )
-        {
-            if ( touch.phase != Touch::Phase::Began )
-            {
-                touch.phase = Touch::Phase::Stationary;
-            }
-        }
-    }
-};
-
 namespace input::Touch
 {
 
 State getState()
 {
-    TouchSDL3Updater::update();
     return TouchSDL3::get().getState();
+}
+
+void endFrame()
+{
+    TouchSDL3::get().endFrame();
 }
 
 bool isSupported()

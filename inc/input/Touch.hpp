@@ -39,7 +39,7 @@ struct TouchPoint
     /// <remarks>
     /// A finger touching the screen will have a consistent ID for the duration of the touch.
     /// </remarks>
-    int64_t id;
+    uint64_t id;
 
     /// <summary>
     /// The x-coordinate of the touch point, normalized to [0.0, 1.0] where 0.0 is left and 1.0 is right.
@@ -107,6 +107,11 @@ struct State
 /// </summary>
 /// <returns>The current touch state.</returns>
 State getState();
+
+/// <summary>
+/// Called at the end of the frame to remove touch inputs and set moving touch inputs to stationary.
+/// </summary>
+void endFrame();
 
 /// <summary>
 /// Check if touch input is supported.

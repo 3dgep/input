@@ -19,7 +19,7 @@ void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // For a Win32 desktop application, in your window setup be sure to call:
 //
-// RegisterTouchWindow(hwnd, 0);
+// Touch::setWindow( hWnd );
 //
 // And call this function from your Window Message Procedure
 //
@@ -52,30 +52,25 @@ public:
         Touch::State state {};
         state.touches = m_Touches;
 
+        return state;
+    }
+
+    void endFrame()
+    {
+        // Remove ended touches
+        std::erase_if( m_Touches,
+                       []( const Touch::TouchPoint& t ) {
+                           return t.phase == Touch::Phase::Ended || t.phase == Touch::Phase::Cancelled;
+                       } );
+
         // Update phase for touches that haven't changed
-        for ( auto& touch : state.touches )
+        for ( auto& touch: m_Touches )
         {
-            if ( touch.phase == Touch::Phase::Began )
-            {
-                // Keep Began for one frame
-            }
-            else if ( touch.phase != Touch::Phase::Ended && touch.phase != Touch::Phase::Cancelled )
+            if ( touch.phase != Touch::Phase::Began )
             {
                 touch.phase = Touch::Phase::Stationary;
             }
         }
-
-        // Remove ended touches
-        state.touches.erase(
-            std::remove_if( state.touches.begin(), state.touches.end(),
-                            []( const Touch::TouchPoint& t ) {
-                                return t.phase == Touch::Phase::Ended || t.phase == Touch::Phase::Cancelled;
-                            } ),
-            state.touches.end() );
-
-        m_Touches = state.touches;
-
-        return state;
     }
 
     bool isSupported() const
@@ -156,11 +151,11 @@ void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
                 RECT rect;
                 GetClientRect( impl.m_Window, &rect );
 
-                const int width  = rect.right - rect.left;
-                const int height = rect.bottom - rect.top;
-                float normalizedX = 0.0f;
-                float normalizedY = 0.0f;
-                if (width != 0 && height != 0)
+                const int width       = rect.right - rect.left;
+                const int height      = rect.bottom - rect.top;
+                float     normalizedX = 0.0f;
+                float     normalizedY = 0.0f;
+                if ( width != 0 && height != 0 )
                 {
                     normalizedX = static_cast<float>( pt.x ) / static_cast<float>( width );
                     normalizedY = static_cast<float>( pt.y ) / static_cast<float>( height );
@@ -215,6 +210,11 @@ namespace input::Touch
 State getState()
 {
     return TouchWin32::get().getState();
+}
+
+void endFrame()
+{
+    TouchWin32::get().endFrame();
 }
 
 bool isSupported()

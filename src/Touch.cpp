@@ -1,11 +1,8 @@
 #include <input/Touch.hpp>
 
 #include <algorithm>
-#include <cstring>  // for memset
 
 using namespace input;
-
-#define UPDATE_BUTTON_STATE( field ) field = static_cast<ButtonState>( ( !!state ) | ( ( !!state ^ !!lastState ) << 1 ) )
 
 void TouchStateTracker::update( const Touch::State& state ) noexcept
 {
@@ -80,8 +77,6 @@ void TouchStateTracker::update( const Touch::State& state ) noexcept
 
     lastState = state;
 }
-
-#undef UPDATE_BUTTON_STATE
 
 void TouchStateTracker::reset() noexcept
 {

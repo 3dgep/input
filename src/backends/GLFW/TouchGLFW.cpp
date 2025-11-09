@@ -22,6 +22,11 @@ State getState()
     return state;
 }
 
+void endFrame()
+{
+    // GLFW does not support touch input.
+}
+
 bool isSupported()
 {
     // GLFW does not support touch input directly

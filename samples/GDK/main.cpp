@@ -493,6 +493,14 @@ void update()
             // Gamepad::setVibration( i, leftMotor, rightMotor, leftTrigger, rightTrigger );
         }
     }
+
+    Touch::State touchState = Touch::getState();
+    {
+        for (auto& t : touchState.touches )
+        {
+            std::cout << std::format( "[{}/{}]: ({}, {})", t.id, t.pressure, t.x, t.y );
+        }
+    }
 }
 
 void renderRectangle( D2D1_COLOR_F color, D2D1_RECT_F rect, FillMode fillMode = FillMode::Solid )
@@ -1040,6 +1048,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow )
 
         // Call this at the end of the frame to reset relative mouse movement.
         Mouse::resetRelativeMotion();
+        Touch::endFrame();
     }
 
     // Cleanup
