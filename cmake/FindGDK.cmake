@@ -25,9 +25,9 @@ if(GDK_ROOT_PATH)
     find_path(GDK_INCLUDE_DIR
         NAMES XGameRuntime.h
         PATHS
-            ${GDK_ROOT_PATH}/gamekit/include
-            ${GDK_ROOT_PATH}/GRDK/gamekit/include
-            ${GDK_ROOT_PATH}/GXDK/gamekit/include
+            ${GDK_ROOT_PATH}/GameKit/Include
+            ${GDK_ROOT_PATH}/GRDK/GameKit/Include
+            ${GDK_ROOT_PATH}/GXDK/GameKit/Include
         NO_DEFAULT_PATH
     )
     
@@ -42,18 +42,18 @@ if(GDK_ROOT_PATH)
     find_library(GDK_LIBRARY
         NAMES xgameruntime.lib XGameRuntime.lib
         PATHS
-            ${GDK_ROOT_PATH}/gamekit/lib/${GDK_ARCH}
-            ${GDK_ROOT_PATH}/GRDK/gamekit/lib/${GDK_ARCH}
-            ${GDK_ROOT_PATH}/GXDK/gamekit/lib/${GDK_ARCH}
+            ${GDK_ROOT_PATH}/GameKit/Lib/${GDK_ARCH}
+            ${GDK_ROOT_PATH}/GRDK/GameKit/Lib/${GDK_ARCH}
+            ${GDK_ROOT_PATH}/GXDK/GameKit/Lib/${GDK_ARCH}
         NO_DEFAULT_PATH
     )
         # Find GameInput library
         find_library(GAMEINPUT_LIBRARY
             NAMES GameInput.lib
             PATHS
-                ${GDK_ROOT_PATH}/gamekit/lib/${GDK_ARCH}
-                ${GDK_ROOT_PATH}/GRDK/gamekit/lib/${GDK_ARCH}
-                ${GDK_ROOT_PATH}/GXDK/gamekit/lib/${GDK_ARCH}
+                ${GDK_ROOT_PATH}/GameKit/Lib/${GDK_ARCH}
+                ${GDK_ROOT_PATH}/GRDK/GameKit/Lib/${GDK_ARCH}
+                ${GDK_ROOT_PATH}/GXDK/GameKit/Lib/${GDK_ARCH}
             NO_DEFAULT_PATH
         )
     
