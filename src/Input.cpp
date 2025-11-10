@@ -1376,6 +1376,9 @@ std::unordered_map<std::string, ButtonCallback> g_ButtonUpMap = {
 
 void Input::update()
 {
+    Mouse::resetRelativeMotion();
+    Touch::endFrame();
+
     for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
         g_GamepadStateTrackers[i].update( Gamepad::getState( i ) );
 
