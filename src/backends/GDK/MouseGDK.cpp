@@ -107,8 +107,9 @@ public:
 
                         if ( m_RelativeX != INT64_MAX )
                         {
-                            state.x         = static_cast<int>( mouseState.positionX - m_RelativeX );
-                            state.y         = static_cast<int>( mouseState.positionY - m_RelativeY );
+                            state.x = static_cast<float>( mouseState.positionX - m_RelativeX );
+                            state.y = static_cast<float>( mouseState.positionY - m_RelativeY );
+
                             int scrollDelta = static_cast<int>( mouseState.wheelY - m_RelativeWheelY );
                             m_ScrollWheelCurrent += scrollDelta;
                         }
