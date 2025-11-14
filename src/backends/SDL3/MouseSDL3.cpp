@@ -35,8 +35,8 @@ public:
 
         if ( m_Mode == Mouse::Mode::Absolute )
         {
-            state.x = static_cast<int>( x );
-            state.y = static_cast<int>( y );
+            state.x = x;
+            state.y = y;
         }
         else  // Relative mode
         {

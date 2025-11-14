@@ -827,7 +827,7 @@ void render()
         {
             float margin = 32.0f;
             float left   = rtSize.width - margin - PANEL_WIDTH;
-            float top    = margin * 4 + MOUSE_STATE_PANEL_HEIGHT + TOUCH_STATE_PANEL_HEIGHT;
+            float top    = margin * 3 + MOUSE_STATE_PANEL_HEIGHT + TOUCH_STATE_PANEL_HEIGHT;
 
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {

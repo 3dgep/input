@@ -7,6 +7,13 @@
     },
     "configurePresets": [
         {
+            "name": "vs18",
+            "displayName": "Visual Studio 2026",
+            "description": "Visual Studio 2026 Generator.",
+            "generator": "Visual Studio 18 2026",
+            "binaryDir": "${sourceDir}/out/build/${presetName}"
+        },
+        {
             "name": "vs17",
             "displayName": "Visual Studio 2022",
             "description": "Visual Studio 2022 Generator.",
@@ -27,13 +34,25 @@
     ],
     "buildPresets": [
         {
-            "name": "x64-debug",
+            "name": "vs18-debug",
+            "displayName": "Windows (Debug)",
+            "configurePreset": "vs18",
+            "configuration": "Debug"
+        },
+        {
+            "name": "vs18-release",
+            "displayName": "Windows (Release)",
+            "configurePreset": "vs18",
+            "configuration": "Release"
+        },
+        {
+            "name": "vs17-debug",
             "displayName": "Windows (Debug)",
             "configurePreset": "vs17",
             "configuration": "Debug"
         },
         {
-            "name": "x64-release",
+            "name": "vs17-release",
             "displayName": "Windows (Release)",
             "configurePreset": "vs17",
             "configuration": "Release"
