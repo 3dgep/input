@@ -51,7 +51,7 @@ public:
                 for ( const GameInputTouchState& touchState: touchStates )
                 {
                     // Check to see if we are already tracking this touch point.
-                    auto it = std::find_if( m_Touches.begin(), m_Touches.end(), [&]( const Touch::TouchPoint& t ) {
+                    auto it = std::ranges::find_if( m_Touches, [&]( const Touch::TouchPoint& t ) {
                         return t.id == touchState.touchId;
                     } );
 

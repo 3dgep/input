@@ -14,7 +14,7 @@ using namespace input;
 //
 // For a Win32 desktop application, call this function from your Window Message Procedure
 //
-// void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+// extern void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // {
@@ -83,7 +83,7 @@ public:
         std::memset( &m_State, 0, sizeof( Keyboard::State ) );
     }
 
-    bool isConnected() const
+    static bool isConnected()
     {
         return true;
     }
@@ -177,7 +177,7 @@ void reset()
 
 bool isConnected()
 {
-    return KeyboardWin32::get().isConnected();
+    return KeyboardWin32::isConnected();
 }
 
 }  // namespace input::Keyboard

@@ -11,7 +11,7 @@
 #include <ostream>
 #include <stdexcept>
 
-void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+extern void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 
 //======================================================================================
 // Win32 + GameInput implementation
@@ -20,7 +20,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // Call this static function from your Window Message Procedure
 //
-// void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+// extern void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // {
@@ -127,7 +127,7 @@ public:
         return state;
     }
 
-    void resetScrollWheelValue() noexcept
+    void resetScrollWheelValue() const noexcept
     {
         SetEvent( m_ScrollWheelValue.get() );
     }
@@ -171,7 +171,7 @@ public:
         }
     }
 
-    void resetRelativeMotion()
+    void resetRelativeMotion() const
     {
         if ( m_Mode == Mouse::Mode::Relative )
         {
@@ -197,7 +197,7 @@ public:
         return ( info.flags & CURSOR_SHOWING ) != 0;
     }
 
-    void setVisible( bool visible )
+    void setVisible( bool visible ) const
     {
         if ( m_Mode == Mouse::Mode::Relative )
             return;
@@ -451,11 +451,11 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
     if ( impl.m_Mode == Mouse::Mode::Absolute )
     {
         // All mouse messages provide a new pointer position
-        int xPos = static_cast<short>( LOWORD( lParam ) );  // GET_X_LPARAM(lParam);
-        int yPos = static_cast<short>( HIWORD( lParam ) );  // GET_Y_LPARAM(lParam);
+        int xPos = LOWORD( lParam );  // GET_X_LPARAM(lParam);
+        int yPos = HIWORD( lParam );  // GET_Y_LPARAM(lParam);
 
-        impl.m_State.x = static_cast<int>( static_cast<float>( xPos ) * impl.m_Scale );
-        impl.m_State.y = static_cast<int>( static_cast<float>( yPos ) * impl.m_Scale );
+        impl.m_State.x = static_cast<float>( xPos ) * impl.m_Scale;
+        impl.m_State.y = static_cast<float>( yPos ) * impl.m_Scale;
     }
 }
 

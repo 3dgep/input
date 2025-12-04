@@ -1,18 +1,19 @@
-cmake_minimum_required(VERSION 3.10...3.31)
+cmake_minimum_required(VERSION 4.0...4.2)
 
-function( add_sample DIR_NAME )
+macro( add_sample DIR_NAME )
 	if( NOT INPUT_TEST_INCLUDED )
 		add_subdirectory( input )
-		set( INPUT_TEST_INCLUDED TRUE PARENT_SCOPE)
+		set( INPUT_TEST_INCLUDED TRUE )
 	endif()
 	add_subdirectory( ${DIR_NAME} )
 	if( TARGET sample_${DIR_NAME} )
 	set_target_properties( input_test sample_${DIR_NAME}
 		PROPERTIES 
 			FOLDER samples
-			VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+			DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
+	set_property( DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT sample_${DIR_NAME})
 	endif()
-endfunction()
+endmacro()
 
 if(INPUT_USE_GDK AND TARGET Microsoft::GDK)
     add_sample(GDK)

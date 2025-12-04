@@ -393,7 +393,7 @@ public:
 
     Keyboard::State getState() const
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         Keyboard::State state {};
         int             numKeys  = 0;

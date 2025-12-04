@@ -140,7 +140,7 @@ public:
     float x = 0.0f;  ///< The change in the x-position since the last update.
     float y = 0.0f;  ///< The change in the y-position since the last update.
 
-    int scrollWheelDelta;
+    int64_t scrollWheelDelta;
 
     MouseStateTracker() noexcept
     {

@@ -184,7 +184,7 @@ public:
 
     Keyboard::State getState()
     {
-        std::lock_guard lock(m_Mutex);
+        std::scoped_lock lock(m_Mutex);
 
         m_State.AltKey     = m_State.LeftAlt || m_State.RightAlt;
         m_State.ControlKey = m_State.LeftControl || m_State.RightControl;
@@ -195,11 +195,11 @@ public:
 
     void reset() noexcept
     {
-        std::lock_guard lock(m_Mutex);
+        std::scoped_lock lock(m_Mutex);
         std::memset(&m_State, 0, sizeof(Keyboard::State));
     }
 
-    bool isConnected() const
+    static bool isConnected()
     {
         return true;
     }
@@ -227,7 +227,7 @@ void Keyboard_Callback(GLFWwindow* /*window*/, int key, int /*scancode*/, int ac
     if (vk == 0)
         return;
 
-    std::lock_guard lock(impl.m_Mutex);
+    std::scoped_lock lock(impl.m_Mutex);
 
     if (action == GLFW_PRESS)
     {
@@ -254,6 +254,6 @@ void reset()
 
 bool isConnected()
 {
-    return KeyboardGLFW::get().isConnected();
+    return KeyboardGLFW::isConnected();
 }
 }  // namespace input::Keyboard

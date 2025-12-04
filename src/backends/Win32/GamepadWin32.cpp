@@ -17,7 +17,7 @@ namespace
 {
 struct handle_closer
 {
-    void operator()( HANDLE h ) noexcept
+    void operator()( HANDLE h ) const noexcept
     {
         if ( h )
             CloseHandle( h );
@@ -133,7 +133,7 @@ public:
         return state;
     }
 
-    bool setVibration( int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger ) noexcept
+    bool setVibration( int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger ) const noexcept
     {
         using namespace ABI::Windows::Gaming::Input;
 
@@ -167,7 +167,7 @@ public:
         }
     }
 
-    void resume() noexcept
+    void resume() const noexcept
     {
         // Make sure we rescan gamepads
         SetEvent( m_Changed.get() );
@@ -281,7 +281,7 @@ private:
                             m_MostRecentGamepad = static_cast<int>( k );
                         break;
                     }
-                    else if ( !m_Gamepad[k] )
+                    if ( !m_Gamepad[k] )
                     {
                         if ( empty >= input::Gamepad::MAX_PLAYER_COUNT )
                             empty = k;

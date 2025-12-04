@@ -7,7 +7,7 @@ set(DEPENDENCY_FILES $<TARGET_FILE:SDL2::SDL2> $<TARGET_FILE:SDL2::SDL2main>)
 
 if(TARGET SDL2_ttf::SDL2_ttf)
     target_link_libraries(sample_SDL2 PRIVATE SDL2_ttf::SDL2_ttf)
-    list(APPEND DEPENDENCY_FILES $<TARGET_FILE:SDL2_ttf::SDL2_ttf>)
+    list(APPEND DEPENDENCY_FILES $<TARGET_FILE:SDL2_ttf::SDL2_ttf> $<TARGET_FILE:Freetype::Freetype>)
 elseif(TARGET SDL2_ttf::SDL2_ttf-static)
     target_link_libraries(sample_SDL2 PRIVATE SDL2_ttf::SDL2_ttf-static)
 endif()

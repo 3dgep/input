@@ -14,7 +14,7 @@
 //
 // For a Win32 desktop application, call this function from your Window Message Procedure
 //
-// void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+// extern void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // {
@@ -207,7 +207,7 @@ bool isConnected()
 
 }  // namespace input::Keyboard
 
-void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
+void Keyboard_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )  // NOLINT(misc-use-internal-linkage)
 {
     // GameInput for Keyboard doesn't require Win32 messages, but this simplifies integration.
 }

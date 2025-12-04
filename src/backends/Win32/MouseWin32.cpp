@@ -9,7 +9,7 @@
 
 using namespace input;
 
-void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+extern void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 
 //======================================================================================
 // Win32 desktop implementation
@@ -22,8 +22,8 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 //
 // And call this function from your Window Message Procedure
 //
-// void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
-// 
+// extern void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+//
 // LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // {
 //     switch (message)
@@ -74,7 +74,7 @@ public:
         return mouseWin32;
     }
 
-    Mouse::State getState()
+    Mouse::State getState() const
     {
         Mouse::State state = m_State;
         state.positionMode = m_Mode;
@@ -104,12 +104,12 @@ public:
         return state;
     }
 
-    void resetScrollWheelValue() noexcept
+    void resetScrollWheelValue() const noexcept
     {
         SetEvent( m_ScrollWheelValue.get() );
     }
 
-    void setMode( Mouse::Mode mode )
+    void setMode( Mouse::Mode mode ) const
     {
         if ( m_Mode == mode )
             return;
@@ -138,7 +138,7 @@ public:
         }
     }
 
-    bool isConnected() const noexcept
+    static bool isConnected() noexcept
     {
         return GetSystemMetrics( SM_MOUSEPRESENT ) != 0;
     }
@@ -155,7 +155,7 @@ public:
         return ( info.flags & CURSOR_SHOWING ) != 0;
     }
 
-    void setVisible( bool visible )
+    void setVisible( bool visible ) const
     {
         if ( m_Mode == Mouse::Mode::Relative )
             return;
@@ -173,7 +173,7 @@ public:
         }
     }
 
-   void setWindow( HWND window )
+    void setWindow( HWND window )
     {
         if ( m_Window == window )
             return;
@@ -216,7 +216,7 @@ private:
 
     friend void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 
-    void clipToWindow() noexcept
+    void clipToWindow() const noexcept
     {
         assert( m_Window != nullptr );
 
@@ -245,8 +245,7 @@ private:
 
     Mouse::State m_State {};
 
-    HWND        m_Window { nullptr };
-    Mouse::Mode m_Mode { Mouse::Mode::Absolute };
+    HWND m_Window { nullptr };
 
     ScopedHandle m_ScrollWheelValue;
     ScopedHandle m_RelativeRead;
@@ -258,7 +257,8 @@ private:
     int m_RelativeX { INT_MAX };
     int m_RelativeY { INT_MAX };
 
-    bool m_InFocus { true };
+    Mouse::Mode m_Mode { Mouse::Mode::Absolute };
+    bool        m_InFocus { true };
 };
 
 void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
@@ -305,8 +305,8 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
         {
             SetCursorPos( point.x, point.y );
         }
-        impl.m_State.x = impl.m_LastX;
-        impl.m_State.y = impl.m_LastY;
+        impl.m_State.x = static_cast<float>( impl.m_LastX );
+        impl.m_State.y = static_cast<float>( impl.m_LastY );
     }
     break;
 
@@ -348,7 +348,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
         }
         else
         {
-            const int scrollWheel = impl.m_State.scrollWheelValue;
+            const int64_t scrollWheel = impl.m_State.scrollWheelValue;
             memset( &impl.m_State, 0, sizeof( Mouse::State ) );
             impl.m_State.scrollWheelValue = scrollWheel;
 
@@ -368,7 +368,7 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
             UINT     rawSize = sizeof( raw );
 
             const UINT resultData = GetRawInputData( reinterpret_cast<HRAWINPUT>( lParam ), RID_INPUT, &raw, &rawSize, sizeof( RAWINPUTHEADER ) );
-            if ( resultData == static_cast<UINT>( -1 ) )
+            if ( resultData == static_cast<UINT>( -1 ) )  // NOLINT(modernize-use-integer-sign-comparison)
             {
                 throw std::runtime_error( "GetRawInputData" );
             }
@@ -377,8 +377,8 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
             {
                 if ( !( raw.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE ) )
                 {
-                    impl.m_State.x += raw.data.mouse.lLastX;
-                    impl.m_State.y += raw.data.mouse.lLastY;
+                    impl.m_State.x += static_cast<float>( raw.data.mouse.lLastX );
+                    impl.m_State.y += static_cast<float>( raw.data.mouse.lLastY );
 
                     ResetEvent( impl.m_RelativeRead.get() );
                 }
@@ -397,8 +397,8 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
                     }
                     else
                     {
-                        impl.m_State.x = x - impl.m_RelativeX;
-                        impl.m_State.y = y - impl.m_RelativeY;
+                        impl.m_State.x = static_cast<float>( x - impl.m_RelativeX );
+                        impl.m_State.y = static_cast<float>( y - impl.m_RelativeY );
                     }
 
                     impl.m_RelativeX = x;
@@ -484,11 +484,11 @@ void Mouse_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
     if ( impl.m_Mode == Mouse::Mode::Absolute )
     {
         // All mouse messages provide a new pointer position
-        const int xPos = static_cast<short>( LOWORD( lParam ) );  // GET_X_LPARAM(lParam);
-        const int yPos = static_cast<short>( HIWORD( lParam ) );  // GET_Y_LPARAM(lParam);
+        const int xPos = LOWORD( lParam );  // GET_X_LPARAM(lParam);
+        const int yPos = HIWORD( lParam );  // GET_Y_LPARAM(lParam);
 
-        impl.m_State.x = impl.m_LastX = xPos;
-        impl.m_State.y = impl.m_LastY = yPos;
+        impl.m_State.x = static_cast<float>( impl.m_LastX = xPos );
+        impl.m_State.y = static_cast<float>( impl.m_LastY = yPos );
     }
 }
 
@@ -516,7 +516,7 @@ void resetRelativeMotion() noexcept
 
 bool isConnected()
 {
-    return MouseWin32::get().isConnected();
+    return MouseWin32::isConnected();
 }
 
 bool isVisible() noexcept
@@ -534,4 +534,4 @@ void setWindow( void* window )
     MouseWin32::get().setWindow( static_cast<HWND>( window ) );
 }
 
-}
+}  // namespace input::Mouse

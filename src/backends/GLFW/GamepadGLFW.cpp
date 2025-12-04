@@ -28,7 +28,7 @@ public:
         m_Suspended = false;
     }
 
-    Gamepad::State getState( int player, Gamepad::DeadZone deadZoneMode )
+    Gamepad::State getState( int player, Gamepad::DeadZone deadZoneMode ) const
     {
         Gamepad::State state = {};
         if ( m_Suspended )
@@ -95,7 +95,7 @@ public:
         return state;
     }
 
-    bool setVibration( int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
+    static bool setVibration( int player, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
     {
         // GLFW does not support vibration; stub implementation
         return false;
@@ -110,7 +110,7 @@ private:
         }
     }
 
-    ~GamepadGLFW()
+    ~GamepadGLFW()  // NOLINT(modernize-use-equals-default)
     {
         // glfwTerminate(); // Uncomment if you want to terminate GLFW when this singleton is destroyed
     }
@@ -125,7 +125,7 @@ Gamepad::State Gamepad::getState( int playerIndex, DeadZone deadZoneMode )
 
 bool Gamepad::setVibration( int playerIndex, float leftMotor, float rightMotor, float leftTrigger, float rightTrigger )
 {
-    return GamepadGLFW::get().setVibration( playerIndex, leftMotor, rightMotor, leftTrigger, rightTrigger );
+    return GamepadGLFW::setVibration( playerIndex, leftMotor, rightMotor, leftTrigger, rightTrigger );
 }
 
 void Gamepad::suspend() noexcept

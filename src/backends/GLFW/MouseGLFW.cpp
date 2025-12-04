@@ -28,7 +28,7 @@ public:
 
     Mouse::State getState()
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         m_State.positionMode = m_Mode;
 
@@ -43,13 +43,13 @@ public:
 
     void resetScrollWheelValue() noexcept
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         m_State.scrollWheelValue = 0;
     }
 
     void setMode( Mouse::Mode mode )
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         if ( m_Mode == mode )
             return;
 
@@ -75,7 +75,7 @@ public:
 
     void resetRelativeMotion() noexcept
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         if ( m_Mode == Mouse::Mode::Relative )
         {
             m_RelativeX = 0;
@@ -83,7 +83,7 @@ public:
         }
     }
 
-    bool isConnected() const
+    static bool isConnected()
     {
         return true;
     }
@@ -93,14 +93,14 @@ public:
         return glfwGetInputMode( m_Window, GLFW_CURSOR ) == GLFW_CURSOR_NORMAL;
     }
 
-    void setVisible( bool visible )
+    void setVisible( bool visible ) const
     {
         glfwSetInputMode( m_Window, GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN );
     }
 
     void setWindow( GLFWwindow* window )
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         m_Window = window;
     }
 
@@ -131,16 +131,16 @@ private:
 // GLFW scroll callback function (outside the class)
 void Mouse_ScrollCallback( GLFWwindow* /*window*/, double /*xoffset*/, double yoffset )
 {
-    auto&           impl = MouseGLFW::get();
-    std::lock_guard lock( impl.m_Mutex );
+    auto&            impl = MouseGLFW::get();
+    std::scoped_lock lock( impl.m_Mutex );
     impl.m_State.scrollWheelValue += static_cast<int>( yoffset * 120 );  // 120 is Win32/DirectX standard
 }
 
 // GLFW cursor position callback function (outside the class)
 void Mouse_CursorPosCallback( GLFWwindow* /*window*/, double x, double y )
 {
-    auto&           impl = MouseGLFW::get();
-    std::lock_guard lock( impl.m_Mutex );
+    auto&            impl = MouseGLFW::get();
+    std::scoped_lock lock( impl.m_Mutex );
     if ( impl.m_Mode == Mouse::Mode::Relative )
     {
         impl.m_RelativeX += static_cast<float>( x - impl.m_LastX );
@@ -159,9 +159,9 @@ void Mouse_CursorPosCallback( GLFWwindow* /*window*/, double x, double y )
 // GLFW mouse button callback function (outside the class)
 void Mouse_ButtonCallback( GLFWwindow* /*window*/, int button, int action, int /*mods*/ )
 {
-    auto&           impl = MouseGLFW::get();
-    std::lock_guard lock( impl.m_Mutex );
-    bool            pressed = ( action == GLFW_PRESS );
+    auto&            impl = MouseGLFW::get();
+    std::scoped_lock lock( impl.m_Mutex );
+    bool             pressed = ( action == GLFW_PRESS );
 
     switch ( button )
     {
@@ -210,7 +210,7 @@ void resetRelativeMotion() noexcept
 
 bool isConnected()
 {
-    return MouseGLFW::get().isConnected();
+    return MouseGLFW::isConnected();
 }
 
 bool isVisible() noexcept

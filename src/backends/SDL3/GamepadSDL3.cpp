@@ -21,9 +21,10 @@ public:
         return instance;
     }
 
-    Gamepad::State getState( int player, Gamepad::DeadZone deadZoneMode )
+    Gamepad::State getState( int player, Gamepad::DeadZone deadZoneMode ) const
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
+
         Gamepad::State  state = {};
 
         if ( player == Gamepad::MOST_RECENT_PLAYER )
@@ -58,25 +59,25 @@ public:
         state.dPad.right = SDL_GetGamepadButton( pad, SDL_GAMEPAD_BUTTON_DPAD_RIGHT );
 
         // Raw thumbstick values
-        float rawLeftX  = SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_LEFTX ) / 32767.0f;
-        float rawLeftY  = SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_LEFTY ) / 32767.0f;
-        float rawRightX = SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_RIGHTX ) / 32767.0f;
-        float rawRightY = SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_RIGHTY ) / 32767.0f;
+        float rawLeftX  = static_cast<float>( SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_LEFTX ) ) / 32767.0f;
+        float rawLeftY  = static_cast<float>( SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_LEFTY ) ) / 32767.0f;
+        float rawRightX = static_cast<float>( SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_RIGHTX ) ) / 32767.0f;
+        float rawRightY = static_cast<float>( SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_RIGHTY ) ) / 32767.0f;
 
         // Apply deadzone
         ApplyStickDeadZone( rawLeftX, rawLeftY, deadZoneMode, 1.0f, SDLThumbDeadZone, state.thumbSticks.leftX, state.thumbSticks.leftY );
         ApplyStickDeadZone( rawRightX, rawRightY, deadZoneMode, 1.0f, SDLThumbDeadZone, state.thumbSticks.rightX, state.thumbSticks.rightY );
 
         // Triggers
-        state.triggers.left  = SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER ) / 32767.0f;
-        state.triggers.right = SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER ) / 32767.0f;
+        state.triggers.left  = static_cast<float>( SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER ) ) / 32767.0f;
+        state.triggers.right = static_cast<float>( SDL_GetGamepadAxis( pad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER ) ) / 32767.0f;
 
         return state;
     }
 
-    bool setVibration( int player, float leftMotor, float rightMotor, float /*leftTrigger*/, float /*rightTrigger*/ )
+    bool setVibration( int player, float leftMotor, float rightMotor, float /*leftTrigger*/, float /*rightTrigger*/ ) const
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         if ( player == Gamepad::MOST_RECENT_PLAYER )
             player = m_MostRecentGamepad;
 
@@ -93,9 +94,9 @@ public:
         return SDL_RumbleGamepad( pad, lowFreq, highFreq, UINT32_MAX ) == 0;
     }
 
-    void suspend()
+    void suspend() const
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         for ( auto& pad: m_Gamepads )
         {
             if ( pad )
@@ -105,7 +106,7 @@ public:
 
     void resume()
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         for ( auto& pad: m_Gamepads )
         {
             if ( pad )
@@ -127,6 +128,8 @@ private:
         {
         case SDL_EVENT_QUIT:
         {
+            std::scoped_lock lock( self->m_Mutex );
+
             // Close all gamepads when quiting.
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {
@@ -141,14 +144,13 @@ private:
         break;
         case SDL_EVENT_GAMEPAD_ADDED:
         {
-            SDL_JoystickID joyId = event->gdevice.which;
+            SDL_JoystickID   joyId = event->gdevice.which;
             if ( !SDL_IsGamepad( joyId ) )
                 return true;
 
-            SDL_Gamepad* pad = SDL_OpenGamepad( joyId );
-            if ( pad )
+            if ( SDL_Gamepad* pad = SDL_OpenGamepad( joyId ) )
             {
-                std::lock_guard lock( self->m_Mutex );
+                std::scoped_lock lock( self->m_Mutex );
                 for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
                 {
                     if ( !self->m_Gamepads[i] )
@@ -163,8 +165,9 @@ private:
         break;
         case SDL_EVENT_GAMEPAD_REMOVED:
         {
-            SDL_JoystickID  joyId = event->gdevice.which;
-            std::lock_guard lock( self->m_Mutex );
+            std::scoped_lock lock( self->m_Mutex );
+
+            SDL_JoystickID   joyId = event->gdevice.which;
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {
                 if ( self->m_Gamepads[i] && SDL_GetGamepadID( self->m_Gamepads[i] ) == joyId )
@@ -210,16 +213,15 @@ private:
         int             count = 0;
         SDL_JoystickID* ids   = SDL_GetGamepads( &count );
         count                 = std::min( count, Gamepad::MAX_PLAYER_COUNT );
-        int gamepadId         = 0;
         if ( ids )
         {
+            int gamepadId         = 0;
             for ( int i = 0; i < count; ++i )
             {
                 SDL_JoystickID id = ids[i];
                 if ( SDL_IsGamepad( id ) )
                 {
-                    SDL_Gamepad* pad = SDL_OpenGamepad( id );
-                    if ( pad )
+                    if ( SDL_Gamepad* pad = SDL_OpenGamepad( id ) )
                     {
                         m_Gamepads[gamepadId++] = pad;
                         m_MostRecentGamepad     = gamepadId - 1;

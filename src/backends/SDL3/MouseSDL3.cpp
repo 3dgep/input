@@ -19,7 +19,7 @@ public:
 
     Mouse::State getState() const
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         Mouse::State state {};
         state.positionMode = m_Mode;
@@ -44,21 +44,21 @@ public:
             state.y = m_RelativeY;
         }
 
-        state.scrollWheelValue = m_ScrollWheelValue;
+        state.scrollWheelValue = static_cast<int64_t>( m_ScrollWheelValue );
 
         return state;
     }
 
     void resetScrollWheelValue() noexcept
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         m_ScrollWheelValue = 0;
     }
 
     void setMode( Mouse::Mode mode )
     {
         {
-            std::lock_guard lock( m_Mutex );
+            std::scoped_lock lock( m_Mutex );
             if ( m_Mode == mode )
                 return;
 
@@ -86,7 +86,7 @@ public:
 
     void resetRelativeMotion() noexcept
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         if ( m_Mode == Mouse::Mode::Relative )
         {
             m_RelativeX = m_AccumulateX;
@@ -97,17 +97,17 @@ public:
         }
     }
 
-    bool isConnected() const
+    static bool isConnected()
     {
         return SDL_HasMouse();
     }
 
-    bool isVisible() const noexcept
+    static bool isVisible() noexcept
     {
         return SDL_CursorVisible();
     }
 
-    void setVisible( bool visible )
+    static void setVisible( bool visible )
     {
         if ( visible )
             SDL_ShowCursor();
@@ -128,21 +128,26 @@ public:
 private:
     static bool SDLEventWatch( void* userdata, SDL_Event* event )
     {
-        auto*           self = static_cast<MouseSDL3*>( userdata );
-        std::lock_guard lock( self->m_Mutex );
+        auto* self = static_cast<MouseSDL3*>( userdata );
 
         switch ( event->type )
         {
         case SDL_EVENT_MOUSE_WHEEL:
+        {
+            std::scoped_lock lock( self->m_Mutex );
             self->m_ScrollWheelValue += event->wheel.y * 120;  // 120 is Win32/DirectX standard
-            break;
+        }
+        break;
         case SDL_EVENT_MOUSE_MOTION:
+        {
+            std::scoped_lock lock( self->m_Mutex );
             if ( self->m_Mode == Mouse::Mode::Relative )
             {
                 self->m_AccumulateX += event->motion.xrel;
                 self->m_AccumulateY += event->motion.yrel;
             }
-            break;
+        }
+        break;
         }
 
         return true;
@@ -159,15 +164,14 @@ private:
         SDL_RemoveEventWatch( &MouseSDL3::SDLEventWatch, this );
     }
 
+    SDL_Window*        m_Window           = nullptr;
+    float              m_AccumulateX      = 0.0f;
+    float              m_AccumulateY      = 0.0f;
+    float              m_RelativeX        = 0.0f;
+    float              m_RelativeY        = 0.0f;
+    float              m_ScrollWheelValue = 0.0f;
+    Mouse::Mode        m_Mode             = Mouse::Mode::Absolute;
     mutable std::mutex m_Mutex;
-
-    Mouse::Mode m_Mode             = Mouse::Mode::Absolute;
-    SDL_Window* m_Window           = nullptr;
-    float       m_ScrollWheelValue = 0.0f;
-    float       m_AccumulateX      = 0.0f;
-    float       m_AccumulateY      = 0.0f;
-    float       m_RelativeX        = 0.0f;
-    float       m_RelativeY        = 0.0f;
 };
 
 namespace input::Mouse
@@ -194,17 +198,17 @@ void resetRelativeMotion() noexcept
 
 bool isConnected()
 {
-    return MouseSDL3::get().isConnected();
+    return MouseSDL3::isConnected();
 }
 
 bool isVisible() noexcept
 {
-    return MouseSDL3::get().isVisible();
+    return MouseSDL3::isVisible();
 }
 
 void setVisible( bool visible )
 {
-    MouseSDL3::get().setVisible( visible );
+    MouseSDL3::setVisible( visible );
 }
 
 void setWindow( void* window )
@@ -212,4 +216,4 @@ void setWindow( void* window )
     MouseSDL3::get().setWindow( static_cast<SDL_Window*>( window ) );
 }
 
-}
+}  // namespace input::Mouse

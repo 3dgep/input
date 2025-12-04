@@ -1,5 +1,3 @@
-#include "input/Mouse.hpp"
-
 #include <input/Mouse.hpp>
 
 #include <SDL.h>
@@ -20,7 +18,7 @@ public:
 
     Mouse::State getState() const
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         Mouse::State state;
         state.positionMode = m_Mode;
@@ -52,14 +50,14 @@ public:
 
     void resetScrollWheelValue() noexcept
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         m_ScrollWheelValue = 0;
     }
 
     void setMode( Mouse::Mode mode )
     {
         {
-            std::lock_guard lock( m_Mutex );
+            std::scoped_lock lock( m_Mutex );
             if ( m_Mode == mode )
                 return;
 
@@ -86,7 +84,7 @@ public:
 
     void resetRelativeMotion() noexcept
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         if ( m_Mode == Mouse::Mode::Relative )
         {
             m_RelativeX = 0;
@@ -124,15 +122,18 @@ public:
 private:
     static int SDLEventWatch( void* userdata, SDL_Event* event )
     {
-        auto*           self = static_cast<MouseSDL2*>( userdata );
-        std::lock_guard lock( self->m_Mutex );
+        auto* self = static_cast<MouseSDL2*>( userdata );
 
         if ( event->type == SDL_MOUSEWHEEL )
         {
+            std::scoped_lock lock( self->m_Mutex );
+
             self->m_ScrollWheelValue += event->wheel.y * 120;  // 120 is Win32/DirectX standard
         }
         else if ( event->type == SDL_MOUSEMOTION && self->m_Mode == Mouse::Mode::Relative )
         {
+            std::scoped_lock lock( self->m_Mutex );
+
             self->m_RelativeX += event->motion.xrel;
             self->m_RelativeY += event->motion.yrel;
         }
@@ -150,11 +151,11 @@ private:
         SDL_DelEventWatch( &SDLEventWatch, this );
     }
 
-    mutable std::mutex m_Mutex;
-    Mouse::Mode        m_Mode = Mouse::Mode::Absolute;
+    Mouse::Mode        m_Mode             = Mouse::Mode::Absolute;
     int                m_ScrollWheelValue = 0;
-    int                m_RelativeX = 0;
-    int                m_RelativeY = 0;
+    int                m_RelativeX        = 0;
+    int                m_RelativeY        = 0;
+    mutable std::mutex m_Mutex;
 };
 
 namespace input::Mouse
@@ -198,4 +199,4 @@ void setWindow( void* window )
 {
     MouseSDL2::get().setWindow( window );
 }
-}
+}  // namespace input::Mouse

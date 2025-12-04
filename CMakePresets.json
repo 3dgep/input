@@ -21,52 +21,49 @@
             "binaryDir": "${sourceDir}/out/build/${presetName}"
         },
         {
-            "name": "gcc",
-            "displayName": "GCC 11.4.0 x86_64-linux-gnu",
-            "description": "GCC Generator.",
+            "name": "ninja",
+            "displayName": "Ninja",
+            "description": "Generator for Ninja build system",
+            "generator": "Ninja Multi-Config",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_C_COMPILER": "/usr/bin/gcc",
-                "CMAKE_CXX_COMPILER": "/usr/bin/g++"
-            }
+            "installDir": "${sourceDir}/out/install/${presetName}"
         }
     ],
     "buildPresets": [
         {
             "name": "vs18-debug",
-            "displayName": "Windows (Debug)",
+            "displayName": "Windows Debug",
             "configurePreset": "vs18",
             "configuration": "Debug"
         },
         {
             "name": "vs18-release",
-            "displayName": "Windows (Release)",
+            "displayName": "Windows Release",
             "configurePreset": "vs18",
             "configuration": "Release"
         },
         {
             "name": "vs17-debug",
-            "displayName": "Windows (Debug)",
+            "displayName": "Windows Debug",
             "configurePreset": "vs17",
             "configuration": "Debug"
         },
         {
             "name": "vs17-release",
-            "displayName": "Windows (Release)",
+            "displayName": "Windows Release",
             "configurePreset": "vs17",
             "configuration": "Release"
         },
         {
-            "name": "gcc-debug",
-            "displayName": "Linux (Debug)",
-            "configurePreset": "gcc",
+            "name": "ninja-debug",
+            "displayName": "Ninja Debug",
+            "configurePreset": "ninja",
             "configuration": "Debug"
         },
         {
-            "name": "gcc-release",
-            "displayName": "Linux (Release)",
-            "configurePreset": "gcc",
+            "name": "ninja-release",
+            "displayName": "Ninja Release",
+            "configurePreset": "ninja",
             "configuration": "Release"
         }
     ]

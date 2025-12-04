@@ -12,7 +12,7 @@
 
 using namespace input;
 
-void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
+extern void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam );
 
 //======================================================================================
 // Win32 desktop implementation
@@ -56,7 +56,7 @@ public:
 
     Touch::State getState()
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         Touch::State state {};
         state.touches = m_Touches;
@@ -85,12 +85,12 @@ public:
         }
     }
 
-    bool isSupported() const
+    static bool isSupported()
     {
         return ( GetSystemMetrics( SM_DIGITIZER ) & NID_READY ) != 0;
     }
 
-    int getDeviceCount() const
+    static int getDeviceCount()
     {
         const int digitizer = GetSystemMetrics( SM_DIGITIZER );
         if ( digitizer & NID_READY )
@@ -163,13 +163,9 @@ void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
 
                 float              pressure = 1.0f;
                 POINTER_INPUT_TYPE pointerType;
-                bool               isPen   = false;
-                bool               isTouch = false;
                 if ( GetPointerType( pointerId, &pointerType ) )
                 {
-                    isPen   = ( pointerType == PT_PEN );
-                    isTouch = ( pointerType == PT_TOUCH );
-                    if ( isPen )
+                    if ( bool isPen = ( pointerType == PT_PEN ) )
                     {
                         POINTER_PEN_INFO penInfo;
                         if ( GetPointerPenInfo( pointerId, &penInfo ) )
@@ -180,11 +176,10 @@ void Touch_ProcessMessage( UINT message, WPARAM wParam, LPARAM lParam )
                     }
                 }
 
-                std::lock_guard lock( impl.m_Mutex );
-                auto            it = std::find_if( impl.m_Touches.begin(), impl.m_Touches.end(),
-                                                   [&]( const Touch::TouchPoint& t ) {
-                                            return t.id == static_cast<int64_t>( pointerId );
-                                        } );
+                std::scoped_lock lock( impl.m_Mutex );
+                auto             it = std::ranges::find_if( impl.m_Touches, [&]( const Touch::TouchPoint& t ) {
+                    return t.id == static_cast<uint64_t>( pointerId );
+                } );
 
                 // Handle pointer cancel
                 if ( pointerInfo.pointerFlags & POINTER_FLAG_CANCELED )
@@ -262,12 +257,12 @@ void endFrame()
 
 bool isSupported()
 {
-    return TouchWin32::get().isSupported();
+    return TouchWin32::isSupported();
 }
 
 int getDeviceCount()
 {
-    return TouchWin32::get().getDeviceCount();
+    return TouchWin32::getDeviceCount();
 }
 
 void setWindow( void* window )

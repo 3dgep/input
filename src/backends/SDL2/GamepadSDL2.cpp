@@ -7,7 +7,7 @@
 
 using namespace input;
 
-constexpr float SDLThumbDeadZone          = 0.24f;  // Consistent with XboxOneThumbDeadZone
+constexpr float SDLThumbDeadZone = 0.24f;  // Consistent with XboxOneThumbDeadZone
 
 class GamepadSDL2
 {
@@ -18,10 +18,10 @@ public:
         return instance;
     }
 
-    Gamepad::State getState( int player, Gamepad::DeadZone deadZoneMode )
+    Gamepad::State getState( int player, Gamepad::DeadZone deadZoneMode ) const
     {
-        std::lock_guard<std::mutex> lock( m_Mutex );
-        Gamepad::State              state = {};
+        std::scoped_lock lock( m_Mutex );
+        Gamepad::State   state = {};
 
         if ( player == Gamepad::MOST_RECENT_PLAYER )
             player = m_MostRecentGamepad;
@@ -55,25 +55,25 @@ public:
         state.dPad.right = SDL_GameControllerGetButton( ctrl, SDL_CONTROLLER_BUTTON_DPAD_RIGHT );
 
         // Raw thumbstick values
-        float rawLeftX  = SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_LEFTX ) / 32767.0f;
-        float rawLeftY  = SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_LEFTY ) / 32767.0f;
-        float rawRightX = SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_RIGHTX ) / 32767.0f;
-        float rawRightY = SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_RIGHTY ) / 32767.0f;
+        float rawLeftX  = static_cast<float>( SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_LEFTX ) ) / 32767.0f;
+        float rawLeftY  = static_cast<float>( SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_LEFTY ) ) / 32767.0f;
+        float rawRightX = static_cast<float>( SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_RIGHTX ) ) / 32767.0f;
+        float rawRightY = static_cast<float>( SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_RIGHTY ) ) / 32767.0f;
 
         // Apply deadzone
         ApplyStickDeadZone( rawLeftX, rawLeftY, deadZoneMode, 1.0f, SDLThumbDeadZone, state.thumbSticks.leftX, state.thumbSticks.leftY );
         ApplyStickDeadZone( rawRightX, rawRightY, deadZoneMode, 1.0f, SDLThumbDeadZone, state.thumbSticks.rightX, state.thumbSticks.rightY );
 
         // Triggers
-        state.triggers.left  = SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_TRIGGERLEFT ) / 32767.0f;
-        state.triggers.right = SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_TRIGGERRIGHT ) / 32767.0f;
+        state.triggers.left  = static_cast<float>( SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_TRIGGERLEFT ) ) / 32767.0f;
+        state.triggers.right = static_cast<float>( SDL_GameControllerGetAxis( ctrl, SDL_CONTROLLER_AXIS_TRIGGERRIGHT ) ) / 32767.0f;
 
         return state;
     }
 
-    bool setVibration( int player, float leftMotor, float rightMotor, float /*leftTrigger*/, float /*rightTrigger*/ )
+    bool setVibration( int player, float leftMotor, float rightMotor, float /*leftTrigger*/, float /*rightTrigger*/ ) const
     {
-        std::lock_guard<std::mutex> lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         if ( player == Gamepad::MOST_RECENT_PLAYER )
             player = m_MostRecentGamepad;
 
@@ -90,9 +90,9 @@ public:
         return SDL_GameControllerRumble( ctrl, lowFreq, highFreq, UINT32_MAX ) == 0;
     }
 
-    void suspend()
+    void suspend() const
     {
-        std::lock_guard<std::mutex> lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
         for ( auto& ctrl: m_Controllers )
         {
             if ( ctrl )
@@ -102,7 +102,7 @@ public:
 
     void resume()
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         // Close all currently open controllers
         for ( auto& ctrl: m_Controllers )
@@ -124,8 +124,8 @@ public:
                 SDL_GameController* ctrl = SDL_GameControllerOpen( i );
                 if ( ctrl )
                 {
+                    m_MostRecentGamepad  = idx;
                     m_Controllers[idx++] = ctrl;
-                    m_MostRecentGamepad  = idx - 1;
                 }
             }
         }
@@ -134,19 +134,20 @@ public:
 private:
     static int SDLEventWatch( void* userdata, SDL_Event* event )
     {
-        auto*           self = static_cast<GamepadSDL2*>( userdata );
-        std::lock_guard lock( self->m_Mutex );
+        auto* self = static_cast<GamepadSDL2*>( userdata );
 
         if ( event->type == SDL_CONTROLLERDEVICEADDED )
         {
-            int joyIdx = event->cdevice.which;
-            if ( joyIdx < 0 || joyIdx >= Gamepad::MAX_PLAYER_COUNT )
+            std::scoped_lock lock( self->m_Mutex );
+
+            SDL_JoystickID joyId = event->cdevice.which;
+            if ( joyId < 0 || joyId >= Gamepad::MAX_PLAYER_COUNT )
                 return 0;
 
-            if ( !SDL_IsGameController( joyIdx ) )
+            if ( !SDL_IsGameController( joyId ) )
                 return 0;
 
-            SDL_GameController* ctrl = SDL_GameControllerOpen( joyIdx );
+            SDL_GameController* ctrl = SDL_GameControllerOpen( joyId );
             if ( ctrl )
             {
                 for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
@@ -162,6 +163,8 @@ private:
         }
         else if ( event->type == SDL_CONTROLLERDEVICEREMOVED )
         {
+            std::scoped_lock lock( self->m_Mutex );
+
             SDL_JoystickID joyId = event->cdevice.which;
             for ( int i = 0; i < Gamepad::MAX_PLAYER_COUNT; ++i )
             {
@@ -188,11 +191,10 @@ private:
         {
             if ( SDL_IsGameController( i ) )
             {
-                SDL_GameController* ctrl = SDL_GameControllerOpen( i );
-                if ( ctrl )
+                if ( SDL_GameController* ctrl = SDL_GameControllerOpen( i ) )
                 {
+                    m_MostRecentGamepad  = idx;
                     m_Controllers[idx++] = ctrl;
-                    m_MostRecentGamepad  = idx - 1;
                 }
             }
         }

@@ -19,7 +19,7 @@ public:
 
     Touch::State getState() const
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         Touch::State state {};
         state.touches = m_Touches;
@@ -29,7 +29,7 @@ public:
 
     void endFrame()
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         // Remove touches that ended in the previous frame
         std::erase_if( m_Touches,
@@ -65,8 +65,8 @@ public:
 private:
     static int SDLEventWatch( void* userdata, SDL_Event* event )
     {
-        auto*           self = static_cast<TouchSDL2*>( userdata );
-        std::lock_guard lock( self->m_Mutex );
+        auto*            self = static_cast<TouchSDL2*>( userdata );
+        std::scoped_lock lock( self->m_Mutex );
 
         switch ( event->type )
         {
@@ -84,10 +84,10 @@ private:
         }
         case SDL_FINGERMOTION:
         {
-            auto it = std::find_if( self->m_Touches.begin(), self->m_Touches.end(),
-                                    [&]( const Touch::TouchPoint& t ) {
-                                        return t.id == static_cast<uint64_t>( event->tfinger.fingerId );
-                                    } );
+            auto it = std::ranges::find_if( self->m_Touches,
+                                            [&]( const Touch::TouchPoint& t ) {
+                                                return std::cmp_equal( t.id, event->tfinger.fingerId );
+                                            } );
             if ( it != self->m_Touches.end() )
             {
                 it->timestamp = event->tfinger.timestamp;
@@ -100,10 +100,10 @@ private:
         }
         case SDL_FINGERUP:
         {
-            auto it = std::find_if( self->m_Touches.begin(), self->m_Touches.end(),
-                                    [&]( const Touch::TouchPoint& t ) {
-                                        return t.id == static_cast<uint64_t>( event->tfinger.fingerId );
-                                    } );
+            auto it = std::ranges::find_if( self->m_Touches,
+                                            [&]( const Touch::TouchPoint& t ) {
+                                                return std::cmp_equal( t.id, event->tfinger.fingerId );
+                                            } );
             if ( it != self->m_Touches.end() )
             {
                 it->x        = event->tfinger.x;

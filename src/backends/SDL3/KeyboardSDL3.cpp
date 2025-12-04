@@ -348,7 +348,7 @@ public:
 
     Keyboard::State getState() const
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         Keyboard::State state {};
         int             numKeys  = 0;
@@ -370,7 +370,7 @@ public:
         return state;
     }
 
-    bool isConnected() const
+    static bool isConnected()
     {
         return SDL_HasKeyboard();
     }
@@ -399,6 +399,6 @@ void reset()
 
 bool isConnected()
 {
-    return KeyboardSDL3::get().isConnected();
+    return KeyboardSDL3::isConnected();
 }
 }  // namespace input::Keyboard

@@ -19,7 +19,7 @@ public:
 
     Touch::State getState() const
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         Touch::State state {};
         state.touches = m_Touches;
@@ -29,7 +29,7 @@ public:
 
     void endFrame()
     {
-        std::lock_guard lock( m_Mutex );
+        std::scoped_lock lock( m_Mutex );
 
         // Remove touches that ended in the previous frame
         std::erase_if( m_Touches,
@@ -47,12 +47,12 @@ public:
         }
     }
 
-    bool isSupported() const
+    static bool isSupported()
     {
         return getDeviceCount() > 0;
     }
 
-    int getDeviceCount() const
+    static int getDeviceCount()
     {
         int          numTouchDevices = 0;
         SDL_TouchID* touchId         = SDL_GetTouchDevices( &numTouchDevices );
@@ -69,13 +69,13 @@ public:
 private:
     static bool SDLEventWatch( void* userdata, SDL_Event* event )
     {
-        auto*           self = static_cast<TouchSDL3*>( userdata );
-        std::lock_guard lock( self->m_Mutex );
+        auto*            self = static_cast<TouchSDL3*>( userdata );
 
         switch ( event->type )
         {
         case SDL_EVENT_FINGER_DOWN:
         {
+            std::scoped_lock  lock( self->m_Mutex );
             Touch::TouchPoint touch;
             touch.id        = event->tfinger.fingerID;
             touch.timestamp = event->tfinger.timestamp;
@@ -88,10 +88,11 @@ private:
         }
         case SDL_EVENT_FINGER_MOTION:
         {
-            auto it = std::find_if( self->m_Touches.begin(), self->m_Touches.end(),
-                                    [&]( const Touch::TouchPoint& t ) {
-                                        return t.id == event->tfinger.fingerID;
-                                    } );
+            std::scoped_lock lock( self->m_Mutex );
+            auto             it = std::ranges::find_if( self->m_Touches,
+                                            [&]( const Touch::TouchPoint& t ) {
+                                                return t.id == event->tfinger.fingerID;
+                                            } );
             if ( it != self->m_Touches.end() )
             {
                 it->timestamp = event->tfinger.timestamp;
@@ -104,10 +105,11 @@ private:
         }
         case SDL_EVENT_FINGER_UP:
         {
-            auto it = std::find_if( self->m_Touches.begin(), self->m_Touches.end(),
-                                    [&]( const Touch::TouchPoint& t ) {
-                                        return t.id == static_cast<int64_t>( event->tfinger.fingerID );
-                                    } );
+            std::scoped_lock lock( self->m_Mutex );
+            auto             it = std::ranges::find_if( self->m_Touches,
+                                            [&]( const Touch::TouchPoint& t ) {
+                                                return t.id == event->tfinger.fingerID;
+                                            } );
             if ( it != self->m_Touches.end() )
             {
                 it->x        = event->tfinger.x;
@@ -155,12 +157,12 @@ void endFrame()
 
 bool isSupported()
 {
-    return TouchSDL3::get().isSupported();
+    return TouchSDL3::isSupported();
 }
 
 int getDeviceCount()
 {
-    return TouchSDL3::get().getDeviceCount();
+    return TouchSDL3::getDeviceCount();
 }
 
 }  // namespace input::Touch
