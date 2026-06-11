@@ -4,6 +4,7 @@
 #include <SDL3/SDL_mouse.h>
 
 #include <cassert>
+#include <iostream>
 #include <mutex>
 
 using namespace input;
@@ -40,8 +41,15 @@ public:
         }
         else  // Relative mode
         {
-            state.x = m_RelativeX;
-            state.y = m_RelativeY;
+            state.x = m_AccumulateX;
+            state.y = m_AccumulateY;
+
+            std::cout << "Accumulated relative motion: (" << m_AccumulateX << ", " << m_AccumulateY << ")\n";   
+
+            // Keep track of how much relative motion has been reported to the user, 
+            // so that we subtract it from the accumulated relative motion.
+            m_RelativeX = m_AccumulateX;
+            m_RelativeY = m_AccumulateY;
         }
 
         state.scrollWheelValue = static_cast<int64_t>( m_ScrollWheelValue );
@@ -65,8 +73,8 @@ public:
             m_Mode = mode;
             if ( mode == Mouse::Mode::Relative )
             {
-                m_AccumulateX = m_RelativeX = 0;
-                m_AccumulateY = m_RelativeY = 0;
+                m_AccumulateX = m_RelativeX = 0.0f;
+                m_AccumulateY = m_RelativeY = 0.0f;
             }
         }
 
@@ -89,11 +97,13 @@ public:
         std::scoped_lock lock( m_Mutex );
         if ( m_Mode == Mouse::Mode::Relative )
         {
-            m_RelativeX = m_AccumulateX;
-            m_RelativeY = m_AccumulateY;
+            // Subtract the reported motion.
+            m_AccumulateX -= m_RelativeX;
+            m_AccumulateY -= m_RelativeY;
 
-            m_AccumulateX = 0.0f;
-            m_AccumulateY = 0.0f;
+            // Reset the reported motion so we don't remove it from accumulated again until after getState has been called.
+            m_RelativeX = 0.0f;
+            m_RelativeY = 0.0f;
         }
     }
 
@@ -155,7 +165,6 @@ private:
 
     MouseSDL3()
     {
-        SDL_SetWindowRelativeMouseMode( nullptr, false );
         SDL_AddEventWatch( &MouseSDL3::SDLEventWatch, this );
     }
 
@@ -167,8 +176,8 @@ private:
     SDL_Window*        m_Window           = nullptr;
     float              m_AccumulateX      = 0.0f;
     float              m_AccumulateY      = 0.0f;
-    float              m_RelativeX        = 0.0f;
-    float              m_RelativeY        = 0.0f;
+    mutable float      m_RelativeX        = 0.0f;
+    mutable float      m_RelativeY        = 0.0f;
     float              m_ScrollWheelValue = 0.0f;
     Mouse::Mode        m_Mode             = Mouse::Mode::Absolute;
     mutable std::mutex m_Mutex;
